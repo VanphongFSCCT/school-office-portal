@@ -121,9 +121,9 @@
         </button>
       </div>
 
-      <!-- Khi đã đăng nhập Google: CHỈ HIỂN THỊ TÊN TÀI KHOẢN VÀ HÌNH ẢNH, BẤM VÀO ĐỂ XEM CHI TIẾT -->
+      <!-- Khi đã đăng nhập Google: CHỈ HIỂN THỊ TÊN TÀI KHOẢN VÀ HÌNH ẢNH, BẤM VÀO ĐỂ XEM CHI TIẾT + NÚT ĐĂNG XUẤT NHANH -->
       <div id="auth-logged-in" class="hidden items-center space-x-2">
-        <button id="btn-user-profile-trigger" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl bg-[#102E52]/80 hover:bg-[#14345B] border border-[#B98A33]/35 text-left transition group shadow-sm focus:outline-none" title="Bấm để xem chi tiết tài khoản">
+        <button id="btn-user-profile-trigger" class="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-[#102E52]/80 hover:bg-[#14345B] border border-[#B98A33]/35 text-left transition group shadow-sm focus:outline-none" title="Bấm để xem chi tiết tài khoản">
           <div id="user-avatar-badge" class="w-8 h-8 rounded-full bg-[#14345B] border border-[#FFC857]/70 flex items-center justify-center font-bold text-xs text-[#FFC857] shadow-inner overflow-hidden shrink-0">
             V
           </div>
@@ -133,6 +133,9 @@
             <span id="badge-user-tag" class="hidden px-1.5 py-0.5 rounded bg-[#16A8F4]/20 text-[#16A8F4] border border-[#16A8F4]/40 text-[9px] font-mono">CÁN BỘ</span>
             <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-[#FFC857] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
           </div>
+        </button>
+        <button id="btn-logout" title="Đăng xuất nhanh" class="p-2 text-slate-400 hover:text-rose-400 rounded-xl hover:bg-rose-500/15 border border-transparent hover:border-rose-500/30 transition flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
         </button>
       </div>
     </div>
@@ -1076,23 +1079,222 @@
     let editUploadedFileData = null;
     let editUploadedFileName = '';
 
-    const DEMO_CODES = ['IT-WI-02', 'IT-BM-01', 'TV-BM-01', 'TV-WI-01', 'HC-SOP-01', 'HC-BM-01', 'YT-SOP-01', 'KT-SOP-01', 'MS-BM-01', 'IT-SOP-01', 'TV-SOP-01'];
+    const INITIAL_PORTAL_DOCS = [
+      {
+        id: 'IT-01',
+        code: 'IT-SOP-01',
+        title: 'Quy trình Cấp mới và Thu hồi Tài khoản Hệ thống',
+        category: 'IT',
+        type: 'Quy trình',
+        version: '2.1',
+        effectiveDate: '15/01/2026',
+        status: 'Có hiệu lực',
+        access: 'Nội bộ',
+        dept: 'Bộ phận IT',
+        downloadPerm: 'allow_all',
+        currentFile: 'IT-SOP-01_Cap_Moi_Tai_Khoan.pdf',
+        fileSize: '2.8 MB',
+        desc: 'Trình tự cấp tài khoản email FPT, quyền truy cập hệ thống thông tin cho cán bộ giảng viên và nhân sự mới tiếp nhận công tác.',
+        relatedDocs: ['IT-BM-01']
+      },
+      {
+        id: 'IT-02',
+        code: 'IT-WI-02',
+        title: 'Hướng dẫn Khắc phục Sự cố Mạng và Máy in Văn phòng',
+        category: 'IT',
+        type: 'Hướng dẫn công việc',
+        version: '1.0',
+        effectiveDate: '01/03/2026',
+        status: 'Có hiệu lực',
+        access: 'Mở',
+        dept: 'Bộ phận IT',
+        downloadPerm: 'allow_all',
+        currentFile: 'IT-WI-02_Khac_Phuc_Su_Co_Mang.pdf',
+        fileSize: '2.4 MB',
+        desc: 'Cẩm nang hỗ trợ cán bộ tự xử lý các sự cố mạng wifi, mạng LAN nội bộ và cài đặt chia sẻ máy in văn phòng phổ biến.',
+        relatedDocs: ['IT-BM-01']
+      },
+      {
+        id: 'IT-03',
+        code: 'IT-BM-01',
+        title: 'Biểu mẫu Yêu cầu Cấp phát Thiết bị & Phần mềm',
+        category: 'IT',
+        type: 'Biểu mẫu',
+        version: '1.3',
+        effectiveDate: '20/04/2026',
+        status: 'Có hiệu lực',
+        access: 'Mở',
+        dept: 'Bộ phận IT',
+        downloadPerm: 'allow_all',
+        currentFile: 'IT-BM-01_Phieu_Cap_Phat_Thiet_Bi.docx',
+        fileSize: '1.2 MB',
+        desc: 'Phiếu đăng ký tiếp nhận máy tính, linh kiện, thiết bị CNTT và cài đặt bản quyền phần mềm phục vụ giảng dạy và quản trị.',
+        relatedDocs: ['IT-WI-02']
+      },
+      {
+        id: 'TV-01',
+        code: 'TV-SOP-01',
+        title: 'Quy trình Thanh toán Chi phí và Hoàn ứng Công tác',
+        category: 'Tài vụ',
+        type: 'Quy trình',
+        version: '3.0',
+        effectiveDate: '01/02/2026',
+        status: 'Có hiệu lực',
+        access: 'Nội bộ',
+        dept: 'Phòng Kế toán - Tài vụ',
+        downloadPerm: 'allow_all',
+        currentFile: 'TV-SOP-01_Quy_Trinh_Thanh_Toan.pdf',
+        fileSize: '3.2 MB',
+        desc: 'Quy định hồ sơ chứng từ hợp lệ, định mức công tác phí, thủ tục hoàn ứng và giải ngân kinh phí sự nghiệp giáo dục.',
+        relatedDocs: ['TV-BM-01']
+      },
+      {
+        id: 'TV-02',
+        code: 'TV-BM-01',
+        title: 'Giấy đề nghị Tạm ứng Ngân sách Hoạt động',
+        category: 'Tài vụ',
+        type: 'Biểu mẫu',
+        version: '2.0',
+        effectiveDate: '10/02/2026',
+        status: 'Có hiệu lực',
+        access: 'Mở',
+        dept: 'Phòng Kế toán - Tài vụ',
+        downloadPerm: 'allow_all',
+        currentFile: 'TV-BM-01_De_Nghi_Tam_Ung.xlsx',
+        fileSize: '1.1 MB',
+        desc: 'Mẫu biểu đề nghị tạm ứng ngân sách cho các hoạt động chuyên môn, sự kiện và công tác đoàn thể của đơn vị.',
+        relatedDocs: ['TV-SOP-01']
+      },
+      {
+        id: 'HC-01',
+        code: 'HC-SOP-01',
+        title: 'Quy trình Đặt phòng họp và Mượn/Trả Tài sản Công',
+        category: 'Hành chính',
+        type: 'Quy trình',
+        version: '1.2',
+        effectiveDate: '05/01/2026',
+        status: 'Có hiệu lực',
+        access: 'Mở',
+        dept: 'Phòng Hành chính',
+        downloadPerm: 'allow_all',
+        currentFile: 'HC-SOP-01_Dat_Phong_Hop.pdf',
+        fileSize: '1.8 MB',
+        desc: 'Quy định đặt lịch phòng họp trực tuyến, phòng hội thảo và trình tự bàn giao mượn/trả trang thiết bị tài sản công văn phòng.',
+        relatedDocs: ['HC-BM-01']
+      },
+      {
+        id: 'HC-02',
+        code: 'HC-BM-01',
+        title: 'Phiếu Đăng ký Sử dụng Văn phòng phẩm Định kỳ',
+        category: 'Hành chính',
+        type: 'Biểu mẫu',
+        version: '1.0',
+        effectiveDate: '15/01/2026',
+        status: 'Có hiệu lực',
+        access: 'Mở',
+        dept: 'Phòng Hành chính',
+        downloadPerm: 'allow_all',
+        currentFile: 'HC-BM-01_Dang_Ky_VPP.xlsx',
+        fileSize: '850 KB',
+        desc: 'Mẫu biểu tổng hợp nhu cầu văn phòng phẩm của các phòng ban đơn vị trước ngày 25 hàng tháng.',
+        relatedDocs: ['HC-SOP-01']
+      },
+      {
+        id: 'YT-01',
+        code: 'YT-SOP-01',
+        title: 'Quy trình Tiếp nhận Sơ cứu ban đầu và Chuyển viện khẩn cấp',
+        category: 'Y tế',
+        type: 'Quy trình',
+        version: '1.1',
+        effectiveDate: '12/03/2026',
+        status: 'Có hiệu lực',
+        access: 'Mở',
+        dept: 'Bộ phận Y tế',
+        downloadPerm: 'view_only',
+        currentFile: 'YT-SOP-01_So_Cuu_Chuyen_Vien.pdf',
+        fileSize: '2.1 MB',
+        desc: 'Trình tự sơ cứu khẩn cấp tại chỗ cho học sinh, cán bộ và quy chuẩn liên hệ điều phối xe cứu thương chuyển viện 115.',
+        relatedDocs: []
+      },
+      {
+        id: 'KT-01',
+        code: 'KT-SOP-01',
+        title: 'Quy trình Báo hỏng và Bảo trì Cơ sở Vật chất Tòa nhà',
+        category: 'Kỹ thuật',
+        type: 'Quy trình',
+        version: '2.0',
+        effectiveDate: '01/04/2026',
+        status: 'Có hiệu lực',
+        access: 'Mở',
+        dept: 'Tổ Kỹ thuật',
+        downloadPerm: 'allow_all',
+        currentFile: 'KT-SOP-01_Bao_Tri_CSVC.pdf',
+        fileSize: '1.5 MB',
+        desc: 'Tiếp nhận báo hỏng điện nước, máy lạnh, âm thanh phòng học và cam kết phản hồi kỹ thuật SLA xử lý nhanh dưới 2 giờ.',
+        relatedDocs: []
+      },
+      {
+        id: 'AT-01',
+        code: 'AT-SOP-01',
+        title: 'Quy trình Kiểm định An toàn Vệ sinh Thực phẩm Bếp ăn Bán trú',
+        category: 'ATVSTP',
+        type: 'Quy trình',
+        version: '1.0',
+        effectiveDate: '05/02/2026',
+        status: 'Có hiệu lực',
+        access: 'Mở',
+        dept: 'Tổ Quản trị Bán trú',
+        downloadPerm: 'allow_all',
+        currentFile: 'AT-SOP-01_Kiem_Dinh_ATVSTP.pdf',
+        fileSize: '1.7 MB',
+        desc: 'Quy định kiểm thực 3 bước và lưu mẫu thức ăn 24h đối với suất ăn trưa và ăn nhẹ học sinh tại căn tin và bếp ăn trường học.',
+        relatedDocs: []
+      },
+      {
+        id: 'MS-02',
+        code: 'MS-BM-01',
+        title: 'Phiếu Đề xuất Mua sắm Vật tư & Báo giá Cạnh tranh',
+        category: 'Mua sắm',
+        type: 'Biểu mẫu',
+        version: '1.4',
+        effectiveDate: '10/05/2026',
+        status: 'Có hiệu lực',
+        access: 'Mở',
+        dept: 'Bộ phận Mua sắm',
+        downloadPerm: 'allow_all',
+        currentFile: 'MS-BM-01_De_Xuat_Mua_Sam.docx',
+        fileSize: '1.3 MB',
+        desc: 'Biểu mẫu đối sánh giá của tối thiểu 3 nhà cung cấp trước khi trình Ban Giám hiệu phê duyệt kế hoạch mua sắm trang thiết bị.',
+        relatedDocs: []
+      }
+    ];
 
     function restoreSession() {
       try {
         const saved = sessionStorage.getItem('fpt_auth_user');
         if (saved) currentUser = JSON.parse(saved);
+        const savedLocalUser = localStorage.getItem('school_portal_user');
+        if (!currentUser && savedLocalUser) currentUser = JSON.parse(savedLocalUser);
+
         const savedRbac = localStorage.getItem('school_portal_rbac_users');
         if (savedRbac) rbacUsers = JSON.parse(savedRbac);
         
         const savedDocs = localStorage.getItem('school_portal_live_docs');
         if (savedDocs) {
           const parsed = JSON.parse(savedDocs);
-          documents = parsed.filter(d => !DEMO_CODES.includes(d.code));
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            documents = parsed;
+          } else {
+            documents = JSON.parse(JSON.stringify(INITIAL_PORTAL_DOCS));
+            localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
+          }
+        } else {
+          documents = JSON.parse(JSON.stringify(INITIAL_PORTAL_DOCS));
           localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
         }
       } catch (e) {
         console.warn('Restore error:', e);
+        documents = JSON.parse(JSON.stringify(INITIAL_PORTAL_DOCS));
       }
     }
 
@@ -1108,56 +1310,35 @@
         }
       } catch (e) {}
 
-      if (!localStorage.getItem('school_portal_clean_v6')) {
-        documents = documents.filter(d => !DEMO_CODES.includes(d.code));
-        localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
-        try {
-          await fetch('/api/documents?purge=all', { method: 'DELETE' });
-        } catch (e) {}
-        localStorage.setItem('school_portal_clean_v6', 'true');
-      }
-
       try {
         const docRes = await fetch('/api/documents');
         if (docRes.ok) {
           const docData = await docRes.json();
-          if (docData.success && Array.isArray(docData.data)) {
-            const liveRows = docData.data.filter(d => !DEMO_CODES.includes(d.code));
-            documents = liveRows.map(d => ({
-              id: d.id,
+          if (docData.success && Array.isArray(docData.data) && docData.data.length > 0) {
+            documents = docData.data.map(d => ({
+              id: d.id || ('DOC-' + d.code),
               code: d.code,
               title: d.title,
-              category: d.category_id,
-              type: d.doc_type,
-              version: d.version,
-              effectiveDate: d.effective_date || new Date().toLocaleDateString('vi-VN'),
+              category: d.category_id || d.category || 'IT',
+              type: d.doc_type || d.type || 'Quy trình',
+              version: d.version || '1.0',
+              effectiveDate: d.effective_date || d.effectiveDate || new Date().toLocaleDateString('vi-VN'),
               status: d.status || 'Có hiệu lực',
-              access: d.access_level || 'Mở',
-              downloadPerm: d.download_perm || 'allow_all',
-              dept: d.department || 'Văn phòng nhà trường',
-              desc: d.description || '',
-              fileData: d.file_data || '',
-              currentFile: d.code + '.pdf'
+              access: d.access_level || d.access || 'Mở',
+              downloadPerm: d.download_perm || d.downloadPerm || 'allow_all',
+              dept: d.department || d.dept || 'Văn phòng nhà trường',
+              desc: d.description || d.desc || '',
+              currentFile: d.current_file || d.currentFile || (d.code + '.pdf'),
+              fileData: d.file_data || d.fileData || '',
+              relatedDocs: d.related_codes || d.relatedDocs || []
             }));
+            localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
             renderDirectCards();
             renderOtherViews();
             updateBadges();
           }
         }
       } catch (e) {}
-
-      if (currentUser && currentUser.role === 'admin') {
-        try {
-          const usrRes = await fetch('/api/users');
-          if (usrRes.ok) {
-            const usrData = await usrRes.json();
-            if (usrData.success && Array.isArray(usrData.data) && usrData.data.length > 0) {
-              rbacUsers = usrData.data;
-              renderOtherViews();
-            }
-          }
-        } catch (e) {}
-      }
     }
 
     function removeVietnameseTones(str) {
@@ -1680,7 +1861,7 @@
     }
 
     function updateCatDropdowns() {
-      const addSelect = document.getElementById('inp-add-doc-cat');
+      const addSelect = document.getElementById('inp-doc-cat');
       const editSelect = document.getElementById('inp-edit-doc-cat');
       
       const buildOpts = (selectedVal) => {
@@ -1822,16 +2003,16 @@
         if (currentUser.role === 'admin') {
           adminNavBtn.classList.remove('hidden');
           if (btnAdminAddCat) btnAdminAddCat.classList.remove('hidden');
-          btnAdminAddDoc.classList.remove('hidden');
-          badgeAdminTag.classList.remove('hidden');
-          if (badgeUserTag) badgeUserTag.classList.add('hidden');
+          if (btnAdminAddDoc) btnAdminAddDoc.classList.remove('hidden');
+          if (badgeAdminTag) badgeAdminTag.classList.remove('hidden');
+          if (badgeUserTag) if (badgeUserTag) badgeUserTag.classList.add('hidden');
         } else {
           adminNavBtn.classList.add('hidden');
           if (btnAdminAddCat) btnAdminAddCat.classList.add('hidden');
-          if (currentUser.role === 'editor') btnAdminAddDoc.classList.remove('hidden');
-          else btnAdminAddDoc.classList.add('hidden');
-          badgeAdminTag.classList.add('hidden');
-          if (badgeUserTag) badgeUserTag.classList.remove('hidden');
+          if (currentUser.role === 'editor') if (btnAdminAddDoc) btnAdminAddDoc.classList.remove('hidden');
+          else if (btnAdminAddDoc) btnAdminAddDoc.classList.add('hidden');
+          if (badgeAdminTag) badgeAdminTag.classList.add('hidden');
+          if (badgeUserTag) if (badgeUserTag) badgeUserTag.classList.remove('hidden');
         }
       } else {
         // CHƯA ĐĂNG NHẬP: ẨN TOÀN BỘ PHÂN HỆ QUẢN TRỊ & NGHIỆP VỤ
@@ -1840,19 +2021,21 @@
         loggedInBox.classList.remove('flex');
         if (emptyLoginBtn) emptyLoginBtn.classList.remove('hidden');
 
-        sidebarRoleName.textContent = 'Khách tra cứu';
-        sidebarSubtext.textContent = 'Chế độ tra cứu mở';
-        sidebarAvatar.innerHTML = `
-          <svg class="w-4 h-4 text-[#16A8F4]" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-          </svg>
-        `;
+        if (sidebarRoleName) sidebarRoleName.textContent = 'Khách tra cứu';
+        if (sidebarSubtext) sidebarSubtext.textContent = 'Chế độ tra cứu mở';
+        if (sidebarAvatar) {
+          sidebarAvatar.innerHTML = `
+            <svg class="w-4 h-4 text-[#16A8F4]" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+            </svg>
+          `;
+        }
 
         if (sectionOfficeOps) sectionOfficeOps.classList.add('hidden');
         adminNavBtn.classList.add('hidden');
         if (btnAdminAddCat) btnAdminAddCat.classList.add('hidden');
-        btnAdminAddDoc.classList.add('hidden');
-        badgeAdminTag.classList.add('hidden');
+        if (btnAdminAddDoc) btnAdminAddDoc.classList.add('hidden');
+        if (badgeAdminTag) badgeAdminTag.classList.add('hidden');
       }
 
       updateBadges();
@@ -1916,8 +2099,11 @@
       const authModal = document.getElementById('modal-auth-container');
       const gsiContainer = document.getElementById('google-gsi-button-container');
       const errorAlert = document.getElementById('oauth-error-alert');
-      errorAlert.classList.add('hidden');
-      authModal.classList.remove('hidden');
+      if (errorAlert) errorAlert.classList.add('hidden');
+      if (authModal) {
+        authModal.classList.remove('hidden');
+        authModal.classList.add('flex');
+      }
 
       if (window.google && google.accounts && google.accounts.id) {
         try {
@@ -2027,15 +2213,21 @@
       const emptyLoginBtn = document.getElementById('btn-empty-login-admin');
       if (emptyLoginBtn) emptyLoginBtn.addEventListener('click', openAuthModal);
       document.getElementById('btn-close-auth-modal').addEventListener('click', () => {
-        document.getElementById('modal-auth-container').classList.add('hidden');
+        const am = document.getElementById('modal-auth-container'); if (am) { am.classList.add('hidden'); am.classList.remove('flex'); }
       });
-      document.getElementById('btn-logout').addEventListener('click', () => {
-        currentUser = null;
-        sessionStorage.removeItem('fpt_auth_user');
-        showToast('Đã đăng xuất khỏi hệ thống', 'info');
-        switchView('dashboard');
-        updateAuthState();
-      });
+      const btnQuickLogout = document.getElementById('btn-logout');
+      if (btnQuickLogout) {
+        btnQuickLogout.addEventListener('click', () => {
+          currentUser = null;
+          sessionStorage.removeItem('fpt_auth_user');
+          localStorage.removeItem('school_portal_user');
+          showToast('Đã đăng xuất khỏi hệ thống thành công', 'info');
+          switchView('all-docs');
+          updateAuthState();
+          renderDirectCards();
+          renderOtherViews();
+        });
+      }
 
       // Toàn màn hình cho Reader Modal
       const btnFullscreen = document.getElementById('btn-toggle-reader-fullscreen');
@@ -2353,7 +2545,7 @@
             role: 'admin'
           };
           localStorage.setItem('school_portal_user', JSON.stringify(currentUser));
-          document.getElementById('modal-auth-container').classList.add('hidden');
+          const am = document.getElementById('modal-auth-container'); if (am) { am.classList.add('hidden'); am.classList.remove('flex'); }
           updateAuthState();
           renderDirectCards();
           renderOtherViews();
@@ -2370,7 +2562,7 @@
             role: 'user'
           };
           localStorage.setItem('school_portal_user', JSON.stringify(currentUser));
-          document.getElementById('modal-auth-container').classList.add('hidden');
+          const am = document.getElementById('modal-auth-container'); if (am) { am.classList.add('hidden'); am.classList.remove('flex'); }
           updateAuthState();
           renderDirectCards();
           renderOtherViews();
@@ -2378,10 +2570,17 @@
         });
       }
 
-      document.getElementById('btn-admin-add-doc').addEventListener('click', () => {
-        populateCatSelect();
-        docModal.classList.remove('hidden');
-      });
+      const btnAddDoc = document.getElementById('btn-admin-add-doc');
+      if (btnAddDoc) {
+        btnAddDoc.addEventListener('click', () => {
+          updateCatDropdowns();
+          const modalAddDoc = document.getElementById('modal-add-document');
+          if (modalAddDoc) {
+            modalAddDoc.classList.remove('hidden');
+            modalAddDoc.classList.add('flex');
+          }
+        });
+      }
       document.getElementById('btn-close-doc-modal').addEventListener('click', () => docModal.classList.add('hidden'));
       document.getElementById('btn-cancel-doc-modal').addEventListener('click', () => docModal.classList.add('hidden'));
 
