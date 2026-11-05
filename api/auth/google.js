@@ -15,7 +15,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Xác thực chữ ký số của Google ID Token trực tiếp với máy chủ Google OAuth2
     const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
     if (!verifyRes.ok) {
       return res.status(401).json({ error: 'Token xác thực Google không hợp lệ hoặc đã hết hạn.' });
@@ -27,25 +26,18 @@ export default async function handler(req, res) {
     const picture = payload.picture || '';
     const hd = payload.hd || '';
 
-    // 2. Xác định danh sách Super Admin từ biến môi trường ADMIN_EMAILS
-    const defaultAdmins = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com', 'datbt13@fpt.edu.vn'];
+    // CHỈ các email được set riêng trong ADMIN_EMAILS mới là Super Admin gốc (KHÔNG gán mặc định cho @fpt.edu.vn)
+    const rootAdmins = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com'];
     const envAdmins = (process.env.ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
-    const superAdmins = [...new Set([...defaultAdmins, ...envAdmins])];
+    const superAdmins = [...new Set([...rootAdmins, ...envAdmins])];
 
-    let userRole = 'guest';
-    let userDept = 'Khách';
     const isSuperAdmin = superAdmins.includes(email);
     const isFptDomain = (hd === 'fpt.edu.vn') || email.endsWith('@fpt.edu.vn');
 
-    if (isSuperAdmin) {
-      userRole = 'admin';
-      userDept = 'Quản trị hệ thống';
-    } else if (isFptDomain) {
-      userRole = 'user';
-      userDept = 'Cán bộ FPT Education';
-    }
+    // Mặc định tài khoản @fpt.edu.vn chỉ là 'user' (Cán bộ xem nội bộ), KHÔNG phải 'admin'
+    let userRole = isSuperAdmin ? 'admin' : 'user';
+    let userDept = isSuperAdmin ? 'Quản trị hệ thống' : 'Cán bộ FPT Education';
 
-    // 3. Đối soát phân quyền trong Neon PostgreSQL (Bảng users)
     const databaseUrl = process.env.DATABASE_URL;
     if (databaseUrl) {
       try {
@@ -64,15 +56,17 @@ export default async function handler(req, res) {
 
         const existing = await sql`SELECT * FROM users WHERE email = ${email}`;
         if (existing.length > 0) {
-          // Nếu tài khoản đã được phân quyền trong DB, lấy đúng role trong DB (trừ khi là Super Admin gốc)
+          // Lấy đúng quyền được set riêng trong bảng users (hoặc giữ quyền admin nếu là rootAdmins)
           userRole = isSuperAdmin ? 'admin' : existing[0].role;
           userDept = existing[0].department || userDept;
-          await sql`UPDATE users SET full_name = ${name}, picture = ${picture}, updated_at = CURRENT_TIMESTAMP WHERE email = ${email}`;
+          await sql`UPDATE users SET full_name = ${name}, picture = ${picture}, role = ${userRole}, updated_at = CURRENT_TIMESTAMP WHERE email = ${email}`;
         } else {
-          // Nếu chưa có trong DB: chỉ cho phép nếu là Super Admin hoặc thuộc miền @fpt.edu.vn
+          // Nếu chưa có trong bảng phân quyền:
+          // - Nếu là @fpt.edu.vn -> chỉ được quyền 'user' (xem & tải tài liệu nội bộ được cấp phép)
+          // - Nếu là Gmail ngoài và không nằm trong bảng phân quyền -> từ chối
           if (!isSuperAdmin && !isFptDomain) {
             return res.status(403).json({
-              error: `Tài khoản ${email} chưa được cấp quyền truy cập hệ thống. Vui lòng sử dụng email @fpt.edu.vn hoặc liên hệ Quản trị viên để được phân quyền.`
+              error: `Tài khoản ${email} chưa được cấp quyền trong hệ thống. Vui lòng sử dụng tài khoản @fpt.edu.vn hoặc liên hệ Quản trị viên để được cấp quyền.`
             });
           }
           await sql`
@@ -81,13 +75,12 @@ export default async function handler(req, res) {
           `;
         }
       } catch (dbErr) {
-        console.error('Database query warning:', dbErr);
+        console.error('Database RBAC check warning:', dbErr);
       }
     } else {
-      // Nếu chưa kết nối DB, chỉ cho phép Super Admin hoặc @fpt.edu.vn
       if (!isSuperAdmin && !isFptDomain) {
         return res.status(403).json({
-          error: `Tài khoản ${email} không thuộc tổ chức @fpt.edu.vn và chưa được cấp quyền quản trị.`
+          error: `Tài khoản ${email} chưa được phân quyền trong hệ thống.`
         });
       }
     }
@@ -99,8 +92,7 @@ export default async function handler(req, res) {
         name,
         picture,
         role: userRole,
-        department: userDept,
-        idToken: credential
+        department: userDept
       }
     });
 

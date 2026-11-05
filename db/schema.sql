@@ -1,3 +1,6 @@
+-- Làm sạch toàn bộ dữ liệu mẫu cũ trong bảng documents (nếu đã tạo trước đó)
+TRUNCATE TABLE document_history, documents RESTART IDENTITY CASCADE;
+
 -- 1. Bảng danh mục lĩnh vực hoạt động (Categories)
 CREATE TABLE IF NOT EXISTS categories (
     id VARCHAR(50) PRIMARY KEY,
@@ -7,7 +10,7 @@ CREATE TABLE IF NOT EXISTS categories (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Bảng tài liệu và quy trình (Documents - Làm sạch không có dữ liệu mẫu)
+-- 2. Bảng tài liệu và quy trình (Documents - Trống 100% để vận hành chính thức)
 CREATE TABLE IF NOT EXISTS documents (
     id VARCHAR(50) PRIMARY KEY,
     code VARCHAR(50) UNIQUE NOT NULL,
@@ -44,7 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(150) UNIQUE NOT NULL,
     full_name VARCHAR(150) NOT NULL,
-    role VARCHAR(50) NOT NULL DEFAULT 'user', -- 'user', 'editor', 'approver', 'admin'
+    role VARCHAR(50) NOT NULL DEFAULT 'user', -- 'user' (Cán bộ xem nội bộ), 'editor' (Biên tập), 'admin' (Quản trị viên)
     department VARCHAR(150),
     picture TEXT,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -61,9 +64,11 @@ INSERT INTO categories (id, name, icon, display_order) VALUES
 ('Mua sắm', 'Mua sắm', '📦', 7)
 ON CONFLICT (id) DO NOTHING;
 
--- Khởi tạo quyền Super Admin mặc định cho tài khoản Google của bạn
+-- Chỉ cấp quyền Admin gốc cho Gmail quản trị được chỉ định riêng.
+-- Mọi tài khoản @fpt.edu.vn khi đăng nhập mặc định chỉ có role = 'user' (xem & tải tài liệu nội bộ).
+DELETE FROM users WHERE email LIKE '%@fpt.edu.vn' AND role = 'admin';
+
 INSERT INTO users (email, full_name, role, department) VALUES
-('buitandat1727@gmail.com', 'Bùi Tấn Đạt (DatBT13)', 'admin', 'Quản trị hệ thống'),
-('hethongquanlyphong.fscct@gmail.com', 'Hệ thống Quản lý Phòng', 'admin', 'Quản trị hệ thống'),
-('datbt13@fpt.edu.vn', 'Bùi Tấn Đạt (FPT)', 'admin', 'Quản trị hệ thống')
+('buitandat1727@gmail.com', 'Bùi Tấn Đạt (Quản trị viên)', 'admin', 'Quản trị hệ thống'),
+('hethongquanlyphong.fscct@gmail.com', 'Hệ thống Quản lý Phòng', 'admin', 'Quản trị hệ thống')
 ON CONFLICT (email) DO UPDATE SET role = 'admin';
