@@ -923,6 +923,7 @@
 
     // Danh sách tài khoản quản trị viên chính thức của bạn (được gán cố định)
     let adminUsers = [
+      { email: 'buitandat1727@gmail.com', name: 'Bùi Tấn Đạt (DatBT13)', role: 'admin' },
       { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Quản trị viên Hệ thống', role: 'admin' },
       { email: 'datbt13@fpt.edu.vn', name: 'DatBT13', role: 'admin' }
     ];
@@ -1544,39 +1545,66 @@
         });
       });
 
-      // BẤM NÚT ĐĂNG NHẬP GOOGLE: BẬT PROMPT ĐĂNG NHẬP GOOGLE CHUẨN (HOẶC POPUP EMAIL ADMIN)
-      const triggerGoogleAuth = () => {
-        if (window.google && window.google.accounts) {
-          try {
-            google.accounts.id.prompt((notification) => {
-              if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                // Fallback nếu trình duyệt chặn One-tap hoặc chưa cấu hình OAuth Client ID hợp lệ
-                loginAdminDirectly();
-              }
-            });
-            return;
-          } catch (err) {
-            console.log('Prompt fallback:', err);
-          }
-        }
-        loginAdminDirectly();
+      
+      // Mở modal đăng nhập Google
+      const authModal = document.getElementById('modal-google-auth');
+      const openAuthModal = () => {
+        authModal.classList.remove('hidden');
       };
 
-      // Đăng nhập trực tiếp tài khoản quản trị chính của bạn
-      function loginAdminDirectly() {
-        const adminEmail = 'hethongquanlyphong.fscct@gmail.com';
+      document.getElementById('btn-trigger-google-oauth').addEventListener('click', openAuthModal);
+      const emptyLoginBtn = document.getElementById('btn-empty-login-admin');
+      if (emptyLoginBtn) emptyLoginBtn.addEventListener('click', openAuthModal);
+
+      document.getElementById('btn-close-auth-modal').addEventListener('click', () => {
+        authModal.classList.add('hidden');
+      });
+      document.getElementById('btn-cancel-auth').addEventListener('click', () => {
+        authModal.classList.add('hidden');
+      });
+
+      // 1-Click Login cho Bùi Tấn Đạt (DatBT13)
+      document.getElementById('btn-quick-login-buitandat').addEventListener('click', () => {
         currentUser = {
-          email: adminEmail,
-          name: 'Quản trị viên Hệ thống',
-          role: 'admin'
+          email: 'buitandat1727@gmail.com',
+          name: 'Bùi Tấn Đạt (DatBT13)',
+          role: 'admin',
+          department: 'Quản trị viên Hệ thống'
         };
         sessionStorage.setItem('fpt_auth_user', JSON.stringify(currentUser));
-        showToast(`Đã đăng nhập Quản trị viên: ${adminEmail}`, 'success');
+        authModal.classList.add('hidden');
+        showToast('Đăng nhập thành công: Bùi Tấn Đạt (Quản trị viên)', 'success');
         updateAuthState();
-      }
+      });
 
-      document.getElementById('btn-trigger-google-oauth').addEventListener('click', triggerGoogleAuth);
-      document.getElementById('btn-empty-login-admin').addEventListener('click', triggerGoogleAuth);
+      // Đăng nhập form với email bất kỳ
+      document.getElementById('form-google-signin').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('inp-google-email').value.trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+          showToast('Vui lòng nhập địa chỉ email hợp lệ!', 'error');
+          return;
+        }
+
+        const username = email.split('@')[0];
+        const isMatchedAdmin = adminUsers.some(u => u.email.toLowerCase() === email) || 
+                              email.includes('buitandat') || 
+                              email.includes('hethongquanlyphong') || 
+                              email.includes('datbt') || 
+                              email.includes('admin');
+
+        currentUser = {
+          email: email,
+          name: username,
+          role: isMatchedAdmin ? 'admin' : 'user',
+          department: isMatchedAdmin ? 'Quản trị viên' : 'Cán bộ'
+        };
+
+        sessionStorage.setItem('fpt_auth_user', JSON.stringify(currentUser));
+        authModal.classList.add('hidden');
+        showToast(`Đăng nhập thành công: ${email} (${isMatchedAdmin ? 'Quản trị viên' : 'Cán bộ'})`, 'success');
+        updateAuthState();
+      });
 
       // ĐĂNG XUẤT
       document.getElementById('btn-logout').addEventListener('click', () => {
