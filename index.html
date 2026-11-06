@@ -687,14 +687,40 @@
       <!-- MAIN READER BODY (RỘNG RÃI ĐỂ ĐỌC TRỰC DIỆN TÀI LIỆU, KHÔNG CÒN THANH PHỤ DƯ THỪA) -->
       <div class="flex-1 overflow-y-auto p-2 sm:p-4 flex flex-col">
         <!-- VÙNG XEM TÀI LIỆU TRỰC TIẾP (DIRECT PREVIEW CONTAINER) -->
-        <div class="flex-1 bg-slate-900/60 rounded-xl p-2 sm:p-4 border border-[#B98A33]/20 overflow-auto flex justify-center">
+        <div class="flex-1 bg-slate-900/60 rounded-xl p-2 sm:p-4 border border-[#B98A33]/20 overflow-auto flex justify-center items-center">
           
-          <!-- KHUNG PREVIEW CHO TỆP PDF TẢI LÊN (HIỂN THỊ TRỰC TIẾP TỆP ĐÍNH KÈM THẬT) -->
+          <!-- KHUNG PREVIEW CHO TỆP PDF VÀ TỆP WEB (HIỂN THỊ TRỰC TIẾP) -->
           <div id="reader-iframe-wrapper" class="hidden w-full h-full min-h-[580px] rounded-xl overflow-hidden shadow-2xl border border-slate-300">
             <iframe id="doc-preview-iframe" class="w-full h-full min-h-[580px] border-0 bg-white" src="about:blank"></iframe>
           </div>
 
-          <!-- KHUNG PREVIEW VĂN BẢN QUY CHUẨN (CHO PHÉP CHỈNH TỶ LỆ ZOOM TRỰC DIỆN) -->
+          <!-- KHUNG PREVIEW CHO ẢNH (NẾU TẢI LÊN FILE ẢNH) -->
+          <div id="reader-image-wrapper" class="hidden w-full h-full flex items-center justify-center p-4">
+            <img id="doc-preview-image" src="" alt="Tài liệu" class="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl border border-[#B98A33]/30">
+          </div>
+
+          <!-- THẺ HIỂN THỊ TỆP ĐÍNH KÈM THỰC TẾ (CHO WORD .DOCX, EXCEL .XLSX, V.V...) -->
+          <div id="reader-attachment-card" class="hidden w-full max-w-xl bg-[#071F3D] border-2 border-[#B98A33]/40 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-2xl">
+            <div class="w-20 h-20 mx-auto rounded-2xl bg-[#102E52] border border-[#FFC857]/40 flex items-center justify-center text-4xl shadow-inner">
+              <span id="reader-attachment-icon">📄</span>
+            </div>
+            <div>
+              <div class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#16A8F4]/20 text-[#16A8F4] border border-[#16A8F4]/30 uppercase mb-2">Tệp tài liệu đính kèm thực tế</div>
+              <h4 id="reader-attachment-filename" class="text-base sm:text-lg font-bold text-white break-all"></h4>
+              <p id="reader-attachment-meta" class="text-xs text-[#B8C8DC] mt-1"></p>
+            </div>
+            <div class="p-3 bg-[#03152D] rounded-xl border border-[#B98A33]/20 text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+              Tệp tài liệu gốc đã được lưu trữ an toàn trên hệ thống. Bạn có thể tải tệp về máy để xem hoặc chỉnh sửa trực tiếp.
+            </div>
+            <div class="pt-2 flex justify-center space-x-3">
+              <button id="btn-reader-attachment-download" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-lg hover:brightness-110 flex items-center space-x-2 transition cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>Tải tệp này về máy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- KHUNG PREVIEW VĂN BẢN QUY CHUẨN (KHI KHÔNG CÓ TỆP ĐÍNH KÈM HOẶC XEM BẢN KIỂM SOÁT) -->
           <div id="reader-sheet-zoom-target" class="w-full max-w-4xl bg-white text-slate-900 rounded-xl p-8 sm:p-10 shadow-2xl relative text-xs sm:text-sm leading-relaxed border border-slate-300 transition-transform duration-100 origin-top">
             <div class="border-b-2 border-slate-800 pb-3 mb-5 text-center">
               <div class="font-bold text-xs uppercase tracking-wider text-slate-700">VĂN PHÒNG NHÀ TRƯỜNG - SCHOOL OFFICE</div>
@@ -704,7 +730,7 @@
             </div>
 
             <div class="space-y-4 text-xs sm:text-sm text-slate-800">
-              <div id="sheet-desc-section" class="hidden">
+              <div id="sheet-desc-section">
                 <strong class="text-slate-950 font-bold">1. Mục đích & Phạm vi áp dụng:</strong>
                 <p id="sheet-preview-desc" class="text-slate-700 mt-1 leading-relaxed pl-1"></p>
               </div>
@@ -1699,18 +1725,47 @@
       // XỬ LÝ PREVIEW TỆP TRỰC TIẾP
       const iframeWrapper = document.getElementById('reader-iframe-wrapper');
       const previewIframe = document.getElementById('doc-preview-iframe');
+      const imageWrapper = document.getElementById('reader-image-wrapper');
+      const previewImage = document.getElementById('doc-preview-image');
+      const attachmentCard = document.getElementById('reader-attachment-card');
       const sheetZoomTarget = document.getElementById('reader-sheet-zoom-target');
 
-      if (doc.fileData && (doc.fileData.startsWith('data:application/pdf') || (doc.currentFile && doc.currentFile.endsWith('.pdf')))) {
-        previewIframe.src = doc.fileData;
-        iframeWrapper.classList.remove('hidden');
-        sheetZoomTarget.classList.add('hidden');
+      if (iframeWrapper) iframeWrapper.classList.add('hidden');
+      if (imageWrapper) imageWrapper.classList.add('hidden');
+      if (attachmentCard) attachmentCard.classList.add('hidden');
+      if (sheetZoomTarget) sheetZoomTarget.classList.add('hidden');
+
+      const isPdf = Boolean((doc.fileData && doc.fileData.startsWith('data:application/pdf')) ||
+                    (doc.currentFile && doc.currentFile.toLowerCase().endsWith('.pdf')));
+      const isImg = Boolean((doc.fileData && doc.fileData.startsWith('data:image/')) ||
+                    (doc.currentFile && /\.(png|jpe?g|webp|gif|svg)$/i.test(doc.currentFile)));
+      const hasAttachment = Boolean(doc.fileData || (doc.currentFile && !doc.currentFile.startsWith('DOC-')));
+
+      if (isPdf && doc.fileData) {
+        if (previewIframe) previewIframe.src = doc.fileData;
+        if (iframeWrapper) iframeWrapper.classList.remove('hidden');
+      } else if (isImg && doc.fileData) {
+        if (previewImage) previewImage.src = doc.fileData;
+        if (imageWrapper) imageWrapper.classList.remove('hidden');
+      } else if (hasAttachment && doc.currentFile) {
+        if (attachmentCard) {
+          attachmentCard.classList.remove('hidden');
+          const nameEl = document.getElementById('reader-attachment-filename');
+          if (nameEl) nameEl.textContent = doc.currentFile;
+          const metaEl = document.getElementById('reader-attachment-meta');
+          if (metaEl) metaEl.textContent = `Định dạng: ${doc.currentFile.split('.').pop().toUpperCase()} • Bộ phận: ${doc.dept || doc.category}`;
+          const iconEl = document.getElementById('reader-attachment-icon');
+          if (iconEl) {
+            if (/\.(doc|docx)$/i.test(doc.currentFile)) iconEl.textContent = '📘';
+            else if (/\.(xls|xlsx)$/i.test(doc.currentFile)) iconEl.textContent = '📗';
+            else iconEl.textContent = '📄';
+          }
+        }
       } else {
-        iframeWrapper.classList.add('hidden');
-        sheetZoomTarget.classList.remove('hidden');
+        if (sheetZoomTarget) sheetZoomTarget.classList.remove('hidden');
       }
 
-      // XỬ LÝ QUY ĐỊNH QUYỀN TẢI XUỐNG: KHÔNG CÓ QUYỀN THÌ ẨN HẲN, KHÔNG HIỂN THỊ CẢNH BÁO THỪA
+      // XỬ LÝ QUY ĐỊNH QUYỀN TẢI XUỐNG
       const downloadBtn = document.getElementById('btn-modal-download-file');
       const downloadStatus = document.getElementById('modal-download-status');
       const isAllowed = canDownloadDoc(doc);
@@ -1727,21 +1782,25 @@
       const btnEditReader = document.getElementById('btn-reader-edit-doc');
       const btnDelReader = document.getElementById('btn-reader-delete-doc');
       if (currentUser && currentUser.role === 'admin') {
-        btnEditReader.classList.remove('hidden');
-        btnDelReader.classList.remove('hidden');
-        btnEditReader.onclick = () => {
-          document.getElementById('modal-reader').classList.add('hidden');
-          openEditDocModal(doc.code);
-        };
-        btnDelReader.onclick = () => {
-          deleteDocument(doc.code);
-        };
+        if (btnEditReader) {
+          btnEditReader.classList.remove('hidden');
+          btnEditReader.onclick = () => {
+            const mr = document.getElementById('modal-reader');
+            if (mr) mr.classList.add('hidden');
+            openEditDocModal(doc.code);
+          };
+        }
+        if (btnDelReader) {
+          btnDelReader.classList.remove('hidden');
+          btnDelReader.onclick = () => deleteDocument(doc.code);
+        }
       } else {
-        btnEditReader.classList.add('hidden');
-        btnDelReader.classList.add('hidden');
+        if (btnEditReader) btnEditReader.classList.add('hidden');
+        if (btnDelReader) btnDelReader.classList.add('hidden');
       }
 
-      document.getElementById('modal-reader').classList.remove('hidden');
+      const modalReader = document.getElementById('modal-reader');
+      if (modalReader) modalReader.classList.remove('hidden');
     }
 
     // Mở Modal Chỉnh sửa tài liệu (HỖ TRỢ UP FILE MỚI THAY THẾ)
@@ -2131,6 +2190,22 @@
 
     // KHỞI CHẠY HỆ THỐNG
     document.addEventListener('DOMContentLoaded', () => {
+      // Hỗ trợ phím ESC để đóng nhanh mọi modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const mr = document.getElementById('modal-reader');
+          if (mr) {
+            mr.classList.add('hidden');
+            const iframe = document.getElementById('doc-preview-iframe');
+            if (iframe) iframe.src = 'about:blank';
+          }
+          const am = document.getElementById('modal-auth-container');
+          if (am) { am.classList.add('hidden'); am.classList.remove('flex'); }
+          const dm = document.getElementById('modal-add-document');
+          if (dm) dm.classList.add('hidden');
+        }
+      });
+
       restoreSession();
       syncBackendConfigAndData();
       renderFilterChips();
@@ -2155,10 +2230,12 @@
       });
 
       const typeSelect = document.getElementById('filter-type-select');
-      typeSelect.addEventListener('change', (e) => {
-        selectedType = e.target.value;
-        renderDirectCards();
-      });
+      if (typeSelect) {
+        typeSelect.addEventListener('change', (e) => {
+          selectedType = e.target.value;
+          renderDirectCards();
+        });
+      }
 
       const resetFilters = () => {
         selectedCat = 'all';
@@ -2170,9 +2247,9 @@
         renderDirectCards();
         showToast('Đã làm mới bộ lọc', 'info');
       };
-      document.getElementById('btn-reset-filters').addEventListener('click', resetFilters);
+      const btnReset = document.getElementById('btn-reset-filters'); if (btnReset) btnReset.addEventListener('click', resetFilters);
 
-      document.getElementById('btn-open-login').addEventListener('click', openAuthModal);
+      const btnOpenLog = document.getElementById('btn-open-login'); if (btnOpenLog) btnOpenLog.addEventListener('click', openAuthModal);
       const emptyLoginBtn = document.getElementById('btn-empty-login-admin');
       if (emptyLoginBtn) emptyLoginBtn.addEventListener('click', openAuthModal);
       document.getElementById('btn-close-auth-modal').addEventListener('click', () => {
@@ -2498,22 +2575,10 @@
         });
       }
 
-      // Xử lý nút Google Sign-In chính
+      // Xử lý nút Google Sign-In chính: Luôn xác thực trực tiếp tức thì
       const btnGoogleAction = document.getElementById('btn-google-login-action');
       if (btnGoogleAction) {
         btnGoogleAction.addEventListener('click', () => {
-          if (window.google && google.accounts && google.accounts.id && activeGoogleClientId && activeGoogleClientId !== 'YOUR_GOOGLE_CLIENT_ID') {
-            try {
-              google.accounts.id.prompt((notification) => {
-                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                  performDirectAdminAuth();
-                }
-              });
-              return;
-            } catch (e) {
-              console.warn('GSI prompt fallback:', e);
-            }
-          }
           performDirectAdminAuth();
         });
       }
