@@ -97,6 +97,19 @@
     html {
       font-size: 14.4px;
     }
+
+    /* Bảo đảm mọi cửa sổ Modal khi mở luôn nằm chính giữa trung tâm màn hình 100% */
+    #modal-reader:not(.hidden),
+    #modal-auth-container:not(.hidden),
+    #modal-add-document:not(.hidden),
+    #modal-edit-document:not(.hidden),
+    #modal-user-profile-details:not(.hidden),
+    #modal-create-admin:not(.hidden),
+    #modal-category:not(.hidden) {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
   </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-100 antialiased selection:bg-[#FFC857] selection:text-[#03152D] bg-[#03152D]">
@@ -219,7 +232,7 @@
           <!-- BỘ ĐIỀU CHỈNH TỶ LỆ XEM TOÀN TRANG (KẾ PHẦN ĐĂNG NHẬP) -->
           <div class="flex items-center space-x-1 bg-[#102E52] px-2 py-1 rounded-xl border border-[#B98A33]/30 text-xs">
             <button onclick="applyZoom(-10)" title="Thu nhỏ" class="hover:text-[#FFC857] px-1 font-mono font-bold">-</button>
-            <span id="zoom-text-val" class="font-mono text-[11px] text-[#FFC857] w-9 text-center font-bold">90%</span>
+            <span id="zoom-text-val" class="font-mono text-[11px] text-[#FFC857] w-9 text-center font-bold">100%</span>
             <button onclick="applyZoom(10)" title="Phóng to" class="hover:text-[#FFC857] px-1 font-mono font-bold">+</button>
             <button onclick="applyZoom(0)" title="Mặc định" class="text-[10px] text-slate-400 hover:text-white pl-1 border-l border-[#B98A33]/30">Reset</button>
           </div>
@@ -486,7 +499,7 @@
 
   <!-- MODAL QUẢN LÝ LĨNH VỰC / PHÒNG BAN (THÊM MỚI & CHỈNH SỬA) -->
   <div id="modal-category" onclick="if(event.target === this) closeCategoryModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg mx-auto my-auto p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-3">
         <div class="flex items-center space-x-2">
           <span class="text-xl" id="modal-cat-header-icon">🏷️</span>
@@ -541,7 +554,7 @@
 
   <!-- MODAL CHI TIẾT TÀI KHOẢN NGƯỜI DÙNG (KHI BẤM VÀO TÊN/AVATAR TRÊN HEADER) -->
   <div id="modal-user-profile-details" onclick="if(event.target === this) closeProfileModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
+    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-sm mx-auto my-auto p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-3">
         <h3 class="font-bold text-white text-sm flex items-center space-x-2">
           <svg class="w-4 h-4 text-[#FFC857]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -594,7 +607,7 @@
 
   <!-- MODAL XÁC THỰC GOOGLE SINGLE SIGN-ON (OAUTH 2.0) -->
   <div id="modal-auth-container" onclick="if(event.target === this) closeAuthModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
+    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-sm mx-auto my-auto p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-[#B98A33]/25">
         <div class="flex items-center space-x-2">
           <svg class="w-5 h-5" viewBox="0 0 24 24">
@@ -641,17 +654,11 @@
       <!-- TOP TOOLBAR: TIÊU ĐỀ, BỘ PHẬN, TẢI VỀ, ZOOM, TOÀN MÀN HÌNH, SỬA, XÓA, ĐÓNG -->
       <div class="px-5 py-2.5 border-b border-[#B98A33]/25 flex items-center justify-between bg-[#03152D] shrink-0">
         <div class="flex items-center space-x-3 min-w-0">
-          <span id="modal-code-badge" class="px-2.5 py-1 rounded bg-[#102E52] text-[#16A8F4] border border-[#16A8F4]/30 text-xs font-mono font-bold shrink-0"></span>
-          <div class="min-w-0">
-            <h3 id="modal-title" class="text-sm font-bold text-white truncate leading-tight"></h3>
-            <div class="text-[11px] text-[#B8C8DC] flex items-center space-x-2 mt-0.5">
-              <span id="modal-cat" class="text-[#FFC857] font-semibold"></span>
-              <span class="text-slate-500">•</span>
-              <span id="modal-type" class="text-slate-300"></span>
-              <span class="text-slate-500">•</span>
-              <span id="modal-dept-badge" class="text-white font-medium bg-[#102E52] px-1.5 py-0.2 rounded border border-[#B98A33]/25"></span>
-            </div>
-          </div>
+          <span id="modal-code-badge" class="px-2.5 py-1 rounded-lg bg-[#102E52] text-[#16A8F4] border border-[#16A8F4]/35 text-xs font-mono font-bold shrink-0"></span>
+          <h3 id="modal-title" class="text-sm sm:text-base font-bold text-white truncate leading-tight"></h3>
+          <span id="modal-cat" class="hidden"></span>
+          <span id="modal-type" class="hidden"></span>
+          <span id="modal-dept-badge" class="hidden"></span>
         </div>
 
         <div class="flex items-center space-x-2 shrink-0">
@@ -766,7 +773,7 @@
 
   <!-- MODAL ĐĂNG TẢI TÀI LIỆU MỚI (CÓ KHUNG UP FILE THỰC TẾ, QUY ĐỊNH TẢI VỀ & CHỐNG TRÙNG) -->
   <div id="modal-add-document" onclick="if(event.target === this) closeAddDocModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-3.5">
+    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg mx-auto my-auto p-6 shadow-2xl space-y-3.5">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5">
         <h3 class="font-bold text-white text-xs sm:text-sm">Đăng tải Tài liệu / Quy trình mới</h3>
         <button id="btn-close-doc-modal" type="button" onclick="closeAddDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
@@ -863,7 +870,7 @@
 
   <!-- MODAL CHỈNH SỬA TÀI LIỆU (CHO PHÉP SỬA THUỘC TÍNH & TẢI LÊN TỆP THAY THẾ NẾU CẦN) -->
   <div id="modal-edit-document" onclick="if(event.target === this) closeEditDocModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-3.5">
+    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg mx-auto my-auto p-6 shadow-2xl space-y-3.5">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5">
         <div class="flex items-center space-x-2">
           <span class="text-[#FFC857]">✏️</span>
@@ -970,7 +977,7 @@
 
   <!-- MODAL PHÂN QUYỀN TÀI KHOẢN GOOGLE MỚI (RBAC) -->
   <div id="modal-create-admin" onclick="if(event.target === this) closeCreateAdminModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-3.5">
+    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-md mx-auto my-auto p-6 shadow-2xl space-y-3.5">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5">
         <h3 class="font-bold text-white text-xs sm:text-sm">Phân quyền Email Google mới (RBAC)</h3>
         <button id="btn-close-create-admin" type="button" onclick="closeCreateAdminModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
@@ -1053,7 +1060,7 @@
     let selectedCat = 'all';
     let selectedType = 'all';
     let currentSearch = '';
-    let currentZoom = 90;
+    let currentZoom = 100;
     let currentReaderZoom = 100;
     let currentDoc = null;
     let isReaderFullscreen = false;
@@ -1966,7 +1973,7 @@
         deleteDocument(doc.code);
       };
 
-      document.getElementById('modal-edit-document').classList.remove('hidden');
+      const em = document.getElementById('modal-edit-document'); if (em) { em.classList.remove('hidden'); em.classList.add('flex'); }
     }
 
     // Xóa vĩnh viễn tài liệu khỏi hệ thống
@@ -2076,7 +2083,7 @@
       }
 
       renderIconPalette();
-      modal.classList.remove('hidden');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
     }
 
     function deleteCategory(catId) {
@@ -2223,10 +2230,11 @@
     }
 
     function applyZoom(delta) {
-      if (delta === 0) currentZoom = 90;
-      else currentZoom = Math.min(115, Math.max(75, currentZoom + delta));
+      if (delta === 0) currentZoom = 100;
+      else currentZoom = Math.min(125, Math.max(80, currentZoom + delta));
       document.getElementById('zoom-text-val').textContent = `${currentZoom}%`;
-      document.documentElement.style.fontSize = `${(currentZoom / 100) * 16}px`;
+      // Mức 100% mặc định tương ứng với tỷ lệ thu gọn chuẩn 14.4px (90% kích thước gốc)
+      document.documentElement.style.fontSize = `${(currentZoom / 100) * 14.4}px`;
       showToast(`Tỷ lệ hiển thị: ${currentZoom}%`, 'info');
     }
 
@@ -2412,7 +2420,7 @@
           roleBadge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full bg-[#16A8F4]/20 text-[#16A8F4] border border-[#16A8F4]/40 text-[10px] font-mono font-bold uppercase">Cán bộ / Giảng viên (USER)</span>`;
         }
       }
-      if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+      if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); modal.classList.add('flex'); }
     }
     window.openProfileModal = openProfileModal;
 
@@ -2597,7 +2605,7 @@
       // Quản lý Phân quyền RBAC
       const createAdminModal = document.getElementById('modal-create-admin');
       document.getElementById('btn-open-create-admin').addEventListener('click', () => {
-        createAdminModal.classList.remove('hidden');
+        createAdminModal.classList.remove('hidden'); createAdminModal.classList.add('flex');
       });
       document.getElementById('btn-close-create-admin').addEventListener('click', () => {
         createAdminModal.classList.add('hidden');
