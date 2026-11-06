@@ -78,9 +78,11 @@
       box-shadow: 0 10px 25px -5px rgba(3, 21, 45, 0.8), 0 0 15px rgba(255, 200, 87, 0.15);
     }
     .nav-btn-active {
-      background: linear-gradient(90deg, rgba(255, 200, 87, 0.2) 0%, rgba(185, 138, 51, 0.08) 100%);
-      border-left: 3px solid #FFC857;
-      color: #FFFFFF;
+      background: linear-gradient(90deg, rgba(255, 200, 87, 0.25) 0%, rgba(185, 138, 51, 0.12) 100%);
+      border: 1px solid rgba(255, 200, 87, 0.7);
+      box-shadow: 0 0 15px rgba(255, 200, 87, 0.25);
+      color: #FFC857;
+      border-radius: 0.85rem;
     }
     .nav-btn-inactive {
       color: #B8C8DC;
@@ -92,68 +94,10 @@
     }
   </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden text-slate-100 antialiased selection:bg-[#FFC857] selection:text-[#03152D]">
+<body class="h-screen overflow-hidden text-slate-100 antialiased selection:bg-[#FFC857] selection:text-[#03152D] bg-[#03152D]">
 
   <!-- TOP HEADER NOTIFICATION TICKER -->
-  <header class="bg-[#03152D] border-b border-[#B98A33]/30 px-4 py-2 shrink-0 z-30 flex items-center justify-between shadow-md">
-    <div class="flex items-center space-x-3">
-      <button id="btn-toggle-sidebar" class="md:hidden text-[#FFC857] hover:text-white p-1 rounded-lg focus:outline-none">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-      </button>
-      <div class="flex items-center space-x-2">
-        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#FFC857] text-[#03152D] tracking-wider uppercase">FSC - CẦN THƠ</span>
-        <span class="hidden sm:inline-block text-xs font-semibold text-[#FFC857]">HỆ THỐNG QUẢN LÝ TÀI LIỆU & QUY TRÌNH</span>
-      </div>
-    </div>
-
-    <!-- KHU VỰC THAO TÁC, TỶ LỆ XEM VÀ ĐĂNG NHẬP TRÊN HEADER -->
-    <div class="flex items-center space-x-2.5">
-      <!-- Nút Quản trị viên tải tài liệu mới -->
-      <button id="btn-admin-add-doc" class="hidden px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md hover:brightness-110 flex items-center space-x-1.5 transition cursor-pointer" title="Đăng tải tài liệu">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        <span class="hidden sm:inline">Đăng tải tài liệu</span>
-      </button>
-
-      <!-- BỘ ĐIỀU CHỈNH TỶ LỆ XEM TOÀN TRANG (KẾ PHẦN ĐĂNG NHẬP) -->
-      <div class="flex items-center space-x-1 bg-[#102E52] px-2 py-1 rounded-lg border border-[#B98A33]/25 text-xs">
-        <button onclick="applyZoom(-10)" title="Thu nhỏ" class="hover:text-[#FFC857] px-1 font-mono font-bold">-</button>
-        <span id="zoom-text-val" class="font-mono text-[11px] text-[#FFC857] w-9 text-center font-bold">100%</span>
-        <button onclick="applyZoom(10)" title="Phóng to" class="hover:text-[#FFC857] px-1 font-mono font-bold">+</button>
-        <button onclick="applyZoom(0)" title="Mặc định" class="text-[10px] text-slate-400 hover:text-white pl-1 border-l border-[#B98A33]/30">Reset</button>
-      </div>
-
-      <!-- Khi chưa đăng nhập -->
-      <div id="auth-logged-out" class="flex items-center space-x-2">
-        <button id="btn-open-login" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md hover:brightness-110 flex items-center space-x-1.5 transition cursor-pointer">
-          <svg class="w-4 h-4" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-          </svg>
-          <span>Đăng nhập</span>
-        </button>
-      </div>
-
-      <!-- Khi đã đăng nhập Google -->
-      <div id="auth-logged-in" class="hidden items-center space-x-2">
-        <button id="btn-user-profile-trigger" class="flex items-center space-x-2 px-2.5 py-1 rounded-xl bg-[#102E52]/80 hover:bg-[#14345B] border border-[#B98A33]/35 text-left transition group shadow-sm focus:outline-none cursor-pointer" title="Thông tin tài khoản">
-          <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-[#14345B] border border-[#FFC857]/70 flex items-center justify-center font-bold text-xs text-[#FFC857] shadow-inner overflow-hidden shrink-0">
-            V
-          </div>
-          <div class="flex items-center space-x-1.5">
-            <span id="logged-user-name-display" class="text-xs font-bold text-white max-w-[120px] sm:max-w-[180px] truncate">VP_FSC Cần Thơ</span>
-            <span id="badge-admin-tag" class="hidden px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-mono">ADMIN</span>
-            <span id="badge-user-tag" class="hidden px-1.5 py-0.5 rounded bg-[#16A8F4]/20 text-[#16A8F4] border border-[#16A8F4]/40 text-[9px] font-mono">CÁN BỘ</span>
-            <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-[#FFC857] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-          </div>
-        </button>
-        <button id="btn-logout" title="Đăng xuất" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-rose-500/15 border border-transparent hover:border-rose-500/30 transition flex items-center justify-center cursor-pointer">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-        </button>
-      </div>
-    </div>
-  </header>
+  
 
   <!-- MAIN WRAPPER: SIDEBAR + CONTENT -->
   <div class="flex-1 flex overflow-hidden relative">
@@ -245,7 +189,68 @@
     <!-- MAIN CONTENT VIEW AREA -->
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-radial-pattern">
       
-      
+      <!-- TOP CONTENT ROW: BREADCRUMB & CONTROLS (CHUẨN THEO ẢNH MẪU) -->
+      <div class="px-5 py-3 flex items-center justify-between border-b border-[#B98A33]/20 bg-[#071F3D]/70 backdrop-blur-md shrink-0">
+        <!-- Breadcrumb & Mobile toggle -->
+        <div class="flex items-center space-x-3">
+          <button id="btn-toggle-sidebar" class="md:hidden text-[#FFC857] hover:text-white p-1 rounded-lg focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+          <div class="flex items-center space-x-2 text-sm">
+            <span class="text-[#E2E8F0] font-medium">School Office</span>
+            <span class="text-slate-500">/</span>
+            <span class="font-bold text-[#FFC857]" id="top-breadcrumb-title">Tổng quan</span>
+          </div>
+        </div>
+
+        <!-- Controls: Admin Add, Zoom, Login -->
+        <div class="flex items-center space-x-2.5">
+          <!-- Nút Quản trị viên tải tài liệu mới -->
+          <button id="btn-admin-add-doc" class="hidden px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md hover:brightness-110 flex items-center space-x-1.5 transition cursor-pointer" title="Đăng tải tài liệu">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span class="hidden sm:inline">Đăng tải tài liệu</span>
+          </button>
+
+          <!-- BỘ ĐIỀU CHỈNH TỶ LỆ XEM TOÀN TRANG (KẾ PHẦN ĐĂNG NHẬP) -->
+          <div class="flex items-center space-x-1 bg-[#102E52] px-2 py-1 rounded-xl border border-[#B98A33]/30 text-xs">
+            <button onclick="applyZoom(-10)" title="Thu nhỏ" class="hover:text-[#FFC857] px-1 font-mono font-bold">-</button>
+            <span id="zoom-text-val" class="font-mono text-[11px] text-[#FFC857] w-9 text-center font-bold">100%</span>
+            <button onclick="applyZoom(10)" title="Phóng to" class="hover:text-[#FFC857] px-1 font-mono font-bold">+</button>
+            <button onclick="applyZoom(0)" title="Mặc định" class="text-[10px] text-slate-400 hover:text-white pl-1 border-l border-[#B98A33]/30">Reset</button>
+          </div>
+
+          <!-- Khi chưa đăng nhập -->
+          <div id="auth-logged-out" class="flex items-center space-x-2">
+            <button id="btn-open-login" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md hover:brightness-110 flex items-center space-x-1.5 transition cursor-pointer">
+              <svg class="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Đăng nhập</span>
+            </button>
+          </div>
+
+          <!-- Khi đã đăng nhập Google -->
+          <div id="auth-logged-in" class="hidden items-center space-x-2">
+            <button id="btn-user-profile-trigger" class="flex items-center space-x-2 px-2.5 py-1 rounded-xl bg-[#102E52]/80 hover:bg-[#14345B] border border-[#B98A33]/35 text-left transition group shadow-sm focus:outline-none cursor-pointer" title="Thông tin tài khoản">
+              <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-[#14345B] border border-[#FFC857]/70 flex items-center justify-center font-bold text-xs text-[#FFC857] shadow-inner overflow-hidden shrink-0">
+                V
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <span id="logged-user-name-display" class="text-xs font-bold text-white max-w-[120px] sm:max-w-[180px] truncate">VP_FSC Cần Thơ</span>
+                <span id="badge-admin-tag" class="hidden px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-mono">ADMIN</span>
+                <span id="badge-user-tag" class="hidden px-1.5 py-0.5 rounded bg-[#16A8F4]/20 text-[#16A8F4] border border-[#16A8F4]/40 text-[9px] font-mono">CÁN BỘ</span>
+                <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-[#FFC857] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </button>
+            <button id="btn-logout" title="Đăng xuất" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-rose-500/15 border border-transparent hover:border-rose-500/30 transition flex items-center justify-center cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- VIEW PANES CONTAINER -->
       <div id="zoom-content-wrapper" class="flex-1 overflow-y-auto p-4 sm:p-5 transition-all duration-150">
@@ -253,28 +258,28 @@
         <!-- ==================== VIEW 1: TỔNG QUAN (DASHBOARD - ĐÃ LOẠI BỎ BANNER CỒNG KỀNH THEO YÊU CẦU) ==================== -->
         <div id="view-dashboard" class="space-y-4 view-pane">
           
-          <!-- SEARCH & QUICK FILTER BAR ĐƯỢC ĐƯA LÊN ĐẦU GỌN GÀNG -->
-          <div class="card-enterprise rounded-2xl p-4 shadow-xl space-y-3">
-            <div class="flex flex-col md:flex-row gap-3 items-center">
-              <div class="relative flex-1 w-full">
-                <input type="text" id="main-search-input" placeholder="Tìm kiếm nhanh theo tên tài liệu, mã hiệu, phòng ban..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#071F3D] border border-[#B98A33]/30 text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-[#FFC857] shadow-inner transition">
-                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <!-- SEARCH & QUICK FILTER BAR (THIẾT KẾ ĐẸP CHUẨN ẢNH MẪU) -->
+          <div class="card-enterprise rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5 border border-[#B98A33]/25">
+            <!-- Search bar: Pill shape, glowing border, gold search icon -->
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-[#FFC857]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
               </div>
-              <div class="flex items-center space-x-2 w-full md:w-auto shrink-0">
-                <select id="filter-type-select" class="flex-1 md:flex-initial px-3 py-2.5 rounded-xl bg-[#071F3D] border border-[#B98A33]/30 text-white text-xs focus:outline-none focus:border-[#FFC857]">
-                  <option value="all">Tất cả định dạng</option>
-                  <option value="Quy trình">Quy trình (SOP)</option>
-                  <option value="Hướng dẫn công việc">Hướng dẫn (WI)</option>
-                  <option value="Biểu mẫu">Biểu mẫu (Forms)</option>
-                </select>
-                <button id="btn-reset-filters" class="px-3 py-2.5 rounded-xl bg-[#14345B] hover:bg-[#FFC857] text-[#B8C8DC] hover:text-[#03152D] text-xs font-semibold transition border border-[#B98A33]/25">
+              <input type="text" id="main-search-input" placeholder="Tìm kiếm nhanh: Gõ tên quy trình, mã hiệu, phòng ban..." class="w-full pl-11 pr-28 py-3 rounded-full bg-white text-slate-900 placeholder-slate-500 text-xs sm:text-sm font-medium border-2 border-[#FFC857]/80 focus:border-[#FFC857] shadow-[0_0_20px_rgba(255,200,87,0.3)] focus:outline-none transition">
+              <div class="absolute inset-y-0 right-1.5 flex items-center space-x-1">
+                <button id="btn-reset-filters" class="px-3.5 py-1.5 rounded-full bg-[#102E52] hover:bg-[#FFC857] text-[#B8C8DC] hover:text-[#03152D] text-xs font-semibold transition border border-[#B98A33]/30">
                   Làm mới
                 </button>
               </div>
             </div>
 
-            <!-- CHIPS LĨNH VỰC HOẠT ĐỘNG -->
-            <div class="flex items-center space-x-2 overflow-x-auto pb-1 pt-1 text-xs" id="filter-cat-row"></div>
+            <!-- Chips Lọc theo lĩnh vực -->
+            <div class="space-y-1.5">
+              <div class="text-xs font-semibold text-[#B8C8DC]">Lọc theo lĩnh vực:</div>
+              <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs" id="filter-cat-row"></div>
+            </div>
           </div>
 
           <!-- KHO TÀI LIỆU TRỰC DIỆN -->
@@ -1659,34 +1664,37 @@
       currentReaderZoom = 100;
       applyReaderZoom(0);
 
-      document.getElementById('modal-code-badge').textContent = doc.code;
-      document.getElementById('modal-title').textContent = doc.title;
-      document.getElementById('modal-cat').textContent = doc.category;
-      document.getElementById('modal-type').textContent = doc.type;
-      document.getElementById('modal-ver').textContent = doc.version;
-      document.getElementById('modal-dept-badge').textContent = doc.dept || doc.category;
-      document.getElementById('reader-dept-name').textContent = doc.dept || doc.category;
+      const setElText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
 
-      document.getElementById('sheet-preview-code').textContent = doc.code;
-      document.getElementById('sheet-preview-ver').textContent = doc.version;
-      document.getElementById('sheet-preview-title').textContent = doc.title;
-      document.getElementById('sheet-preview-dept').textContent = doc.dept || doc.category;
-      document.getElementById('sheet-preview-date').textContent = doc.effectiveDate || new Date().toLocaleDateString('vi-VN');
+      setElText('modal-code-badge', doc.code);
+      setElText('modal-title', doc.title);
+      setElText('modal-cat', doc.category);
+      setElText('modal-type', doc.type);
+      setElText('modal-ver', doc.version || '1.0');
+      setElText('modal-dept-badge', doc.dept || doc.category);
+      setElText('reader-dept-name', doc.dept || doc.category);
 
-      // Nếu có trích yếu thì hiện, nếu không thì ẩn hẳn
+      setElText('sheet-preview-code', doc.code);
+      setElText('sheet-preview-ver', doc.version || '1.0');
+      setElText('sheet-preview-title', doc.title);
+      setElText('sheet-preview-dept', doc.dept || doc.category);
+      setElText('sheet-preview-date', doc.effectiveDate || new Date().toLocaleDateString('vi-VN'));
+
+      // Xử lý mục đích / trích yếu: luôn có nội dung đầy đủ, chuẩn mực, không nhảy số mục
       const descSection = document.getElementById('sheet-desc-section');
       const descPreview = document.getElementById('sheet-preview-desc');
-      if (doc.desc && doc.desc.trim().length > 0) {
-        descPreview.textContent = doc.desc;
+      if (descPreview && descSection) {
+        descPreview.textContent = (doc.desc && doc.desc.trim().length > 0)
+          ? doc.desc
+          : `Quy định trình tự, tiêu chuẩn và chuẩn mực thực hiện các nhiệm vụ chuyên môn liên quan đến ${doc.title.toLowerCase()}, áp dụng thống nhất trong toàn trường.`;
         descSection.classList.remove('hidden');
-      } else {
-        descSection.classList.add('hidden');
       }
 
-      const elStatus = document.getElementById('modal-status-text'); if (elStatus) elStatus.textContent = doc.status || 'Có hiệu lực';
-      const elAccess = document.getElementById('modal-access-text'); if (elAccess) elAccess.textContent = doc.access;
-      const elDeptName = document.getElementById('reader-dept-name'); if (elDeptName) elDeptName.textContent = doc.dept || doc.category;
-      const elVer = document.getElementById('modal-ver'); if (elVer) elVer.textContent = doc.version || '1.0';
+      setElText('modal-status-text', doc.status || 'Có hiệu lực');
+      setElText('modal-access-text', doc.access);
 
       // XỬ LÝ PREVIEW TỆP TRỰC TIẾP
       const iframeWrapper = document.getElementById('reader-iframe-wrapper');
