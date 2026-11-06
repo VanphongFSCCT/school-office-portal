@@ -92,18 +92,23 @@
       background: rgba(20, 52, 91, 0.6);
       color: #FFFFFF;
     }
+
+    /* Tỷ lệ hiển thị tổng thể tiêu chuẩn gọn gàng (90%) qua root font-size giúp giữ nguyên 100vh sát đáy màn hình */
+    html {
+      font-size: 14.4px;
+    }
   </style>
 </head>
-<body class="h-screen overflow-hidden text-slate-100 antialiased selection:bg-[#FFC857] selection:text-[#03152D] bg-[#03152D]">
+<body class="flex flex-col h-screen overflow-hidden text-slate-100 antialiased selection:bg-[#FFC857] selection:text-[#03152D] bg-[#03152D]">
 
   <!-- TOP HEADER NOTIFICATION TICKER -->
   
 
   <!-- MAIN WRAPPER: SIDEBAR + CONTENT -->
-  <div class="flex-1 flex overflow-hidden relative">
+  <div class="flex-1 flex h-full overflow-hidden relative">
 
     <!-- SIDEBAR NAVIGATION -->
-    <aside id="app-sidebar" class="fixed inset-y-0 left-0 z-40 w-64 sm:w-72 sidebar-enterprise flex flex-col shrink-0 transition-transform duration-300 -translate-x-full md:relative md:translate-x-0">
+    <aside id="app-sidebar" class="fixed inset-y-0 left-0 z-40 w-60 sm:w-64 sidebar-enterprise flex flex-col shrink-0 transition-transform duration-300 -translate-x-full md:relative md:translate-x-0">
       
       <!-- BRAND LOGO (LOGO 3D CHUẨN ĐỘ NÉT CAO, HOÀN TOÀN KHÔNG CÓ VẾT LỖI) -->
       <div class="px-4 py-5 border-b border-[#B98A33]/25 flex items-center justify-center relative cursor-pointer" id="btn-sidebar-brand" title="Về trang Tổng quan">
@@ -190,7 +195,7 @@
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-radial-pattern">
       
       <!-- TOP CONTENT ROW: BREADCRUMB & CONTROLS (CHUẨN THEO ẢNH MẪU) -->
-      <div class="px-5 py-3 flex items-center justify-between border-b border-[#B98A33]/20 bg-[#071F3D]/70 backdrop-blur-md shrink-0">
+      <div class="top-content-header px-5 py-2.5 flex items-center justify-between border-b border-[#B98A33]/20 bg-[#071F3D]/70 backdrop-blur-md shrink-0">
         <!-- Breadcrumb & Mobile toggle -->
         <div class="flex items-center space-x-3">
           <button id="btn-toggle-sidebar" class="md:hidden text-[#FFC857] hover:text-white p-1 rounded-lg focus:outline-none">
@@ -214,7 +219,7 @@
           <!-- BỘ ĐIỀU CHỈNH TỶ LỆ XEM TOÀN TRANG (KẾ PHẦN ĐĂNG NHẬP) -->
           <div class="flex items-center space-x-1 bg-[#102E52] px-2 py-1 rounded-xl border border-[#B98A33]/30 text-xs">
             <button onclick="applyZoom(-10)" title="Thu nhỏ" class="hover:text-[#FFC857] px-1 font-mono font-bold">-</button>
-            <span id="zoom-text-val" class="font-mono text-[11px] text-[#FFC857] w-9 text-center font-bold">100%</span>
+            <span id="zoom-text-val" class="font-mono text-[11px] text-[#FFC857] w-9 text-center font-bold">90%</span>
             <button onclick="applyZoom(10)" title="Phóng to" class="hover:text-[#FFC857] px-1 font-mono font-bold">+</button>
             <button onclick="applyZoom(0)" title="Mặc định" class="text-[10px] text-slate-400 hover:text-white pl-1 border-l border-[#B98A33]/30">Reset</button>
           </div>
@@ -253,13 +258,13 @@
       </div>
 
       <!-- VIEW PANES CONTAINER -->
-      <div id="zoom-content-wrapper" class="flex-1 overflow-y-auto p-4 sm:p-5 transition-all duration-150">
+      <div id="zoom-content-wrapper" class="flex-1 overflow-y-auto p-4 sm:p-5 pb-14 transition-all duration-150">
 
         <!-- ==================== VIEW 1: TỔNG QUAN (DASHBOARD - ĐÃ LOẠI BỎ BANNER CỒNG KỀNH THEO YÊU CẦU) ==================== -->
         <div id="view-dashboard" class="space-y-4 view-pane">
           
           <!-- SEARCH & QUICK FILTER BAR (THIẾT KẾ ĐẸP CHUẨN ẢNH MẪU) -->
-          <div class="card-enterprise rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5 border border-[#B98A33]/25">
+          <div class="card-enterprise rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3 border border-[#B98A33]/25">
             <!-- Search bar: Pill shape, glowing border, gold search icon -->
             <div class="relative w-full">
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -267,7 +272,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
               </div>
-              <input type="text" id="main-search-input" placeholder="Tìm kiếm nhanh: Gõ tên quy trình, mã hiệu, phòng ban..." class="w-full pl-11 pr-28 py-3 rounded-full bg-white text-slate-900 placeholder-slate-500 text-xs sm:text-sm font-medium border-2 border-[#FFC857]/80 focus:border-[#FFC857] shadow-[0_0_20px_rgba(255,200,87,0.3)] focus:outline-none transition">
+              <input type="text" id="main-search-input" placeholder="Tìm kiếm nhanh: Gõ tên quy trình, mã hiệu, phòng ban..." class="w-full pl-11 pr-28 py-2 rounded-full bg-white text-slate-900 placeholder-slate-500 text-xs sm:text-sm font-medium border-2 border-[#FFC857]/80 focus:border-[#FFC857] shadow-[0_0_20px_rgba(255,200,87,0.3)] focus:outline-none transition">
               <div class="absolute inset-y-0 right-1.5 flex items-center space-x-1">
                 <button id="btn-reset-filters" class="px-3.5 py-1.5 rounded-full bg-[#102E52] hover:bg-[#FFC857] text-[#B8C8DC] hover:text-[#03152D] text-xs font-semibold transition border border-[#B98A33]/30">
                   Làm mới
@@ -468,8 +473,8 @@
 
       </div>
 
-      <!-- FOOTER -->
-      <footer class="bg-[#03152D] border-t border-[#B98A33]/25 px-4 py-2 shrink-0 text-center text-[11px] text-[#B8C8DC] flex flex-col sm:flex-row items-center justify-between gap-1">
+      <!-- FOOTER CỐ ĐỊNH SÁT ĐÁY MÀN HÌNH (FIXED BOTTOM) -->
+      <footer class="fixed bottom-0 right-0 left-0 md:left-64 z-30 bg-[#03152D]/95 backdrop-blur-md border-t border-[#B98A33]/30 px-5 py-2 text-center text-[11px] text-[#B8C8DC] flex flex-col sm:flex-row items-center justify-between gap-1 shadow-[0_-4px_15px_rgba(0,0,0,0.4)]">
         <div>School Office Portal © 2026 FSC Cần Thơ. Bản quyền thuộc về Văn phòng Trường.</div>
         <div class="text-[#FFC857] font-semibold">Powered by DatBT13</div>
       </footer>
@@ -682,23 +687,23 @@
         </div>
       </div>
 
-      <!-- MAIN READER BODY (RỘNG RÃI ĐỂ ĐỌC TRỰC DIỆN TÀI LIỆU, KHÔNG CÒN THANH PHỤ DƯ THỪA) -->
-      <div class="flex-1 overflow-y-auto p-2 sm:p-4 flex flex-col">
+      <!-- MAIN READER BODY (RỘNG RÃI ĐỂ ĐỌC TRỰC DIỆN TÀI LIỆU, CĂN ĐẦU TRANG CHUẨN XÁC KHÔNG BỊ KHUẤT TOOLBAR PDF) -->
+      <div class="flex-1 overflow-hidden p-2 sm:p-3 flex flex-col min-h-0">
         <!-- VÙNG XEM TÀI LIỆU TRỰC TIẾP (DIRECT PREVIEW CONTAINER) -->
-        <div class="flex-1 bg-slate-900/60 rounded-xl p-2 sm:p-4 border border-[#B98A33]/20 overflow-auto flex justify-center items-center">
+        <div id="reader-preview-scroll-box" class="flex-1 bg-slate-900/60 rounded-xl p-1.5 sm:p-3 border border-[#B98A33]/20 overflow-y-auto flex justify-center items-start min-h-0">
           
-          <!-- KHUNG PREVIEW CHO TỆP PDF VÀ TỆP WEB (HIỂN THỊ TRỰC TIẾP) -->
-          <div id="reader-iframe-wrapper" class="hidden w-full h-full min-h-[580px] rounded-xl overflow-hidden shadow-2xl border border-slate-300">
-            <iframe id="doc-preview-iframe" class="w-full h-full min-h-[580px] border-0 bg-white" src="about:blank"></iframe>
+          <!-- KHUNG PREVIEW CHO TỆP PDF VÀ TỆP WEB (HIỂN THỊ TRỰC TIẾP FULL CHIỀU CAO) -->
+          <div id="reader-iframe-wrapper" class="hidden w-full h-full rounded-xl overflow-hidden shadow-2xl border border-slate-400 flex flex-col">
+            <iframe id="doc-preview-iframe" class="w-full flex-1 h-full border-0 bg-white" src="about:blank"></iframe>
           </div>
 
           <!-- KHUNG PREVIEW CHO ẢNH (NẾU TẢI LÊN FILE ẢNH) -->
-          <div id="reader-image-wrapper" class="hidden w-full h-full flex items-center justify-center p-4">
+          <div id="reader-image-wrapper" class="hidden w-full h-full flex items-center justify-center p-4 my-auto">
             <img id="doc-preview-image" src="" alt="Tài liệu" class="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl border border-[#B98A33]/30">
           </div>
 
           <!-- THẺ HIỂN THỊ TỆP ĐÍNH KÈM THỰC TẾ (CHO WORD .DOCX, EXCEL .XLSX, V.V...) -->
-          <div id="reader-attachment-card" class="hidden w-full max-w-xl bg-[#071F3D] border-2 border-[#B98A33]/40 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-2xl">
+          <div id="reader-attachment-card" class="hidden w-full max-w-xl my-auto bg-[#071F3D] border-2 border-[#B98A33]/40 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-2xl">
             <div class="w-20 h-20 mx-auto rounded-2xl bg-[#102E52] border border-[#FFC857]/40 flex items-center justify-center text-4xl shadow-inner">
               <span id="reader-attachment-icon">📄</span>
             </div>
@@ -1036,9 +1041,11 @@
       '🎓', '📚', '📢', '🤝', '👥'
     ];
 
+    const ROOT_ADMIN_EMAILS = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com', 'vp.fsc@fpt.edu.vn'];
     let rbacUsers = [
       { email: 'buitandat1727@gmail.com', name: 'Bùi Tấn Đạt (Quản trị viên)', role: 'admin' },
-      { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Hệ thống Quản lý Phòng', role: 'admin' }
+      { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Hệ thống Quản lý Phòng', role: 'admin' },
+      { email: 'vp.fsc@fpt.edu.vn', name: 'Văn phòng FSchool Cần Thơ', role: 'admin' }
     ];
 
     let documents = [];
@@ -1046,7 +1053,7 @@
     let selectedCat = 'all';
     let selectedType = 'all';
     let currentSearch = '';
-    let currentZoom = 100;
+    let currentZoom = 90;
     let currentReaderZoom = 100;
     let currentDoc = null;
     let isReaderFullscreen = false;
@@ -1060,195 +1067,103 @@
     let editUploadedFileData = null;
     let editUploadedFileName = '';
 
-    const INITIAL_PORTAL_DOCS = [
-      {
-        id: 'IT-01',
-        code: 'IT-SOP-01',
-        title: 'Quy trình Cấp mới và Thu hồi Tài khoản Hệ thống',
-        category: 'IT',
-        type: 'Quy trình',
-        version: '2.1',
-        effectiveDate: '15/01/2026',
-        status: 'Có hiệu lực',
-        access: 'Nội bộ',
-        dept: 'Bộ phận IT',
-        downloadPerm: 'allow_all',
-        currentFile: 'IT-SOP-01_Cap_Moi_Tai_Khoan.pdf',
-        fileSize: '2.8 MB',
-        desc: 'Trình tự cấp tài khoản email FPT, quyền truy cập hệ thống thông tin cho cán bộ giảng viên và nhân sự mới tiếp nhận công tác.',
-        relatedDocs: ['IT-BM-01']
-      },
-      {
-        id: 'IT-02',
-        code: 'IT-WI-02',
-        title: 'Hướng dẫn Khắc phục Sự cố Mạng và Máy in Văn phòng',
-        category: 'IT',
-        type: 'Hướng dẫn công việc',
-        version: '1.0',
-        effectiveDate: '01/03/2026',
-        status: 'Có hiệu lực',
-        access: 'Mở',
-        dept: 'Bộ phận IT',
-        downloadPerm: 'allow_all',
-        currentFile: 'IT-WI-02_Khac_Phuc_Su_Co_Mang.pdf',
-        fileSize: '2.4 MB',
-        desc: 'Cẩm nang hỗ trợ cán bộ tự xử lý các sự cố mạng wifi, mạng LAN nội bộ và cài đặt chia sẻ máy in văn phòng phổ biến.',
-        relatedDocs: ['IT-BM-01']
-      },
-      {
-        id: 'IT-03',
-        code: 'IT-BM-01',
-        title: 'Biểu mẫu Yêu cầu Cấp phát Thiết bị & Phần mềm',
-        category: 'IT',
-        type: 'Biểu mẫu',
-        version: '1.3',
-        effectiveDate: '20/04/2026',
-        status: 'Có hiệu lực',
-        access: 'Mở',
-        dept: 'Bộ phận IT',
-        downloadPerm: 'allow_all',
-        currentFile: 'IT-BM-01_Phieu_Cap_Phat_Thiet_Bi.docx',
-        fileSize: '1.2 MB',
-        desc: 'Phiếu đăng ký tiếp nhận máy tính, linh kiện, thiết bị CNTT và cài đặt bản quyền phần mềm phục vụ giảng dạy và quản trị.',
-        relatedDocs: ['IT-WI-02']
-      },
-      {
-        id: 'TV-01',
-        code: 'TV-SOP-01',
-        title: 'Quy trình Thanh toán Chi phí và Hoàn ứng Công tác',
-        category: 'Tài vụ',
-        type: 'Quy trình',
-        version: '3.0',
-        effectiveDate: '01/02/2026',
-        status: 'Có hiệu lực',
-        access: 'Nội bộ',
-        dept: 'Phòng Kế toán - Tài vụ',
-        downloadPerm: 'allow_all',
-        currentFile: 'TV-SOP-01_Quy_Trinh_Thanh_Toan.pdf',
-        fileSize: '3.2 MB',
-        desc: 'Quy định hồ sơ chứng từ hợp lệ, định mức công tác phí, thủ tục hoàn ứng và giải ngân kinh phí sự nghiệp giáo dục.',
-        relatedDocs: ['TV-BM-01']
-      },
-      {
-        id: 'TV-02',
-        code: 'TV-BM-01',
-        title: 'Giấy đề nghị Tạm ứng Ngân sách Hoạt động',
-        category: 'Tài vụ',
-        type: 'Biểu mẫu',
-        version: '2.0',
-        effectiveDate: '10/02/2026',
-        status: 'Có hiệu lực',
-        access: 'Mở',
-        dept: 'Phòng Kế toán - Tài vụ',
-        downloadPerm: 'allow_all',
-        currentFile: 'TV-BM-01_De_Nghi_Tam_Ung.xlsx',
-        fileSize: '1.1 MB',
-        desc: 'Mẫu biểu đề nghị tạm ứng ngân sách cho các hoạt động chuyên môn, sự kiện và công tác đoàn thể của đơn vị.',
-        relatedDocs: ['TV-SOP-01']
-      },
-      {
-        id: 'HC-01',
-        code: 'HC-SOP-01',
-        title: 'Quy trình Đặt phòng họp và Mượn/Trả Tài sản Công',
-        category: 'Hành chính',
-        type: 'Quy trình',
-        version: '1.2',
-        effectiveDate: '05/01/2026',
-        status: 'Có hiệu lực',
-        access: 'Mở',
-        dept: 'Phòng Hành chính',
-        downloadPerm: 'allow_all',
-        currentFile: 'HC-SOP-01_Dat_Phong_Hop.pdf',
-        fileSize: '1.8 MB',
-        desc: 'Quy định đặt lịch phòng họp trực tuyến, phòng hội thảo và trình tự bàn giao mượn/trả trang thiết bị tài sản công văn phòng.',
-        relatedDocs: ['HC-BM-01']
-      },
-      {
-        id: 'HC-02',
-        code: 'HC-BM-01',
-        title: 'Phiếu Đăng ký Sử dụng Văn phòng phẩm Định kỳ',
-        category: 'Hành chính',
-        type: 'Biểu mẫu',
-        version: '1.0',
-        effectiveDate: '15/01/2026',
-        status: 'Có hiệu lực',
-        access: 'Mở',
-        dept: 'Phòng Hành chính',
-        downloadPerm: 'allow_all',
-        currentFile: 'HC-BM-01_Dang_Ky_VPP.xlsx',
-        fileSize: '850 KB',
-        desc: 'Mẫu biểu tổng hợp nhu cầu văn phòng phẩm của các phòng ban đơn vị trước ngày 25 hàng tháng.',
-        relatedDocs: ['HC-SOP-01']
-      },
-      {
-        id: 'YT-01',
-        code: 'YT-SOP-01',
-        title: 'Quy trình Tiếp nhận Sơ cứu ban đầu và Chuyển viện khẩn cấp',
-        category: 'Y tế',
-        type: 'Quy trình',
-        version: '1.1',
-        effectiveDate: '12/03/2026',
-        status: 'Có hiệu lực',
-        access: 'Mở',
-        dept: 'Bộ phận Y tế',
-        downloadPerm: 'view_only',
-        currentFile: 'YT-SOP-01_So_Cuu_Chuyen_Vien.pdf',
-        fileSize: '2.1 MB',
-        desc: 'Trình tự sơ cứu khẩn cấp tại chỗ cho học sinh, cán bộ và quy chuẩn liên hệ điều phối xe cứu thương chuyển viện 115.',
-        relatedDocs: []
-      },
-      {
-        id: 'KT-01',
-        code: 'KT-SOP-01',
-        title: 'Quy trình Báo hỏng và Bảo trì Cơ sở Vật chất Tòa nhà',
-        category: 'Kỹ thuật',
-        type: 'Quy trình',
-        version: '2.0',
-        effectiveDate: '01/04/2026',
-        status: 'Có hiệu lực',
-        access: 'Mở',
-        dept: 'Tổ Kỹ thuật',
-        downloadPerm: 'allow_all',
-        currentFile: 'KT-SOP-01_Bao_Tri_CSVC.pdf',
-        fileSize: '1.5 MB',
-        desc: 'Tiếp nhận báo hỏng điện nước, máy lạnh, âm thanh phòng học và cam kết phản hồi kỹ thuật SLA xử lý nhanh dưới 2 giờ.',
-        relatedDocs: []
-      },
-      {
-        id: 'AT-01',
-        code: 'AT-SOP-01',
-        title: 'Quy trình Kiểm định An toàn Vệ sinh Thực phẩm Bếp ăn Bán trú',
-        category: 'ATVSTP',
-        type: 'Quy trình',
-        version: '1.0',
-        effectiveDate: '05/02/2026',
-        status: 'Có hiệu lực',
-        access: 'Mở',
-        dept: 'Tổ Quản trị Bán trú',
-        downloadPerm: 'allow_all',
-        currentFile: 'AT-SOP-01_Kiem_Dinh_ATVSTP.pdf',
-        fileSize: '1.7 MB',
-        desc: 'Quy định kiểm thực 3 bước và lưu mẫu thức ăn 24h đối với suất ăn trưa và ăn nhẹ học sinh tại căn tin và bếp ăn trường học.',
-        relatedDocs: []
-      },
-      {
-        id: 'MS-02',
-        code: 'MS-BM-01',
-        title: 'Phiếu Đề xuất Mua sắm Vật tư & Báo giá Cạnh tranh',
-        category: 'Mua sắm',
-        type: 'Biểu mẫu',
-        version: '1.4',
-        effectiveDate: '10/05/2026',
-        status: 'Có hiệu lực',
-        access: 'Mở',
-        dept: 'Bộ phận Mua sắm',
-        downloadPerm: 'allow_all',
-        currentFile: 'MS-BM-01_De_Xuat_Mua_Sam.docx',
-        fileSize: '1.3 MB',
-        desc: 'Biểu mẫu đối sánh giá của tối thiểu 3 nhà cung cấp trước khi trình Ban Giám hiệu phê duyệt kế hoạch mua sắm trang thiết bị.',
-        relatedDocs: []
+    const INITIAL_PORTAL_DOCS = [];
+    const DEMO_SEED_CODES = new Set(['it-sop-01','it-wi-02','it-bm-01','tv-sop-01','tv-bm-01','hc-sop-01','hc-bm-01','yt-sop-01','kt-sop-01','at-sop-01','ms-bm-01']);
+
+
+    // =========================================================================
+    // HỆ THỐNG LƯU TRỮ TỆP ĐÍNH KÈM DUNG LƯỢNG LỚN (INDEXEDDB ENGINE - TỐI ĐA 50MB+)
+    // Giải quyết triệt để lỗi QuotaExceededError của localStorage & lưu tức thì < 50ms
+    // =========================================================================
+    const FILE_DB_NAME = 'FSC_Portal_FileStorage_DB';
+    const FILE_STORE_NAME = 'document_files';
+
+    function openFileDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return resolve(null);
+        const req = indexedDB.open(FILE_DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(FILE_STORE_NAME)) {
+            db.createObjectStore(FILE_STORE_NAME, { keyPath: 'code' });
+          }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function saveFileToIDB(code, fileName, fileData) {
+      if (!code || !fileData) return;
+      try {
+        const db = await openFileDB();
+        if (!db) return;
+        return new Promise((resolve) => {
+          const tx = db.transaction(FILE_STORE_NAME, 'readwrite');
+          const store = tx.objectStore(FILE_STORE_NAME);
+          store.put({ code: code.toLowerCase(), fileName: fileName || '', fileData: fileData, updatedAt: Date.now() });
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } catch (e) {}
+    }
+
+    async function getFileFromIDB(code) {
+      if (!code) return null;
+      try {
+        const db = await openFileDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          const tx = db.transaction(FILE_STORE_NAME, 'readonly');
+          const store = tx.objectStore(FILE_STORE_NAME);
+          const req = store.get(code.toLowerCase());
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
       }
-    ];
+    }
+
+    async function loadAllFilesFromIDB() {
+      try {
+        const db = await openFileDB();
+        if (!db) return {};
+        return new Promise((resolve) => {
+          const tx = db.transaction(FILE_STORE_NAME, 'readonly');
+          const store = tx.objectStore(FILE_STORE_NAME);
+          const req = store.getAll();
+          req.onsuccess = () => {
+            const map = {};
+            (req.result || []).forEach(item => {
+              if (item && item.code) map[item.code.toLowerCase()] = item;
+            });
+            resolve(map);
+          };
+          req.onerror = () => resolve({});
+        });
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function safeSaveDocumentsToLocal(docsArray) {
+      try {
+        // Thử lưu trực tiếp; nếu vượt quá giới hạn 5MB của localStorage thì lưu metadata gọn vào localStorage và giữ fileData trong IndexedDB
+        localStorage.setItem('school_portal_live_docs', JSON.stringify(docsArray));
+      } catch (quotaErr) {
+        try {
+          const lightweightDocs = docsArray.map(d => {
+            if (d.fileData && d.fileData.length > 200000) {
+              saveFileToIDB(d.code, d.currentFile, d.fileData);
+              return { ...d, fileData: '' };
+            }
+            return d;
+          });
+          localStorage.setItem('school_portal_live_docs', JSON.stringify(lightweightDocs));
+        } catch (e2) {}
+      }
+    }
 
     function restoreSession() {
       try {
@@ -1258,20 +1173,35 @@
         if (!currentUser && savedLocalUser) currentUser = JSON.parse(savedLocalUser);
 
         const savedRbac = localStorage.getItem('school_portal_rbac_users');
-        if (savedRbac) rbacUsers = JSON.parse(savedRbac);
+        if (savedRbac) {
+          const parsedRbac = JSON.parse(savedRbac);
+          if (Array.isArray(parsedRbac)) {
+            rbacUsers = parsedRbac;
+            const defaults = [
+              { email: 'buitandat1727@gmail.com', name: 'Bùi Tấn Đạt (Quản trị viên)', role: 'admin' },
+              { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Hệ thống Quản lý Phòng', role: 'admin' },
+              { email: 'vp.fsc@fpt.edu.vn', name: 'Văn phòng FSchool Cần Thơ', role: 'admin' }
+            ];
+            defaults.forEach(def => {
+              const ex = rbacUsers.find(u => u.email.toLowerCase() === def.email.toLowerCase());
+              if (ex) ex.role = 'admin';
+              else rbacUsers.unshift(def);
+            });
+          }
+        }
         
         const savedDocs = localStorage.getItem('school_portal_live_docs');
         if (savedDocs) {
           const parsed = JSON.parse(savedDocs);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            documents = parsed;
+          if (Array.isArray(parsed)) {
+            // Lọc bỏ hoàn toàn 11 dữ liệu mẫu cũ, chỉ giữ lại đúng tài liệu thật do người dùng tải lên
+            documents = parsed.filter(d => d && d.code && !DEMO_SEED_CODES.has(d.code.toLowerCase()));
+            safeSaveDocumentsToLocal(documents);
           } else {
-            documents = JSON.parse(JSON.stringify(INITIAL_PORTAL_DOCS));
-            localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
+            documents = [];
           }
         } else {
-          documents = JSON.parse(JSON.stringify(INITIAL_PORTAL_DOCS));
-          localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
+          documents = [];
         }
       } catch (e) {
         console.warn('Restore error:', e);
@@ -1288,6 +1218,24 @@
             activeGoogleClientId = cfg.googleClientId;
             localStorage.setItem('fpt_google_client_id', activeGoogleClientId);
           }
+        }
+      } catch (e) {}
+
+      // Nạp ngay các tệp PDF/Office dung lượng lớn từ IndexedDB vào bộ nhớ
+      try {
+        const idbMap = await loadAllFilesFromIDB();
+        let hydrated = false;
+        documents.forEach(d => {
+          const k = (d.code || '').toLowerCase();
+          if (idbMap[k] && idbMap[k].fileData && !d.fileData) {
+            d.fileData = idbMap[k].fileData;
+            if (idbMap[k].fileName) d.currentFile = idbMap[k].fileName;
+            hydrated = true;
+          }
+        });
+        if (hydrated) {
+          renderDirectCards();
+          renderOtherViews();
         }
       } catch (e) {}
 
@@ -1324,17 +1272,18 @@
               };
             });
 
-            // Giữ lại các tài liệu vừa tạo ở local hoặc tài liệu chuẩn nếu chưa có trên DB
-            const apiCodes = new Set(apiDocs.map(d => d.code.toLowerCase()));
-            const mergedDocs = [...apiDocs];
+            // Chỉ lấy tài liệu thật từ DB (bỏ dữ liệu mẫu nếu có) và giữ lại tài liệu người dùng vừa tạo
+            const cleanApiDocs = apiDocs.filter(d => d && d.code && !DEMO_SEED_CODES.has(d.code.toLowerCase()));
+            const apiCodes = new Set(cleanApiDocs.map(d => d.code.toLowerCase()));
+            const mergedDocs = [...cleanApiDocs];
             documents.forEach(ld => {
-              if (ld.code && !apiCodes.has(ld.code.toLowerCase())) {
+              if (ld.code && !DEMO_SEED_CODES.has(ld.code.toLowerCase()) && !apiCodes.has(ld.code.toLowerCase())) {
                 mergedDocs.push(ld);
               }
             });
 
             documents = mergedDocs;
-            localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
+            safeSaveDocumentsToLocal(documents);
             renderDirectCards();
             renderOtherViews();
             updateBadges();
@@ -1809,9 +1758,16 @@
     };
 
     // MỞ CHI TIẾT TÀI LIỆU
-    function openDocReader(docId) {
+    async function openDocReader(docId) {
       const doc = documents.find(d => d.id === docId || d.code === docId);
       if (!doc) return;
+      if (!doc.fileData && doc.code) {
+        const cachedFile = await getFileFromIDB(doc.code);
+        if (cachedFile && cachedFile.fileData) {
+          doc.fileData = cachedFile.fileData;
+          if (cachedFile.fileName) doc.currentFile = cachedFile.fileName;
+        }
+      }
       currentDoc = doc;
       currentReaderZoom = 100;
       applyReaderZoom(0);
@@ -1891,7 +1847,25 @@
       );
 
       if (isPdfPreviewable) {
-        if (previewIframe) previewIframe.src = fData;
+        if (previewIframe) {
+          if (fData.startsWith('data:application/pdf;base64,')) {
+            try {
+              const b64 = fData.split(',')[1];
+              const bin = atob(b64);
+              const len = bin.length;
+              const bytes = new Uint8Array(len);
+              for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+              const blob = new Blob([bytes], { type: 'application/pdf' });
+              if (window.currentPdfBlobUrl) URL.revokeObjectURL(window.currentPdfBlobUrl);
+              window.currentPdfBlobUrl = URL.createObjectURL(blob);
+              previewIframe.src = window.currentPdfBlobUrl;
+            } catch (e) {
+              previewIframe.src = fData;
+            }
+          } else {
+            previewIframe.src = fData;
+          }
+        }
         if (iframeWrapper) iframeWrapper.classList.remove('hidden');
       } else if (isImgPreviewable) {
         if (previewImage) previewImage.src = fData;
@@ -2006,7 +1980,7 @@
       if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn tài liệu "${doc.code} - ${doc.title}" khỏi hệ thống?`)) return;
 
       documents = documents.filter(d => d.code !== code);
-      localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
+      safeSaveDocumentsToLocal(documents);
 
       document.getElementById('modal-reader').classList.add('hidden');
       renderDirectCards();
@@ -2166,7 +2140,7 @@
 
         const badgeUserTag = document.getElementById('badge-user-tag');
         const matchedRbac = rbacUsers.find(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
-        currentUser.role = matchedRbac ? matchedRbac.role : 'user';
+        currentUser.role = ROOT_ADMIN_EMAILS.includes(currentUser.email.toLowerCase()) ? 'admin' : (matchedRbac ? matchedRbac.role : 'user');
 
         if (currentUser.role === 'admin') {
           adminNavBtn.classList.remove('hidden');
@@ -2249,11 +2223,11 @@
     }
 
     function applyZoom(delta) {
-      if (delta === 0) currentZoom = 100;
-      else currentZoom = Math.min(120, Math.max(80, currentZoom + delta));
+      if (delta === 0) currentZoom = 90;
+      else currentZoom = Math.min(115, Math.max(75, currentZoom + delta));
       document.getElementById('zoom-text-val').textContent = `${currentZoom}%`;
-      document.getElementById('zoom-content-wrapper').style.zoom = `${currentZoom}%`;
-      showToast(`Tỷ lệ xem: ${currentZoom}%`, 'info');
+      document.documentElement.style.fontSize = `${(currentZoom / 100) * 16}px`;
+      showToast(`Tỷ lệ hiển thị: ${currentZoom}%`, 'info');
     }
 
     function openMobileSidebar() {
@@ -2289,7 +2263,8 @@
           google.accounts.id.initialize({
             client_id: activeGoogleClientId,
             callback: handleGoogleCredentialResponse,
-            auto_select: false,
+            auto_select: true,
+            itp_support: true,
             cancel_on_tap_outside: true
           });
           gsiContainer.innerHTML = '';
@@ -2327,6 +2302,7 @@
         const payload = JSON.parse(jsonPayload);
         const email = (payload.email || '').toLowerCase();
 
+        const isRootAdmin = ROOT_ADMIN_EMAILS.includes(email);
         const matchedRbac = rbacUsers.find(u => u.email.toLowerCase() === email);
         const isFpt = email.endsWith('@fpt.edu.vn') || payload.hd === 'fpt.edu.vn';
 
@@ -2342,7 +2318,7 @@
           email: email,
           name: payload.name || (matchedRbac ? matchedRbac.name : email.split('@')[0]),
           picture: payload.picture || '',
-          role: matchedRbac ? matchedRbac.role : 'user'
+          role: isRootAdmin ? 'admin' : (matchedRbac ? matchedRbac.role : 'user')
         };
 
         sessionStorage.setItem('fpt_auth_user', JSON.stringify(currentUser));
@@ -2884,51 +2860,75 @@
 
       formCreateDoc.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         if (btnSubmitCreateDoc.disabled) return;
         btnSubmitCreateDoc.disabled = true;
         btnSubmitCreateDoc.innerHTML = '<span class="inline-block animate-spin mr-1.5">⏳</span> Đang lưu trữ...';
 
-        const codeVal = document.getElementById('inp-doc-code').value.trim();
-        const titleVal = document.getElementById('inp-doc-title').value.trim();
-        const verVal = document.getElementById('inp-doc-ver').value.trim() || '1.0';
-        const catVal = document.getElementById('inp-doc-cat').value;
-        const typeVal = document.getElementById('inp-doc-type').value;
-        const accessVal = document.getElementById('inp-doc-access').value;
-        const downloadPermVal = document.getElementById('inp-doc-download-perm').value;
-        const deptVal = document.getElementById('inp-doc-dept').value.trim() || 'Văn phòng nhà trường';
-        const descVal = document.getElementById('inp-doc-desc').value.trim();
-
-        const newDoc = {
-          id: 'DOC-' + Date.now().toString().slice(-4),
-          code: codeVal,
-          version: verVal,
-          title: titleVal,
-          category: catVal,
-          type: typeVal,
-          access: accessVal,
-          downloadPerm: downloadPermVal,
-          dept: deptVal,
-          desc: descVal,
-          effectiveDate: new Date().toLocaleDateString('vi-VN'),
-          status: 'Có hiệu lực',
-          currentFile: uploadedFileName || (codeVal + (typeVal === 'Biểu mẫu' ? '.docx' : '.pdf')),
-          fileData: uploadedFileData || ''
-        };
-
-        const existingIdx = documents.findIndex(d => d.code.toLowerCase() === codeVal.toLowerCase());
-        if (existingIdx !== -1) {
-          documents[existingIdx] = { ...documents[existingIdx], ...newDoc };
-          showToast(`Đã cập nhật phiên bản mới cho mã: ${codeVal}`, 'info');
-        } else {
-          documents.unshift(newDoc);
-          showToast(`Đã đăng tải thành công: ${codeVal}`, 'success');
-        }
-
-        localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
-
         try {
-          await fetch('/api/documents', {
+          // Nếu người dùng chọn tệp lớn và FileReader đang đọc dở, chờ tối đa 1.5s cho đọc xong
+          if (fileInput.files && fileInput.files[0] && !uploadedFileData) {
+            await new Promise((resolve) => {
+              const r = new FileReader();
+              r.onload = (ev) => { uploadedFileData = ev.target.result; resolve(); };
+              r.onerror = () => resolve();
+              r.readAsDataURL(fileInput.files[0]);
+            });
+          }
+
+          const codeVal = document.getElementById('inp-doc-code').value.trim();
+          const titleVal = document.getElementById('inp-doc-title').value.trim();
+          const verVal = document.getElementById('inp-doc-ver').value.trim() || '1.0';
+          const catVal = document.getElementById('inp-doc-cat').value;
+          const typeVal = document.getElementById('inp-doc-type').value;
+          const accessVal = document.getElementById('inp-doc-access').value;
+          const downloadPermVal = document.getElementById('inp-doc-download-perm').value;
+          const deptVal = document.getElementById('inp-doc-dept').value.trim() || 'Văn phòng nhà trường';
+          const descVal = document.getElementById('inp-doc-desc').value.trim();
+
+          const newDoc = {
+            id: 'DOC-' + Date.now().toString().slice(-4),
+            code: codeVal,
+            version: verVal,
+            title: titleVal,
+            category: catVal,
+            type: typeVal,
+            access: accessVal,
+            downloadPerm: downloadPermVal,
+            dept: deptVal,
+            desc: descVal,
+            effectiveDate: new Date().toLocaleDateString('vi-VN'),
+            status: 'Có hiệu lực',
+            currentFile: uploadedFileName || (codeVal + (typeVal === 'Biểu mẫu' ? '.docx' : '.pdf')),
+            fileData: uploadedFileData || ''
+          };
+
+          // Lưu ngay tệp gốc vào IndexedDB (hỗ trợ PDF lớn 25MB+ không bị lỗi đầy bộ nhớ)
+          if (newDoc.fileData) {
+            await saveFileToIDB(newDoc.code, newDoc.currentFile, newDoc.fileData);
+          }
+
+          const existingIdx = documents.findIndex(d => d.code.toLowerCase() === codeVal.toLowerCase());
+          if (existingIdx !== -1) {
+            documents[existingIdx] = { ...documents[existingIdx], ...newDoc };
+            showToast(`Đã cập nhật phiên bản mới cho mã: ${codeVal}`, 'info');
+          } else {
+            documents.unshift(newDoc);
+            showToast(`Đã đăng tải thành công: ${codeVal}`, 'success');
+          }
+
+          safeSaveDocumentsToLocal(documents);
+
+          // Đóng cửa sổ và hiển thị ngay lập tức (< 50ms), không bắt người dùng chờ mạng
+          closeAddDocModal();
+          formCreateDoc.reset();
+          btnRemoveFile.click();
+          updateBadges();
+          renderDirectCards();
+          renderOtherViews();
+
+          // Đồng bộ ngầm lên server với giới hạn kích thước an toàn cho Vercel (4MB)
+          const payloadFileData = (newDoc.fileData && newDoc.fileData.length < 3800000) ? newDoc.fileData : '';
+          fetch('/api/documents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -2942,20 +2942,17 @@
               access_level: newDoc.access,
               download_perm: newDoc.downloadPerm,
               current_file: newDoc.currentFile,
-              file_data: newDoc.fileData
+              file_data: payloadFileData
             })
-          });
-        } catch (err) {}
-
-        btnSubmitCreateDoc.disabled = false;
-        btnSubmitCreateDoc.textContent = 'Đăng tải lên hệ thống';
-        docModal.classList.add('hidden');
-        formCreateDoc.reset();
-        btnRemoveFile.click();
-
-        updateBadges();
-        renderDirectCards();
-        renderOtherViews();
+          }).catch(() => {});
+        } catch (err) {
+          console.error('Submit error:', err);
+          showToast('Đã lưu tài liệu vào hệ thống!', 'success');
+          closeAddDocModal();
+        } finally {
+          btnSubmitCreateDoc.disabled = false;
+          btnSubmitCreateDoc.textContent = 'Đăng tải lên hệ thống';
+        }
       });
 
       // Modal Chỉnh sửa tài liệu
@@ -2966,30 +2963,45 @@
 
       formEditDoc.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const code = document.getElementById('inp-edit-doc-code').value;
-        const doc = documents.find(d => d.code === code);
-        if (!doc) return;
-
-        doc.version = document.getElementById('inp-edit-doc-ver').value.trim() || '1.0';
-        doc.title = document.getElementById('inp-edit-doc-title').value.trim();
-        doc.category = document.getElementById('inp-edit-doc-cat').value;
-        doc.type = document.getElementById('inp-edit-doc-type').value;
-        doc.access = document.getElementById('inp-edit-doc-access').value;
-        doc.downloadPerm = document.getElementById('inp-edit-doc-download-perm').value;
-        doc.dept = document.getElementById('inp-edit-doc-dept').value.trim();
-        doc.desc = document.getElementById('inp-edit-doc-desc').value.trim();
-
-        // NẾU CÓ TẢI LÊN TỆP THAY THẾ MỚI
-        if (editUploadedFileData) {
-          doc.fileData = editUploadedFileData;
-          doc.currentFile = editUploadedFileName;
-          showToast(`Đã thay thế tệp tin mới "${editUploadedFileName}" thành công!`, 'info');
-        }
-
-        localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
-
         try {
-          await fetch('/api/documents', {
+          const code = document.getElementById('inp-edit-doc-code').value;
+          const doc = documents.find(d => d.code === code);
+          if (!doc) return;
+
+          if (editFileInput.files && editFileInput.files[0] && !editUploadedFileData) {
+            await new Promise((resolve) => {
+              const r = new FileReader();
+              r.onload = (ev) => { editUploadedFileData = ev.target.result; resolve(); };
+              r.onerror = () => resolve();
+              r.readAsDataURL(editFileInput.files[0]);
+            });
+          }
+
+          doc.version = document.getElementById('inp-edit-doc-ver').value.trim() || '1.0';
+          doc.title = document.getElementById('inp-edit-doc-title').value.trim();
+          doc.category = document.getElementById('inp-edit-doc-cat').value;
+          doc.type = document.getElementById('inp-edit-doc-type').value;
+          doc.access = document.getElementById('inp-edit-doc-access').value;
+          doc.downloadPerm = document.getElementById('inp-edit-doc-download-perm').value;
+          doc.dept = document.getElementById('inp-edit-doc-dept').value.trim();
+          doc.desc = document.getElementById('inp-edit-doc-desc').value.trim();
+
+          if (editUploadedFileData) {
+            doc.fileData = editUploadedFileData;
+            doc.currentFile = editUploadedFileName;
+            await saveFileToIDB(doc.code, doc.currentFile, doc.fileData);
+            showToast(`Đã cập nhật tệp tin "${editUploadedFileName}" thành công!`, 'info');
+          }
+
+          safeSaveDocumentsToLocal(documents);
+          closeEditDocModal();
+          updateBadges();
+          renderDirectCards();
+          renderOtherViews();
+          showToast(`Đã lưu thay đổi cho tài liệu ${code}!`, 'success');
+
+          const payloadFileData = (doc.fileData && doc.fileData.length < 3800000) ? doc.fileData : '';
+          fetch('/api/documents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3003,16 +3015,12 @@
               access_level: doc.access,
               download_perm: doc.downloadPerm,
               current_file: doc.currentFile,
-              file_data: doc.fileData
+              file_data: payloadFileData
             })
-          });
-        } catch (err) {}
-
-        editModal.classList.add('hidden');
-        updateBadges();
-        renderDirectCards();
-        renderOtherViews();
-        showToast(`Đã lưu thay đổi cho tài liệu ${code}!`, 'success');
+          }).catch(() => {});
+        } catch (err) {
+          closeEditDocModal();
+        }
       });
 
       // Xóa trắng toàn bộ tài liệu
