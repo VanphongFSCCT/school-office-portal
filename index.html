@@ -92,18 +92,32 @@
       background: rgba(20, 52, 91, 0.6);
       color: #FFFFFF;
     }
+
+    /* Tỷ lệ hiển thị tổng thể tiêu chuẩn gọn gàng, vừa vặn màn hình (90%) */
+    #app-sidebar {
+      zoom: 0.92;
+    }
+    #zoom-content-wrapper {
+      zoom: 0.92;
+    }
+    .top-content-header {
+      zoom: 0.92;
+    }
+    #reader-dialog {
+      zoom: 0.95;
+    }
   </style>
 </head>
-<body class="h-screen overflow-hidden text-slate-100 antialiased selection:bg-[#FFC857] selection:text-[#03152D] bg-[#03152D]">
+<body class="flex flex-col h-screen overflow-hidden text-slate-100 antialiased selection:bg-[#FFC857] selection:text-[#03152D] bg-[#03152D]">
 
   <!-- TOP HEADER NOTIFICATION TICKER -->
   
 
   <!-- MAIN WRAPPER: SIDEBAR + CONTENT -->
-  <div class="flex-1 flex overflow-hidden relative">
+  <div class="flex-1 flex h-full overflow-hidden relative">
 
     <!-- SIDEBAR NAVIGATION -->
-    <aside id="app-sidebar" class="fixed inset-y-0 left-0 z-40 w-64 sm:w-72 sidebar-enterprise flex flex-col shrink-0 transition-transform duration-300 -translate-x-full md:relative md:translate-x-0">
+    <aside id="app-sidebar" class="fixed inset-y-0 left-0 z-40 w-60 sm:w-64 sidebar-enterprise flex flex-col shrink-0 transition-transform duration-300 -translate-x-full md:relative md:translate-x-0">
       
       <!-- BRAND LOGO (LOGO 3D CHUẨN ĐỘ NÉT CAO, HOÀN TOÀN KHÔNG CÓ VẾT LỖI) -->
       <div class="px-4 py-5 border-b border-[#B98A33]/25 flex items-center justify-center relative cursor-pointer" id="btn-sidebar-brand" title="Về trang Tổng quan">
@@ -190,7 +204,7 @@
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-radial-pattern">
       
       <!-- TOP CONTENT ROW: BREADCRUMB & CONTROLS (CHUẨN THEO ẢNH MẪU) -->
-      <div class="px-5 py-3 flex items-center justify-between border-b border-[#B98A33]/20 bg-[#071F3D]/70 backdrop-blur-md shrink-0">
+      <div class="top-content-header px-5 py-2.5 flex items-center justify-between border-b border-[#B98A33]/20 bg-[#071F3D]/70 backdrop-blur-md shrink-0">
         <!-- Breadcrumb & Mobile toggle -->
         <div class="flex items-center space-x-3">
           <button id="btn-toggle-sidebar" class="md:hidden text-[#FFC857] hover:text-white p-1 rounded-lg focus:outline-none">
@@ -214,7 +228,7 @@
           <!-- BỘ ĐIỀU CHỈNH TỶ LỆ XEM TOÀN TRANG (KẾ PHẦN ĐĂNG NHẬP) -->
           <div class="flex items-center space-x-1 bg-[#102E52] px-2 py-1 rounded-xl border border-[#B98A33]/30 text-xs">
             <button onclick="applyZoom(-10)" title="Thu nhỏ" class="hover:text-[#FFC857] px-1 font-mono font-bold">-</button>
-            <span id="zoom-text-val" class="font-mono text-[11px] text-[#FFC857] w-9 text-center font-bold">100%</span>
+            <span id="zoom-text-val" class="font-mono text-[11px] text-[#FFC857] w-9 text-center font-bold">90%</span>
             <button onclick="applyZoom(10)" title="Phóng to" class="hover:text-[#FFC857] px-1 font-mono font-bold">+</button>
             <button onclick="applyZoom(0)" title="Mặc định" class="text-[10px] text-slate-400 hover:text-white pl-1 border-l border-[#B98A33]/30">Reset</button>
           </div>
@@ -259,7 +273,7 @@
         <div id="view-dashboard" class="space-y-4 view-pane">
           
           <!-- SEARCH & QUICK FILTER BAR (THIẾT KẾ ĐẸP CHUẨN ẢNH MẪU) -->
-          <div class="card-enterprise rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5 border border-[#B98A33]/25">
+          <div class="card-enterprise rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3 border border-[#B98A33]/25">
             <!-- Search bar: Pill shape, glowing border, gold search icon -->
             <div class="relative w-full">
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -267,7 +281,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
               </div>
-              <input type="text" id="main-search-input" placeholder="Tìm kiếm nhanh: Gõ tên quy trình, mã hiệu, phòng ban..." class="w-full pl-11 pr-28 py-3 rounded-full bg-white text-slate-900 placeholder-slate-500 text-xs sm:text-sm font-medium border-2 border-[#FFC857]/80 focus:border-[#FFC857] shadow-[0_0_20px_rgba(255,200,87,0.3)] focus:outline-none transition">
+              <input type="text" id="main-search-input" placeholder="Tìm kiếm nhanh: Gõ tên quy trình, mã hiệu, phòng ban..." class="w-full pl-11 pr-28 py-2 rounded-full bg-white text-slate-900 placeholder-slate-500 text-xs sm:text-sm font-medium border-2 border-[#FFC857]/80 focus:border-[#FFC857] shadow-[0_0_20px_rgba(255,200,87,0.3)] focus:outline-none transition">
               <div class="absolute inset-y-0 right-1.5 flex items-center space-x-1">
                 <button id="btn-reset-filters" class="px-3.5 py-1.5 rounded-full bg-[#102E52] hover:bg-[#FFC857] text-[#B8C8DC] hover:text-[#03152D] text-xs font-semibold transition border border-[#B98A33]/30">
                   Làm mới
@@ -682,23 +696,23 @@
         </div>
       </div>
 
-      <!-- MAIN READER BODY (RỘNG RÃI ĐỂ ĐỌC TRỰC DIỆN TÀI LIỆU, KHÔNG CÒN THANH PHỤ DƯ THỪA) -->
-      <div class="flex-1 overflow-y-auto p-2 sm:p-4 flex flex-col">
+      <!-- MAIN READER BODY (RỘNG RÃI ĐỂ ĐỌC TRỰC DIỆN TÀI LIỆU, CĂN ĐẦU TRANG CHUẨN XÁC KHÔNG BỊ KHUẤT TOOLBAR PDF) -->
+      <div class="flex-1 overflow-hidden p-2 sm:p-3 flex flex-col min-h-0">
         <!-- VÙNG XEM TÀI LIỆU TRỰC TIẾP (DIRECT PREVIEW CONTAINER) -->
-        <div class="flex-1 bg-slate-900/60 rounded-xl p-2 sm:p-4 border border-[#B98A33]/20 overflow-auto flex justify-center items-center">
+        <div id="reader-preview-scroll-box" class="flex-1 bg-slate-900/60 rounded-xl p-1.5 sm:p-3 border border-[#B98A33]/20 overflow-y-auto flex justify-center items-start min-h-0">
           
-          <!-- KHUNG PREVIEW CHO TỆP PDF VÀ TỆP WEB (HIỂN THỊ TRỰC TIẾP) -->
-          <div id="reader-iframe-wrapper" class="hidden w-full h-full min-h-[580px] rounded-xl overflow-hidden shadow-2xl border border-slate-300">
-            <iframe id="doc-preview-iframe" class="w-full h-full min-h-[580px] border-0 bg-white" src="about:blank"></iframe>
+          <!-- KHUNG PREVIEW CHO TỆP PDF VÀ TỆP WEB (HIỂN THỊ TRỰC TIẾP FULL CHIỀU CAO) -->
+          <div id="reader-iframe-wrapper" class="hidden w-full h-full rounded-xl overflow-hidden shadow-2xl border border-slate-400 flex flex-col">
+            <iframe id="doc-preview-iframe" class="w-full flex-1 h-full border-0 bg-white" src="about:blank"></iframe>
           </div>
 
           <!-- KHUNG PREVIEW CHO ẢNH (NẾU TẢI LÊN FILE ẢNH) -->
-          <div id="reader-image-wrapper" class="hidden w-full h-full flex items-center justify-center p-4">
+          <div id="reader-image-wrapper" class="hidden w-full h-full flex items-center justify-center p-4 my-auto">
             <img id="doc-preview-image" src="" alt="Tài liệu" class="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl border border-[#B98A33]/30">
           </div>
 
           <!-- THẺ HIỂN THỊ TỆP ĐÍNH KÈM THỰC TẾ (CHO WORD .DOCX, EXCEL .XLSX, V.V...) -->
-          <div id="reader-attachment-card" class="hidden w-full max-w-xl bg-[#071F3D] border-2 border-[#B98A33]/40 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-2xl">
+          <div id="reader-attachment-card" class="hidden w-full max-w-xl my-auto bg-[#071F3D] border-2 border-[#B98A33]/40 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-2xl">
             <div class="w-20 h-20 mx-auto rounded-2xl bg-[#102E52] border border-[#FFC857]/40 flex items-center justify-center text-4xl shadow-inner">
               <span id="reader-attachment-icon">📄</span>
             </div>
@@ -1048,7 +1062,7 @@
     let selectedCat = 'all';
     let selectedType = 'all';
     let currentSearch = '';
-    let currentZoom = 100;
+    let currentZoom = 90;
     let currentReaderZoom = 100;
     let currentDoc = null;
     let isReaderFullscreen = false;
@@ -2028,7 +2042,25 @@
       );
 
       if (isPdfPreviewable) {
-        if (previewIframe) previewIframe.src = fData;
+        if (previewIframe) {
+          if (fData.startsWith('data:application/pdf;base64,')) {
+            try {
+              const b64 = fData.split(',')[1];
+              const bin = atob(b64);
+              const len = bin.length;
+              const bytes = new Uint8Array(len);
+              for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+              const blob = new Blob([bytes], { type: 'application/pdf' });
+              if (window.currentPdfBlobUrl) URL.revokeObjectURL(window.currentPdfBlobUrl);
+              window.currentPdfBlobUrl = URL.createObjectURL(blob);
+              previewIframe.src = window.currentPdfBlobUrl;
+            } catch (e) {
+              previewIframe.src = fData;
+            }
+          } else {
+            previewIframe.src = fData;
+          }
+        }
         if (iframeWrapper) iframeWrapper.classList.remove('hidden');
       } else if (isImgPreviewable) {
         if (previewImage) previewImage.src = fData;
@@ -2386,11 +2418,14 @@
     }
 
     function applyZoom(delta) {
-      if (delta === 0) currentZoom = 100;
-      else currentZoom = Math.min(120, Math.max(80, currentZoom + delta));
+      if (delta === 0) currentZoom = 90;
+      else currentZoom = Math.min(115, Math.max(75, currentZoom + delta));
       document.getElementById('zoom-text-val').textContent = `${currentZoom}%`;
-      document.getElementById('zoom-content-wrapper').style.zoom = `${currentZoom}%`;
-      showToast(`Tỷ lệ xem: ${currentZoom}%`, 'info');
+      const contentTarget = document.getElementById('zoom-content-wrapper');
+      if (contentTarget) contentTarget.style.zoom = `${currentZoom / 100}`;
+      const sidebarTarget = document.getElementById('app-sidebar');
+      if (sidebarTarget) sidebarTarget.style.zoom = `${currentZoom / 100}`;
+      showToast(`Tỷ lệ hiển thị: ${currentZoom}%`, 'info');
     }
 
     function openMobileSidebar() {
