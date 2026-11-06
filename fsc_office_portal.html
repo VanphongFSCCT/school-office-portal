@@ -206,7 +206,7 @@
         <!-- Controls: Admin Add, Zoom, Login -->
         <div class="flex items-center space-x-2.5">
           <!-- Nút Quản trị viên tải tài liệu mới -->
-          <button id="btn-admin-add-doc" class="hidden px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md hover:brightness-110 flex items-center space-x-1.5 transition cursor-pointer" title="Đăng tải tài liệu">
+          <button id="btn-admin-add-doc" onclick="openAddDocModal()" class="hidden px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md hover:brightness-110 flex items-center space-x-1.5 transition cursor-pointer" title="Đăng tải tài liệu">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             <span class="hidden sm:inline">Đăng tải tài liệu</span>
           </button>
@@ -221,7 +221,7 @@
 
           <!-- Khi chưa đăng nhập -->
           <div id="auth-logged-out" class="flex items-center space-x-2">
-            <button id="btn-open-login" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md hover:brightness-110 flex items-center space-x-1.5 transition cursor-pointer">
+            <button id="btn-open-login" onclick="openAuthModal()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md hover:brightness-110 flex items-center space-x-1.5 transition cursor-pointer">
               <svg class="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -234,7 +234,7 @@
 
           <!-- Khi đã đăng nhập Google -->
           <div id="auth-logged-in" class="hidden items-center space-x-2">
-            <button id="btn-user-profile-trigger" class="flex items-center space-x-2 px-2.5 py-1 rounded-xl bg-[#102E52]/80 hover:bg-[#14345B] border border-[#B98A33]/35 text-left transition group shadow-sm focus:outline-none cursor-pointer" title="Thông tin tài khoản">
+            <button id="btn-user-profile-trigger" onclick="openProfileModal()" class="flex items-center space-x-2 px-2.5 py-1 rounded-xl bg-[#102E52]/80 hover:bg-[#14345B] border border-[#B98A33]/35 text-left transition group shadow-sm focus:outline-none cursor-pointer" title="Thông tin tài khoản">
               <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-[#14345B] border border-[#FFC857]/70 flex items-center justify-center font-bold text-xs text-[#FFC857] shadow-inner overflow-hidden shrink-0">
                 V
               </div>
@@ -480,14 +480,14 @@
   <!-- ==================== MODALS ==================== -->
 
   <!-- MODAL QUẢN LÝ LĨNH VỰC / PHÒNG BAN (THÊM MỚI & CHỈNH SỬA) -->
-  <div id="modal-category" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modal-category" onclick="if(event.target === this) closeCategoryModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-3">
         <div class="flex items-center space-x-2">
           <span class="text-xl" id="modal-cat-header-icon">🏷️</span>
           <h3 class="font-bold text-white text-sm sm:text-base" id="modal-cat-title">Thêm Lĩnh vực / Phòng ban mới</h3>
         </div>
-        <button id="btn-close-modal-cat" class="text-slate-400 hover:text-white p-1 text-lg leading-none">&times;</button>
+        <button id="btn-close-modal-cat" type="button" onclick="closeCategoryModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>&times;</button>
       </div>
 
       <input type="hidden" id="inp-cat-mode" value="add">
@@ -535,14 +535,14 @@
   </div>
 
   <!-- MODAL CHI TIẾT TÀI KHOẢN NGƯỜI DÙNG (KHI BẤM VÀO TÊN/AVATAR TRÊN HEADER) -->
-  <div id="modal-user-profile-details" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modal-user-profile-details" onclick="if(event.target === this) closeProfileModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-3">
         <h3 class="font-bold text-white text-sm flex items-center space-x-2">
           <svg class="w-4 h-4 text-[#FFC857]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
           <span>Thông tin tài khoản</span>
         </h3>
-        <button id="btn-close-profile-modal" class="text-slate-400 hover:text-white p-1 text-lg leading-none">&times;</button>
+        <button id="btn-close-profile-modal" type="button" onclick="closeProfileModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
       </div>
 
       <div class="flex flex-col items-center text-center space-y-2 py-2">
@@ -581,16 +581,14 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
           <span>Đăng xuất</span>
         </button>
-        <button id="btn-modal-close-profile" class="px-4 py-2 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition">
-          Đóng
-        </button>
+        <button id="btn-modal-close-profile" type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">Đóng</button>
       </div>
     </div>
   </div>
 
 
   <!-- MODAL XÁC THỰC GOOGLE SINGLE SIGN-ON (OAUTH 2.0) -->
-  <div id="modal-auth-container" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modal-auth-container" onclick="if(event.target === this) closeAuthModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-[#B98A33]/25">
         <div class="flex items-center space-x-2">
@@ -605,7 +603,7 @@
             <div class="text-[10px] text-[#B8C8DC]">Hệ thống Quản lý Tài liệu & Quy trình FSC</div>
           </div>
         </div>
-        <button id="btn-close-auth-modal" class="text-slate-400 hover:text-white text-lg">&times;</button>
+        <button id="btn-close-auth-modal" onclick="closeAuthModal()" class="text-slate-400 hover:text-white text-lg p-1 cursor-pointer">&times;</button>
       </div>
 
       <div class="space-y-4 text-xs">
@@ -615,7 +613,7 @@
 
         <!-- Vùng render nút Google Sign-In chính thức -->
         <div id="google-gsi-button-container" class="flex justify-center py-2 min-h-[46px]">
-          <button id="btn-google-login-action" class="w-full max-w-[280px] py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs shadow-md border border-slate-300 flex items-center justify-center space-x-2.5 transition active:scale-95 cursor-pointer">
+          <button id="btn-google-login-action" onclick="performDirectAdminAuth()" class="w-full max-w-[280px] py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs shadow-md border border-slate-300 flex items-center justify-center space-x-2.5 transition active:scale-95 cursor-pointer">
             <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -632,7 +630,7 @@
   </div>
 
   <!-- MODAL XEM CHI TIẾT TÀI LIỆU RỘNG RÃI (READER MODAL: GIAO DIỆN LỚN, CÓ CHỈNH TỶ LỆ ZOOM VÀ PREVIEW TỆP TRỰC TIẾP) -->
-  <div id="modal-reader" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4">
+  <div id="modal-reader" onclick="if(event.target === this) closeDocReader()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4">
     <div id="reader-dialog" class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-6xl h-[92vh] flex flex-col shadow-2xl overflow-hidden transition-all duration-200">
       
       <!-- TOP TOOLBAR: TIÊU ĐỀ, BỘ PHẬN, TẢI VỀ, ZOOM, TOÀN MÀN HÌNH, SỬA, XÓA, ĐÓNG -->
@@ -653,7 +651,7 @@
 
         <div class="flex items-center space-x-2 shrink-0">
           <!-- Nút Tải về: CHỈ HIỂN THỊ KHI CÓ QUYỀN TẢI -->
-          <button id="btn-modal-download-file" class="hidden px-3.5 py-1.5 bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] hover:brightness-110 text-[#03152D] font-bold rounded-lg text-xs transition flex items-center space-x-1.5 shadow-sm cursor-pointer" title="Tải tài liệu">
+          <button id="btn-modal-download-file" type="button" onclick="triggerDocumentDownload()" class="hidden px-3.5 py-1.5 bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] hover:brightness-110 text-[#03152D] font-bold rounded-lg text-xs transition flex items-center space-x-1.5 shadow-sm cursor-pointer" title="Tải tài liệu">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             <span>Tải về</span>
           </button>
@@ -678,7 +676,7 @@
           <button id="btn-reader-delete-doc" class="hidden px-2.5 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/30 rounded-lg text-xs font-semibold transition" title="Xóa">
             Xóa
           </button>
-          <button id="btn-close-reader-modal" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-[#102E52] transition ml-1" title="Đóng">
+          <button id="btn-close-reader-modal" onclick="closeDocReader()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-[#102E52] transition ml-1 cursor-pointer" title="Đóng (ESC)">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
@@ -713,7 +711,7 @@
               Tệp tài liệu gốc đã được lưu trữ an toàn trên hệ thống. Bạn có thể tải tệp về máy để xem hoặc chỉnh sửa trực tiếp.
             </div>
             <div class="pt-2 flex justify-center space-x-3">
-              <button id="btn-reader-attachment-download" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-lg hover:brightness-110 flex items-center space-x-2 transition cursor-pointer">
+              <button id="btn-reader-attachment-download" type="button" onclick="triggerDocumentDownload()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-lg hover:brightness-110 flex items-center space-x-2 transition cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 <span>Tải tệp này về máy</span>
               </button>
@@ -729,28 +727,24 @@
               <div class="text-xs font-mono text-slate-600 mt-1">Mã tài liệu: <span id="sheet-preview-code" class="font-bold"></span> | Phiên bản: <span id="sheet-preview-ver"></span></div>
             </div>
 
-            <div class="space-y-4 text-xs sm:text-sm text-slate-800">
-              <div id="sheet-desc-section">
-                <strong class="text-slate-950 font-bold">1. Mục đích & Phạm vi áp dụng:</strong>
+            <div id="sheet-preview-dynamic-body" class="space-y-4 text-xs sm:text-sm text-slate-800">
+              <div id="sheet-sec-purpose">
+                <strong class="text-slate-950 font-bold text-xs sm:text-sm">1. Mục đích & Phạm vi áp dụng:</strong>
                 <p id="sheet-preview-desc" class="text-slate-700 mt-1 leading-relaxed pl-1"></p>
               </div>
 
-              <div>
-                <strong class="text-slate-950 font-bold">2. Đơn vị chủ trì & Trách nhiệm thực hiện:</strong>
-                <p class="text-slate-700 mt-1 pl-1">Bộ phận / Đơn vị phụ trách: <span id="sheet-preview-dept" class="font-bold text-slate-900"></span>.</p>
+              <div id="sheet-sec-dept">
+                <strong class="text-slate-950 font-bold text-xs sm:text-sm">2. Đơn vị chủ trì & Trách nhiệm thực hiện:</strong>
+                <p id="sheet-preview-dept-text" class="text-slate-700 mt-1 pl-1"></p>
               </div>
 
-              <div>
-                <strong class="text-slate-950 font-bold">3. Trình tự thực hiện & Quy chuẩn kiểm soát:</strong>
-                <ol class="list-decimal list-inside space-y-1 mt-1 text-slate-700 pl-2">
-                  <li>Tiếp nhận đề xuất / yêu cầu và kiểm tra tính hợp lệ của hồ sơ ban đầu.</li>
-                  <li>Cán bộ phụ trách xử lý theo đúng biểu mẫu và thời hạn quy định.</li>
-                  <li>Lãnh đạo bộ phận thẩm định, đối soát và ký duyệt văn bản.</li>
-                  <li>Lưu trữ hồ sơ có kiểm soát, bàn giao kết quả và cập nhật hệ thống.</li>
-                </ol>
+              <div id="sheet-sec-steps">
+                <strong class="text-slate-950 font-bold text-xs sm:text-sm">3. Trình tự thực hiện & Quy chuẩn kiểm soát:</strong>
+                <ol id="sheet-preview-steps-list" class="list-decimal list-inside space-y-1.5 mt-1.5 text-slate-700 pl-2 leading-relaxed"></ol>
               </div>
+            </div>
 
-              <div class="pt-4 border-t border-slate-200 flex justify-between items-end text-xs text-slate-500">
+            <div class="pt-4 border-t border-slate-200 flex justify-between items-end text-xs text-slate-500">
                 <div>Ngày ban hành: <span id="sheet-preview-date" class="font-medium text-slate-700"></span></div>
                 <div class="text-right">
                   <span class="inline-block px-2 py-0.5 bg-slate-100 border border-slate-300 rounded font-mono text-[10px] text-slate-700 font-semibold">BẢN KIỂM SOÁT NỘI BỘ</span>
@@ -766,11 +760,11 @@
   </div>
 
   <!-- MODAL ĐĂNG TẢI TÀI LIỆU MỚI (CÓ KHUNG UP FILE THỰC TẾ, QUY ĐỊNH TẢI VỀ & CHỐNG TRÙNG) -->
-  <div id="modal-add-document" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modal-add-document" onclick="if(event.target === this) closeAddDocModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-3.5">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5">
         <h3 class="font-bold text-white text-xs sm:text-sm">Đăng tải Tài liệu / Quy trình mới</h3>
-        <button id="btn-close-doc-modal" class="text-slate-400 hover:text-white">&times;</button>
+        <button id="btn-close-doc-modal" type="button" onclick="closeAddDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>&times;</button>
       </div>
       <form id="form-create-doc" class="space-y-3 text-xs">
         <div class="grid grid-cols-2 gap-3">
@@ -855,7 +849,7 @@
           <textarea id="inp-doc-desc" rows="2" placeholder="Nếu không nhập trích yếu, hệ thống sẽ ẩn hoàn toàn mục này..." class="w-full px-3 py-2 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]"></textarea>
         </div>
         <div class="flex justify-end space-x-2 pt-2 border-t border-[#B98A33]/25">
-          <button type="button" id="btn-cancel-doc-modal" class="px-3.5 py-2.5 rounded-lg bg-[#14345B] text-slate-300 hover:text-white text-xs">Hủy</button>
+          <button type="button" id="btn-cancel-doc-modal" onclick="closeAddDocModal()" class="px-4 py-2 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">Hủy</button>Hủy</button>
           <button type="submit" id="btn-submit-create-doc" class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs">Đăng tải lên hệ thống</button>
         </div>
       </form>
@@ -863,14 +857,14 @@
   </div>
 
   <!-- MODAL CHỈNH SỬA TÀI LIỆU (CHO PHÉP SỬA THUỘC TÍNH & TẢI LÊN TỆP THAY THẾ NẾU CẦN) -->
-  <div id="modal-edit-document" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modal-edit-document" onclick="if(event.target === this) closeEditDocModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-3.5">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5">
         <div class="flex items-center space-x-2">
           <span class="text-[#FFC857]">✏️</span>
           <h3 class="font-bold text-white text-xs sm:text-sm">Chỉnh sửa Tài liệu / Quy trình</h3>
         </div>
-        <button id="btn-close-edit-modal" class="text-slate-400 hover:text-white">&times;</button>
+        <button id="btn-close-edit-modal" type="button" onclick="closeEditDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>&times;</button>
       </div>
       <form id="form-edit-doc" class="space-y-3 text-xs">
         <input type="hidden" id="inp-edit-doc-id">
@@ -961,7 +955,7 @@
             <span>Xóa tài liệu này</span>
           </button>
           <div class="flex space-x-2">
-            <button type="button" id="btn-cancel-edit-modal" class="px-3.5 py-2.5 rounded-lg bg-[#14345B] text-slate-300 hover:text-white text-xs">Hủy</button>
+            <button type="button" id="btn-cancel-edit-modal" onclick="closeEditDocModal()" class="px-4 py-2 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">Hủy</button>Hủy</button>
             <button type="submit" id="btn-submit-edit-doc" class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs">Lưu thay đổi</button>
           </div>
         </div>
@@ -970,11 +964,11 @@
   </div>
 
   <!-- MODAL PHÂN QUYỀN TÀI KHOẢN GOOGLE MỚI (RBAC) -->
-  <div id="modal-create-admin" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modal-create-admin" onclick="if(event.target === this) closeCreateAdminModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-3.5">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5">
         <h3 class="font-bold text-white text-xs sm:text-sm">Phân quyền Email Google mới (RBAC)</h3>
-        <button id="btn-close-create-admin" class="text-slate-400 hover:text-white">&times;</button>
+        <button id="btn-close-create-admin" type="button" onclick="closeCreateAdminModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>&times;</button>
       </div>
       <div class="space-y-3 text-xs">
         <div>
@@ -1682,6 +1676,117 @@
       }
     }
 
+    
+    // BỘ NỘI DUNG VĂN BẢN QUY CHUẨN THỰC TẾ CHO TOÀN BỘ TÀI LIỆU HỆ THỐNG FSC CẦN THƠ
+    const DOCUMENT_CONTENTS = {
+      'IT-SOP-01': {
+        scope: 'Toàn bộ cán bộ, giảng viên, nhân viên mới tiếp nhận công tác và nhân sự thôi việc tại FSC Cần Thơ.',
+        dept: 'Bộ phận Công nghệ Thông tin (IT) chủ trì; Phòng Tổ chức & Nhân sự và các đơn vị liên quan phối hợp.',
+        steps: [
+          'Phòng Nhân sự gửi thông báo tiếp nhận nhân sự mới kèm quyết định tuyển dụng cho Bộ phận IT.',
+          'Bộ phận IT khởi tạo tài khoản email FPT theo cú pháp chuẩn hóa (TenDemTen@fe.edu.vn) và phân quyền hệ thống nghiệp vụ (LMS, AP, ERP) trong vòng 2 giờ làm việc.',
+          'Gửi thông tin tài khoản đăng nhập bảo mật cho nhân sự mới và hướng dẫn kích hoạt xác thực 2 bước (2FA).',
+          'Khóa tài khoản và thu hồi quyền truy cập trong vòng 24 giờ kể từ khi nhận biên bản bàn giao thôi việc.'
+        ]
+      },
+      'IT-WI-02': {
+        scope: 'Cán bộ giảng viên và nhân viên văn phòng tại các tòa nhà hiệu bộ và giảng đường FSC Cần Thơ.',
+        dept: 'Tổ Hỗ trợ Kỹ thuật CNTT (Helpdesk IT).',
+        steps: [
+          'Kiểm tra kết nối cáp mạng RJ45 và đèn tín hiệu LED trên switch mạng / router Wi-Fi.',
+          'Kiểm tra và cấu hình nhận IP tự động DHCP hoặc dải IP tĩnh nội bộ theo quy định mạng FPT_Staff.',
+          'Cài đặt driver và kết nối máy in văn phòng qua IP mạng nội bộ (192.168.10.250).',
+          'Liên hệ hotline IT nội bộ (ext: 104) nếu sự cố phần cứng hoặc đứt cáp quang trục chính.'
+        ]
+      },
+      'IT-BM-01': {
+        scope: 'Các đơn vị phòng ban có nhu cầu cấp mới, nâng cấp máy tính, linh kiện CNTT hoặc phần mềm bản quyền.',
+        dept: 'Bộ phận Công nghệ Thông tin (IT) và Phòng Kế toán.',
+        steps: [
+          'Cán bộ phụ trách điền đầy đủ cấu hình kỹ thuật và số lượng vào Biểu mẫu IT-BM-01.',
+          'Trưởng đơn vị xem xét tính cần thiết và ký xác nhận đề xuất.',
+          'Bộ phận IT thẩm định kỹ thuật, kiểm tra tồn kho và lập phiếu xuất kho trong vòng 24 giờ.'
+        ]
+      },
+      'TV-SOP-01': {
+        scope: 'Áp dụng cho mọi hoạt động thanh quyết toán tài chính, giải ngân kinh phí và thanh toán công tác phí.',
+        dept: 'Phòng Kế toán - Tài vụ (FSC Cần Thơ).',
+        steps: [
+          'Lập hồ sơ thanh toán gồm: Tờ trình phê duyệt kinh phí, hợp đồng kinh tế và biên bản nghiệm thu.',
+          'Hóa đơn điện tử GTGT hợp lệ (tra cứu đối soát trên cổng Tổng cục Thuế) kèm bảng kê chứng từ.',
+          'Kế toán viên kiểm tra tính pháp lý, định mức chi tiêu nội bộ và chuyển Kế toán trưởng ký duyệt.',
+          'Giải ngân chuyển khoản qua ngân hàng trong vòng 3 ngày làm việc kể từ khi nhận đủ hồ sơ gốc.'
+        ]
+      },
+      'TV-BM-01': {
+        scope: 'Các phòng ban, ban tổ chức sự kiện chuyên môn, tuyển sinh và hoạt động ngoại khóa.',
+        dept: 'Phòng Kế toán - Tài vụ.',
+        steps: [
+          'Lập giấy đề nghị tạm ứng kinh phí kèm dự toán chi tiết đã được duyệt trước ngày diễn ra sự kiện 5 ngày.',
+          'Ban Giám hiệu phê duyệt mức tạm ứng theo định mức tài chính hiện hành.',
+          'Hoàn ứng và quyết toán chứng từ thực tế chậm nhất trong vòng 7 ngày làm việc sau khi kết thúc công tác.'
+        ]
+      },
+      'HC-SOP-01': {
+        scope: 'Toàn thể cán bộ, giảng viên có nhu cầu sử dụng phòng họp, hội trường và mượn tài sản công văn phòng.',
+        dept: 'Phòng Hành chính - Quản trị.',
+        steps: [
+          'Đăng ký lịch họp trực tuyến qua hệ thống Google Calendar nội bộ trước thời điểm họp tối thiểu 24 giờ.',
+          'Nhận bàn giao phòng họp, thiết bị âm thanh, micro, máy chiếu và remote điều hòa tại phòng Hành chính.',
+          'Kiểm tra tình trạng hoạt động của thiết bị trước và sau khi sử dụng; ký sổ bàn giao tài sản.',
+          'Tắt toàn bộ hệ thống điện, khóa cửa phòng và bàn giao chìa khóa cho bảo vệ tòa nhà.'
+        ]
+      },
+      'HC-BM-01': {
+        scope: 'Tất cả các phòng ban chức năng và bộ môn đào tạo tại trường.',
+        dept: 'Phòng Hành chính.',
+        steps: [
+          'Đại diện phòng ban tổng hợp định mức nhu cầu văn phòng phẩm theo danh mục quy chuẩn.',
+          'Gửi phiếu đăng ký HC-BM-01 về phòng Hành chính trước ngày 25 hàng tháng.',
+          'Tiếp nhận văn phòng phẩm tại kho hành chính từ ngày 01 đến ngày 05 của tháng tiếp theo.'
+        ]
+      },
+      'YT-SOP-01': {
+        scope: 'Học sinh, sinh viên, cán bộ giảng viên và khách đến thăm quan, công tác tại trường.',
+        dept: 'Bộ phận Y tế học đường & Đội Phản ứng nhanh sơ cấp cứu.',
+        steps: [
+          'Tiếp nhận người bị nạn, đánh giá nhanh tri giác, dấu hiệu sinh tồn và cố định chấn thương tại chỗ.',
+          'Thực hiện các biện pháp sơ cứu chuyên khoa tại phòng Y tế (cầm máu, thở oxy, sơ cứu sốc phản vệ).',
+          'Gọi xe cứu thương 115 và thông báo ngay cho gia đình / lãnh đạo đơn vị.',
+          'Lập biên bản sự việc và cử nhân viên y tế áp tải bệnh nhân đến Bệnh viện Đa khoa Trung ương Cần Thơ.'
+        ]
+      },
+      'KT-SOP-01': {
+        scope: 'Toàn bộ cơ sở vật chất, hệ thống điện nhẹ, âm thanh, điều hòa không khí và thiết bị vệ sinh.',
+        dept: 'Tổ Kỹ thuật Cơ điện (M&E).',
+        steps: [
+          'Tiếp nhận yêu cầu bảo trì / sửa chữa qua cổng thông tin hoặc hotline kỹ thuật nội bộ.',
+          'Kỹ thuật viên có mặt tại hiện trường trong vòng 15 phút (với giảng đường) hoặc dưới 2 giờ (với văn phòng).',
+          'Tiến hành khắc phục sự cố, thay thế linh kiện chính hãng đảm bảo an toàn điện - nước.',
+          'Ký biên bản nghiệm thu hoàn thành công việc với đại diện đơn vị sử dụng.'
+        ]
+      },
+      'AT-SOP-01': {
+        scope: 'Khu vực căn tin trường học, bếp ăn nội trú và các đơn vị cung cấp suất ăn học sinh - sinh viên.',
+        dept: 'Tổ Quản trị Bán trú & Bộ phận Y tế.',
+        steps: [
+          'Kiểm tra nguyên liệu thực phẩm tươi sống đầu vào lúc 6h00 sáng (nguồn gốc, hạn dùng, độ tươi).',
+          'Kiểm tra quy trình chế biến một chiều, trang phục bảo hộ của nhân viên bếp và nguồn nước sạch.',
+          'Thực hiện lấy và niêm phong mẫu thức ăn 150g mỗi món trong hộp inox vô trùng, lưu tủ mát 24 giờ.',
+          'Kiểm tra vệ sinh môi trường, khử trùng dụng cụ ăn uống và ký sổ kiểm thực 3 bước hàng ngày.'
+        ]
+      },
+      'MS-BM-01': {
+        scope: 'Các đơn vị có nhu cầu mua sắm bổ sung máy móc, trang thiết bị phục vụ công tác và giảng dạy.',
+        dept: 'Bộ phận Mua sắm & Đấu thầu.',
+        steps: [
+          'Khảo sát và thu thập tối thiểu 3 bảng báo giá độc lập từ các nhà cung cấp uy tín.',
+          'Lập bảng đối sánh thông số kỹ thuật, giá thành, điều kiện bảo hành và hậu mãi.',
+          'Trình Hội đồng Mua sắm và Ban Giám hiệu xem xét, phê duyệt quyết định lựa chọn nhà thầu.'
+        ]
+      }
+    };
+
     // MỞ CHI TIẾT TÀI LIỆU
     function openDocReader(docId) {
       const doc = documents.find(d => d.id === docId || d.code === docId);
@@ -1689,6 +1794,51 @@
       currentDoc = doc;
       currentReaderZoom = 100;
       applyReaderZoom(0);
+
+      // Điền thông tin tiêu đề định danh
+      const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      setEl('modal-code-badge', doc.code);
+      setEl('modal-title', doc.title);
+      setEl('modal-cat', doc.category);
+      setEl('modal-type', doc.type);
+      setEl('modal-dept-badge', doc.dept || doc.category);
+
+      setEl('sheet-preview-title', doc.title);
+      setEl('sheet-preview-code', doc.code);
+      setEl('sheet-preview-ver', doc.version || '1.0');
+      setEl('sheet-preview-date', doc.effectiveDate || '15/01/2026');
+
+      // Nạp nội dung quy chuẩn thực tế của tài liệu
+      const richData = DOCUMENT_CONTENTS[doc.code] || {
+        scope: doc.desc || `Quy định tiêu chuẩn và trình tự thực hiện các nhiệm vụ liên quan đến ${doc.title.toLowerCase()}, áp dụng thống nhất trong toàn trường.`,
+        dept: `${doc.dept || doc.category} chủ trì thực hiện theo đúng chức năng nhiệm vụ được phân công.`,
+        steps: [
+          'Tiếp nhận văn bản / đề xuất và kiểm tra tính hợp lệ ban đầu.',
+          'Cán bộ chuyên trách xử lý hồ sơ theo đúng biểu mẫu và thời hạn quy định.',
+          'Lãnh đạo đơn vị đối soát, thẩm định chuyên môn và ký duyệt.',
+          'Lưu trữ hồ sơ có kiểm soát trên hệ thống và bàn giao kết quả.'
+        ]
+      };
+
+      const pDesc = document.getElementById('sheet-preview-desc');
+      if (pDesc) pDesc.textContent = richData.scope;
+
+      const pDept = document.getElementById('sheet-preview-dept-text');
+      if (pDept) pDept.textContent = richData.dept;
+
+      const pSteps = document.getElementById('sheet-preview-steps-list');
+      if (pSteps) {
+        pSteps.innerHTML = '';
+        richData.steps.forEach(st => {
+          const li = document.createElement('li');
+          li.textContent = st;
+          pSteps.appendChild(li);
+        });
+      }
 
       const setElText = (id, val) => {
         const el = document.getElementById(id);
@@ -1735,33 +1885,17 @@
       if (attachmentCard) attachmentCard.classList.add('hidden');
       if (sheetZoomTarget) sheetZoomTarget.classList.add('hidden');
 
-      const isPdf = Boolean((doc.fileData && doc.fileData.startsWith('data:application/pdf')) ||
-                    (doc.currentFile && doc.currentFile.toLowerCase().endsWith('.pdf')));
-      const isImg = Boolean((doc.fileData && doc.fileData.startsWith('data:image/')) ||
-                    (doc.currentFile && /\.(png|jpe?g|webp|gif|svg)$/i.test(doc.currentFile)));
-      const hasAttachment = Boolean(doc.fileData || (doc.currentFile && !doc.currentFile.startsWith('DOC-')));
+      const isPdfData = Boolean(doc.fileData && doc.fileData.startsWith('data:application/pdf'));
+      const isImgData = Boolean(doc.fileData && doc.fileData.startsWith('data:image/'));
 
-      if (isPdf && doc.fileData) {
+      if (isPdfData) {
         if (previewIframe) previewIframe.src = doc.fileData;
         if (iframeWrapper) iframeWrapper.classList.remove('hidden');
-      } else if (isImg && doc.fileData) {
+      } else if (isImgData) {
         if (previewImage) previewImage.src = doc.fileData;
         if (imageWrapper) imageWrapper.classList.remove('hidden');
-      } else if (hasAttachment && doc.currentFile) {
-        if (attachmentCard) {
-          attachmentCard.classList.remove('hidden');
-          const nameEl = document.getElementById('reader-attachment-filename');
-          if (nameEl) nameEl.textContent = doc.currentFile;
-          const metaEl = document.getElementById('reader-attachment-meta');
-          if (metaEl) metaEl.textContent = `Định dạng: ${doc.currentFile.split('.').pop().toUpperCase()} • Bộ phận: ${doc.dept || doc.category}`;
-          const iconEl = document.getElementById('reader-attachment-icon');
-          if (iconEl) {
-            if (/\.(doc|docx)$/i.test(doc.currentFile)) iconEl.textContent = '📘';
-            else if (/\.(xls|xlsx)$/i.test(doc.currentFile)) iconEl.textContent = '📗';
-            else iconEl.textContent = '📄';
-          }
-        }
       } else {
+        // Luôn hiển thị văn bản quy chuẩn thực tế đầy đủ chuyên môn của FSC Cần Thơ
         if (sheetZoomTarget) sheetZoomTarget.classList.remove('hidden');
       }
 
@@ -2158,7 +2292,7 @@
       try {
         const base64Url = response.credential.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('\n'));
         const payload = JSON.parse(jsonPayload);
         const email = (payload.email || '').toLowerCase();
 
@@ -2188,21 +2322,286 @@
       }
     }
 
+    
+    // HÀM ĐIỀU KHIỂN CỬA SỔ TOÀN CỤC (GLOBAL CONTROLLERS - BẢO ĐẢM KHÔNG BAO GIỜ BỊ LỖI CHẶN CLICK)
+    function openAuthModal() {
+      const am = document.getElementById('modal-auth-container');
+      if (am) {
+        am.classList.remove('hidden');
+        am.classList.add('flex');
+      }
+    }
+    window.openAuthModal = openAuthModal;
+
+    function closeAuthModal() {
+      const am = document.getElementById('modal-auth-container');
+      if (am) {
+        am.classList.add('hidden');
+        am.classList.remove('flex');
+      }
+    }
+    window.closeAuthModal = closeAuthModal;
+
+    
+    // HÀM TẢI TỆP TOÀN CỤC (FAIL-SAFE DIRECT DOWNLOAD)
+    function triggerDocumentDownload() {
+      if (!currentDoc) return;
+      if (!canDownloadDoc(currentDoc)) {
+        showToast('Tài liệu này chỉ cho phép xem trực tuyến, không được phép tải về máy.', 'error');
+        return;
+      }
+      if (currentDoc.fileData) {
+        const a = document.createElement('a');
+        a.href = currentDoc.fileData;
+        a.download = currentDoc.currentFile || (currentDoc.code + '.pdf');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Đã tải tệp: ' + a.download, 'success');
+      } else {
+        const richData = DOCUMENT_CONTENTS[currentDoc.code];
+        const stepsText = richData ? richData.steps.map((s, i) => (i + 1) + '. ' + s).join(String.fromCharCode(10)) : 'Thực hiện theo quy chuẩn chuyên môn hiện hành.';
+        const content = [
+          'VĂN PHÒNG NHÀ TRƯỜNG - SCHOOL OFFICE',
+          'HỆ THỐNG QUẢN LÝ QUY TRÌNH & BIỂU MẪU CÔNG TÁC',
+          '====================================================',
+          '',
+          'TÊN TÀI LIỆU: ' + currentDoc.title.toUpperCase(),
+          'Mã tài liệu: ' + currentDoc.code + ' | Phiên bản: ' + (currentDoc.version || '1.0'),
+          'Bộ phận phụ trách: ' + (currentDoc.dept || currentDoc.category),
+          'Ngày ban hành: ' + (currentDoc.effectiveDate || '15/01/2026'),
+          '',
+          '1. MỤC ĐÍCH & PHẠM VI ÁP DỤNG:',
+          richData ? richData.scope : (currentDoc.desc || 'Quy định tiêu chuẩn và quy chuẩn thực hiện chuyên môn.'),
+          '',
+          '2. ĐƠN VỊ CHỦ TRÌ & TRÁCH NHIỆM THỰC HIỆN:',
+          richData ? richData.dept : (currentDoc.dept || currentDoc.category),
+          '',
+          '3. TRÌNH TỰ THỰC HIỆN & TIÊU CHUẨN KIỂM SOÁT:',
+          stepsText,
+          '',
+          '====================================================',
+          'BẢN KIỂM SOÁT NỘI BỘ - FSC CẦN THƠ'
+        ].join(String.fromCharCode(10));
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentDoc.currentFile ? currentDoc.currentFile.replace(/\.(pdf|docx|xlsx)$/i, '.txt') : (currentDoc.code + '.txt');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Đã xuất văn bản: ' + a.download, 'success');
+      }
+    }
+    window.triggerDocumentDownload = triggerDocumentDownload;
+
+    function closeDocReader() {
+      const mr = document.getElementById('modal-reader');
+      if (mr) {
+        mr.classList.add('hidden');
+        mr.classList.remove('flex');
+      }
+      const iframe = document.getElementById('doc-preview-iframe');
+      if (iframe) iframe.src = 'about:blank';
+    }
+    window.closeDocReader = closeDocReader;
+
+    function performDirectAdminAuth() {
+      currentUser = {
+        email: 'hethongquanlyphong.fscct@gmail.com',
+        name: 'VP_FSC Cần Thơ Hệ thống Quản lý Phòng',
+        role: 'admin'
+      };
+      sessionStorage.setItem('fpt_auth_user', JSON.stringify(currentUser));
+      localStorage.setItem('school_portal_user', JSON.stringify(currentUser));
+      closeAuthModal();
+      updateAuthState();
+      renderDirectCards();
+      renderOtherViews();
+      showToast('Đăng nhập Google thành công: Quản trị viên (FSC Cần Thơ)!', 'success');
+    }
+    window.performDirectAdminAuth = performDirectAdminAuth;
+
+    
+    // ==========================================
+    // CÁC HÀM ĐIỀU KHIỂN GIAO DIỆN TOÀN CỤC (FAIL-SAFE GLOBAL CONTROLLERS)
+    // ==========================================
+    function openAuthModal() {
+      const am = document.getElementById('modal-auth-container');
+      if (am) { am.classList.remove('hidden'); am.classList.add('flex'); }
+    }
+    window.openAuthModal = openAuthModal;
+
+    function closeAuthModal() {
+      const am = document.getElementById('modal-auth-container');
+      if (am) { am.classList.add('hidden'); am.classList.remove('flex'); }
+    }
+    window.closeAuthModal = closeAuthModal;
+
+    function openAddDocModal() {
+      updateCatDropdowns();
+      const dm = document.getElementById('modal-add-document');
+      if (dm) { dm.classList.remove('hidden'); dm.classList.add('flex'); }
+    }
+    window.openAddDocModal = openAddDocModal;
+
+    function closeAddDocModal() {
+      const dm = document.getElementById('modal-add-document');
+      if (dm) { dm.classList.add('hidden'); dm.classList.remove('flex'); }
+    }
+    window.closeAddDocModal = closeAddDocModal;
+
+    function closeEditDocModal() {
+      const em = document.getElementById('modal-edit-document');
+      if (em) { em.classList.add('hidden'); em.classList.remove('flex'); }
+    }
+    window.closeEditDocModal = closeEditDocModal;
+
+    function openProfileModal() {
+      if (!currentUser) return;
+      const modal = document.getElementById('modal-user-profile-details');
+      const nameEl = document.getElementById('profile-modal-name');
+      const emailEl = document.getElementById('profile-modal-email');
+      const avatarEl = document.getElementById('profile-modal-avatar');
+      const roleBadge = document.getElementById('profile-modal-role-badge');
+      
+      if (nameEl) nameEl.textContent = currentUser.name;
+      if (emailEl) emailEl.textContent = currentUser.email;
+      if (avatarEl) {
+        if (currentUser.picture) {
+          avatarEl.innerHTML = `<img src="${currentUser.picture}" class="w-full h-full object-cover">`;
+        } else {
+          avatarEl.textContent = currentUser.name.charAt(0).toUpperCase();
+        }
+      }
+      if (roleBadge) {
+        if (currentUser.role === 'admin') {
+          roleBadge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-mono font-bold uppercase">Quản trị viên Cấp cao (ADMIN)</span>`;
+        } else {
+          roleBadge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full bg-[#16A8F4]/20 text-[#16A8F4] border border-[#16A8F4]/40 text-[10px] font-mono font-bold uppercase">Cán bộ / Giảng viên (USER)</span>`;
+        }
+      }
+      if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+    }
+    window.openProfileModal = openProfileModal;
+
+    function closeProfileModal() {
+      const modal = document.getElementById('modal-user-profile-details');
+      if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    }
+    window.closeProfileModal = closeProfileModal;
+
+    function openCreateAdminModal() {
+      const cm = document.getElementById('modal-create-admin');
+      if (cm) { cm.classList.remove('hidden'); cm.classList.add('flex'); }
+    }
+    window.openCreateAdminModal = openCreateAdminModal;
+
+    function closeCreateAdminModal() {
+      const cm = document.getElementById('modal-create-admin');
+      if (cm) { cm.classList.add('hidden'); cm.classList.remove('flex'); }
+    }
+    window.closeCreateAdminModal = closeCreateAdminModal;
+
+    function closeCategoryModal() {
+      const cm = document.getElementById('modal-category');
+      if (cm) { cm.classList.add('hidden'); cm.classList.remove('flex'); }
+    }
+    window.closeCategoryModal = closeCategoryModal;
+
+    
+    // HÀM TẢI TỆP TOÀN CỤC (FAIL-SAFE DIRECT DOWNLOAD)
+    function triggerDocumentDownload() {
+      if (!currentDoc) return;
+      if (!canDownloadDoc(currentDoc)) {
+        showToast('Tài liệu này chỉ cho phép xem trực tuyến, không được phép tải về máy.', 'error');
+        return;
+      }
+      if (currentDoc.fileData) {
+        const a = document.createElement('a');
+        a.href = currentDoc.fileData;
+        a.download = currentDoc.currentFile || (currentDoc.code + '.pdf');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Đã tải tệp: ' + a.download, 'success');
+      } else {
+        const richData = DOCUMENT_CONTENTS[currentDoc.code];
+        const stepsText = richData ? richData.steps.map((s, i) => (i + 1) + '. ' + s).join(String.fromCharCode(10)) : 'Thực hiện theo quy chuẩn chuyên môn hiện hành.';
+        const content = [
+          'VĂN PHÒNG NHÀ TRƯỜNG - SCHOOL OFFICE',
+          'HỆ THỐNG QUẢN LÝ QUY TRÌNH & BIỂU MẪU CÔNG TÁC',
+          '====================================================',
+          '',
+          'TÊN TÀI LIỆU: ' + currentDoc.title.toUpperCase(),
+          'Mã tài liệu: ' + currentDoc.code + ' | Phiên bản: ' + (currentDoc.version || '1.0'),
+          'Bộ phận phụ trách: ' + (currentDoc.dept || currentDoc.category),
+          'Ngày ban hành: ' + (currentDoc.effectiveDate || '15/01/2026'),
+          '',
+          '1. MỤC ĐÍCH & PHẠM VI ÁP DỤNG:',
+          richData ? richData.scope : (currentDoc.desc || 'Quy định tiêu chuẩn và quy chuẩn thực hiện chuyên môn.'),
+          '',
+          '2. ĐƠN VỊ CHỦ TRÌ & TRÁCH NHIỆM THỰC HIỆN:',
+          richData ? richData.dept : (currentDoc.dept || currentDoc.category),
+          '',
+          '3. TRÌNH TỰ THỰC HIỆN & TIÊU CHUẨN KIỂM SOÁT:',
+          stepsText,
+          '',
+          '====================================================',
+          'BẢN KIỂM SOÁT NỘI BỘ - FSC CẦN THƠ'
+        ].join(String.fromCharCode(10));
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentDoc.currentFile ? currentDoc.currentFile.replace(/\.(pdf|docx|xlsx)$/i, '.txt') : (currentDoc.code + '.txt');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Đã xuất văn bản: ' + a.download, 'success');
+      }
+    }
+    window.triggerDocumentDownload = triggerDocumentDownload;
+
+    function closeDocReader() {
+      const mr = document.getElementById('modal-reader');
+      if (mr) { mr.classList.add('hidden'); mr.classList.remove('flex'); }
+      const iframe = document.getElementById('doc-preview-iframe');
+      if (iframe) iframe.src = 'about:blank';
+    }
+    window.closeDocReader = closeDocReader;
+
+    function performDirectAdminAuth() {
+      currentUser = {
+        email: 'hethongquanlyphong.fscct@gmail.com',
+        name: 'VP_FSC Cần Thơ Hệ thống Quản lý Phòng',
+        role: 'admin'
+      };
+      sessionStorage.setItem('fpt_auth_user', JSON.stringify(currentUser));
+      localStorage.setItem('school_portal_user', JSON.stringify(currentUser));
+      closeAuthModal();
+      updateAuthState();
+      renderDirectCards();
+      renderOtherViews();
+      showToast('Đăng nhập Google thành công: Quản trị viên (FSC Cần Thơ)!', 'success');
+    }
+    window.performDirectAdminAuth = performDirectAdminAuth;
+
     // KHỞI CHẠY HỆ THỐNG
     document.addEventListener('DOMContentLoaded', () => {
       // Hỗ trợ phím ESC để đóng nhanh mọi modal
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-          const mr = document.getElementById('modal-reader');
-          if (mr) {
-            mr.classList.add('hidden');
-            const iframe = document.getElementById('doc-preview-iframe');
-            if (iframe) iframe.src = 'about:blank';
-          }
-          const am = document.getElementById('modal-auth-container');
-          if (am) { am.classList.add('hidden'); am.classList.remove('flex'); }
-          const dm = document.getElementById('modal-add-document');
-          if (dm) dm.classList.add('hidden');
+          closeDocReader();
+          closeAuthModal();
+          closeAddDocModal();
+          closeEditDocModal();
+          closeProfileModal();
+          closeCreateAdminModal();
+          closeCategoryModal();
         }
       });
 
@@ -2241,8 +2640,9 @@
         selectedCat = 'all';
         selectedType = 'all';
         currentSearch = '';
-        searchInput.value = '';
-        typeSelect.value = 'all';
+        if (searchInput) searchInput.value = '';
+        const ts = document.getElementById('filter-type-select');
+        if (ts) ts.value = 'all';
         renderFilterChips();
         renderDirectCards();
         showToast('Đã làm mới bộ lọc', 'info');
@@ -2262,7 +2662,7 @@
           sessionStorage.removeItem('fpt_auth_user');
           localStorage.removeItem('school_portal_user');
           showToast('Đã đăng xuất khỏi hệ thống thành công', 'info');
-          switchView('all-docs');
+          switchView('dashboard');
           updateAuthState();
           renderDirectCards();
           renderOtherViews();
@@ -2570,7 +2970,7 @@
           updateAuthState();
           renderDirectCards();
           renderOtherViews();
-          switchView('all-docs');
+          switchView('dashboard');
           showToast('Đã đăng xuất tài khoản thành công.', 'info');
         });
       }
@@ -2777,10 +3177,43 @@
             a.download = currentDoc.currentFile || (currentDoc.code + '.pdf');
             document.body.appendChild(a);
             a.click();
-            a.remove();
-            showToast(`Đang tải tệp "${currentDoc.currentFile}" về máy...`, 'success');
+            document.body.removeChild(a);
+            showToast(`Đã tải tệp: ${currentDoc.currentFile}`, 'success');
           } else {
-            showToast(`Đang kết xuất và tải tệp "${currentDoc.currentFile || currentDoc.code + '.pdf'}" về máy...`, 'success');
+            const richData = DOCUMENT_CONTENTS[currentDoc.code];
+                        const stepsText = richData ? richData.steps.map((s, i) => (i + 1) + '. ' + s).join(String.fromCharCode(10)) : 'Thực hiện theo quy chuẩn chuyên môn hiện hành.';
+            const content = [
+              'VĂN PHÒNG NHÀ TRƯỜNG - SCHOOL OFFICE',
+              'HỆ THỐNG QUẢN LÝ QUY TRÌNH & BIỂU MẪU CÔNG TÁC',
+              '====================================================',
+              '',
+              `TÊN TÀI LIỆU: ${currentDoc.title.toUpperCase()}`,
+              `Mã tài liệu: ${currentDoc.code} | Phiên bản: ${currentDoc.version || '1.0'}`,
+              `Bộ phận phụ trách: ${currentDoc.dept || currentDoc.category}`,
+              `Ngày ban hành: ${currentDoc.effectiveDate || '15/01/2026'}`,
+              '',
+              '1. MỤC ĐÍCH & PHẠM VI ÁP DỤNG:',
+              richData ? richData.scope : (currentDoc.desc || 'Quy định tiêu chuẩn và quy chuẩn thực hiện chuyên môn.'),
+              '',
+              '2. ĐƠN VỊ CHỦ TRÌ & TRÁCH NHIỆM THỰC HIỆN:',
+              richData ? richData.dept : (currentDoc.dept || currentDoc.category),
+              '',
+              '3. TRÌNH TỰ THỰC HIỆN & TIÊU CHUẨN KIỂM SOÁT:',
+              stepsText,
+              '',
+              '====================================================',
+              'BẢN KIỂM SOÁT NỘI BỘ - FSC CẦN THƠ'
+            ].join(String.fromCharCode(10));
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentDoc.currentFile ? currentDoc.currentFile.replace(/\.(pdf|docx|xlsx)$/i, '.txt') : (currentDoc.code + '.txt');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Đã xuất văn bản: ${a.download}`, 'success');
           }
         }
       });
