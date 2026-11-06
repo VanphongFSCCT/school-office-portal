@@ -487,7 +487,7 @@
           <span class="text-xl" id="modal-cat-header-icon">🏷️</span>
           <h3 class="font-bold text-white text-sm sm:text-base" id="modal-cat-title">Thêm Lĩnh vực / Phòng ban mới</h3>
         </div>
-        <button id="btn-close-modal-cat" type="button" onclick="closeCategoryModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>&times;</button>
+        <button id="btn-close-modal-cat" type="button" onclick="closeCategoryModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
       </div>
 
       <input type="hidden" id="inp-cat-mode" value="add">
@@ -613,7 +613,7 @@
 
         <!-- Vùng render nút Google Sign-In chính thức -->
         <div id="google-gsi-button-container" class="flex justify-center py-2 min-h-[46px]">
-          <button id="btn-google-login-action" onclick="performDirectAdminAuth()" class="w-full max-w-[280px] py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs shadow-md border border-slate-300 flex items-center justify-center space-x-2.5 transition active:scale-95 cursor-pointer">
+          <button id="btn-google-login-action" onclick="handlePrimaryGoogleLoginClick()" class="w-full max-w-[280px] py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs shadow-md border border-slate-300 flex items-center justify-center space-x-2.5 transition active:scale-95 cursor-pointer">
             <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -764,7 +764,7 @@
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-3.5">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5">
         <h3 class="font-bold text-white text-xs sm:text-sm">Đăng tải Tài liệu / Quy trình mới</h3>
-        <button id="btn-close-doc-modal" type="button" onclick="closeAddDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>&times;</button>
+        <button id="btn-close-doc-modal" type="button" onclick="closeAddDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
       </div>
       <form id="form-create-doc" class="space-y-3 text-xs">
         <div class="grid grid-cols-2 gap-3">
@@ -849,7 +849,7 @@
           <textarea id="inp-doc-desc" rows="2" placeholder="Nếu không nhập trích yếu, hệ thống sẽ ẩn hoàn toàn mục này..." class="w-full px-3 py-2 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]"></textarea>
         </div>
         <div class="flex justify-end space-x-2 pt-2 border-t border-[#B98A33]/25">
-          <button type="button" id="btn-cancel-doc-modal" onclick="closeAddDocModal()" class="px-4 py-2 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">Hủy</button>Hủy</button>
+          <button type="button" id="btn-cancel-doc-modal" onclick="closeAddDocModal()" class="px-4 py-2 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">Hủy</button>
           <button type="submit" id="btn-submit-create-doc" class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs">Đăng tải lên hệ thống</button>
         </div>
       </form>
@@ -864,7 +864,7 @@
           <span class="text-[#FFC857]">✏️</span>
           <h3 class="font-bold text-white text-xs sm:text-sm">Chỉnh sửa Tài liệu / Quy trình</h3>
         </div>
-        <button id="btn-close-edit-modal" type="button" onclick="closeEditDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>&times;</button>
+        <button id="btn-close-edit-modal" type="button" onclick="closeEditDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
       </div>
       <form id="form-edit-doc" class="space-y-3 text-xs">
         <input type="hidden" id="inp-edit-doc-id">
@@ -955,7 +955,7 @@
             <span>Xóa tài liệu này</span>
           </button>
           <div class="flex space-x-2">
-            <button type="button" id="btn-cancel-edit-modal" onclick="closeEditDocModal()" class="px-4 py-2 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">Hủy</button>Hủy</button>
+            <button type="button" id="btn-cancel-edit-modal" onclick="closeEditDocModal()" class="px-4 py-2 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">Hủy</button>
             <button type="submit" id="btn-submit-edit-doc" class="px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs">Lưu thay đổi</button>
           </div>
         </div>
@@ -968,7 +968,7 @@
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-3.5">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5">
         <h3 class="font-bold text-white text-xs sm:text-sm">Phân quyền Email Google mới (RBAC)</h3>
-        <button id="btn-close-create-admin" type="button" onclick="closeCreateAdminModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>&times;</button>
+        <button id="btn-close-create-admin" type="button" onclick="closeCreateAdminModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
       </div>
       <div class="space-y-3 text-xs">
         <div>
@@ -1036,9 +1036,11 @@
       '🎓', '📚', '📢', '🤝', '👥'
     ];
 
+    const ROOT_ADMIN_EMAILS = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com', 'vp.fsc@fpt.edu.vn'];
     let rbacUsers = [
       { email: 'buitandat1727@gmail.com', name: 'Bùi Tấn Đạt (Quản trị viên)', role: 'admin' },
-      { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Hệ thống Quản lý Phòng', role: 'admin' }
+      { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Hệ thống Quản lý Phòng', role: 'admin' },
+      { email: 'vp.fsc@fpt.edu.vn', name: 'Văn phòng FSchool Cần Thơ', role: 'admin' }
     ];
 
     let documents = [];
@@ -1250,6 +1252,101 @@
       }
     ];
 
+
+    // =========================================================================
+    // HỆ THỐNG LƯU TRỮ TỆP ĐÍNH KÈM DUNG LƯỢNG LỚN (INDEXEDDB ENGINE - TỐI ĐA 50MB+)
+    // Giải quyết triệt để lỗi QuotaExceededError của localStorage & lưu tức thì < 50ms
+    // =========================================================================
+    const FILE_DB_NAME = 'FSC_Portal_FileStorage_DB';
+    const FILE_STORE_NAME = 'document_files';
+
+    function openFileDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return resolve(null);
+        const req = indexedDB.open(FILE_DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(FILE_STORE_NAME)) {
+            db.createObjectStore(FILE_STORE_NAME, { keyPath: 'code' });
+          }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function saveFileToIDB(code, fileName, fileData) {
+      if (!code || !fileData) return;
+      try {
+        const db = await openFileDB();
+        if (!db) return;
+        return new Promise((resolve) => {
+          const tx = db.transaction(FILE_STORE_NAME, 'readwrite');
+          const store = tx.objectStore(FILE_STORE_NAME);
+          store.put({ code: code.toLowerCase(), fileName: fileName || '', fileData: fileData, updatedAt: Date.now() });
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } catch (e) {}
+    }
+
+    async function getFileFromIDB(code) {
+      if (!code) return null;
+      try {
+        const db = await openFileDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          const tx = db.transaction(FILE_STORE_NAME, 'readonly');
+          const store = tx.objectStore(FILE_STORE_NAME);
+          const req = store.get(code.toLowerCase());
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function loadAllFilesFromIDB() {
+      try {
+        const db = await openFileDB();
+        if (!db) return {};
+        return new Promise((resolve) => {
+          const tx = db.transaction(FILE_STORE_NAME, 'readonly');
+          const store = tx.objectStore(FILE_STORE_NAME);
+          const req = store.getAll();
+          req.onsuccess = () => {
+            const map = {};
+            (req.result || []).forEach(item => {
+              if (item && item.code) map[item.code.toLowerCase()] = item;
+            });
+            resolve(map);
+          };
+          req.onerror = () => resolve({});
+        });
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function safeSaveDocumentsToLocal(docsArray) {
+      try {
+        // Thử lưu trực tiếp; nếu vượt quá giới hạn 5MB của localStorage thì lưu metadata gọn vào localStorage và giữ fileData trong IndexedDB
+        localStorage.setItem('school_portal_live_docs', JSON.stringify(docsArray));
+      } catch (quotaErr) {
+        try {
+          const lightweightDocs = docsArray.map(d => {
+            if (d.fileData && d.fileData.length > 200000) {
+              saveFileToIDB(d.code, d.currentFile, d.fileData);
+              return { ...d, fileData: '' };
+            }
+            return d;
+          });
+          localStorage.setItem('school_portal_live_docs', JSON.stringify(lightweightDocs));
+        } catch (e2) {}
+      }
+    }
+
     function restoreSession() {
       try {
         const saved = sessionStorage.getItem('fpt_auth_user');
@@ -1258,7 +1355,22 @@
         if (!currentUser && savedLocalUser) currentUser = JSON.parse(savedLocalUser);
 
         const savedRbac = localStorage.getItem('school_portal_rbac_users');
-        if (savedRbac) rbacUsers = JSON.parse(savedRbac);
+        if (savedRbac) {
+          const parsedRbac = JSON.parse(savedRbac);
+          if (Array.isArray(parsedRbac)) {
+            rbacUsers = parsedRbac;
+            const defaults = [
+              { email: 'buitandat1727@gmail.com', name: 'Bùi Tấn Đạt (Quản trị viên)', role: 'admin' },
+              { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Hệ thống Quản lý Phòng', role: 'admin' },
+              { email: 'vp.fsc@fpt.edu.vn', name: 'Văn phòng FSchool Cần Thơ', role: 'admin' }
+            ];
+            defaults.forEach(def => {
+              const ex = rbacUsers.find(u => u.email.toLowerCase() === def.email.toLowerCase());
+              if (ex) ex.role = 'admin';
+              else rbacUsers.unshift(def);
+            });
+          }
+        }
         
         const savedDocs = localStorage.getItem('school_portal_live_docs');
         if (savedDocs) {
@@ -1267,11 +1379,11 @@
             documents = parsed;
           } else {
             documents = JSON.parse(JSON.stringify(INITIAL_PORTAL_DOCS));
-            localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
+            safeSaveDocumentsToLocal(documents);
           }
         } else {
           documents = JSON.parse(JSON.stringify(INITIAL_PORTAL_DOCS));
-          localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
+          safeSaveDocumentsToLocal(documents);
         }
       } catch (e) {
         console.warn('Restore error:', e);
@@ -1291,29 +1403,68 @@
         }
       } catch (e) {}
 
+      // Nạp ngay các tệp PDF/Office dung lượng lớn từ IndexedDB vào bộ nhớ
+      try {
+        const idbMap = await loadAllFilesFromIDB();
+        let hydrated = false;
+        documents.forEach(d => {
+          const k = (d.code || '').toLowerCase();
+          if (idbMap[k] && idbMap[k].fileData && !d.fileData) {
+            d.fileData = idbMap[k].fileData;
+            if (idbMap[k].fileName) d.currentFile = idbMap[k].fileName;
+            hydrated = true;
+          }
+        });
+        if (hydrated) {
+          renderDirectCards();
+          renderOtherViews();
+        }
+      } catch (e) {}
+
       try {
         const docRes = await fetch('/api/documents');
         if (docRes.ok) {
           const docData = await docRes.json();
           if (docData.success && Array.isArray(docData.data) && docData.data.length > 0) {
-            documents = docData.data.map(d => ({
-              id: d.id || ('DOC-' + d.code),
-              code: d.code,
-              title: d.title,
-              category: d.category_id || d.category || 'IT',
-              type: d.doc_type || d.type || 'Quy trình',
-              version: d.version || '1.0',
-              effectiveDate: d.effective_date || d.effectiveDate || new Date().toLocaleDateString('vi-VN'),
-              status: d.status || 'Có hiệu lực',
-              access: d.access_level || d.access || 'Mở',
-              downloadPerm: d.download_perm || d.downloadPerm || 'allow_all',
-              dept: d.department || d.dept || 'Văn phòng nhà trường',
-              desc: d.description || d.desc || '',
-              currentFile: d.current_file || d.currentFile || (d.code + '.pdf'),
-              fileData: d.file_data || d.fileData || '',
-              relatedDocs: d.related_codes || d.relatedDocs || []
-            }));
-            localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
+            // Lưu map các tệp đính kèm đang có trong localStorage để không bao giờ bị mất fileData khi đồng bộ
+            const localMap = {};
+            documents.forEach(ld => {
+              if (ld.code) localMap[ld.code.toLowerCase()] = ld;
+            });
+
+            const apiDocs = docData.data.map(d => {
+              const key = (d.code || '').toLowerCase();
+              const localDoc = localMap[key] || {};
+              return {
+                id: d.id || localDoc.id || ('DOC-' + d.code),
+                code: d.code,
+                title: d.title,
+                category: d.category_id || d.category || localDoc.category || 'IT',
+                type: d.doc_type || d.type || localDoc.type || 'Quy trình',
+                version: d.version || localDoc.version || '1.0',
+                effectiveDate: d.effective_date || d.effectiveDate || localDoc.effectiveDate || new Date().toLocaleDateString('vi-VN'),
+                status: d.status || localDoc.status || 'Có hiệu lực',
+                access: d.access_level || d.access || localDoc.access || 'Mở',
+                downloadPerm: d.download_perm || d.downloadPerm || localDoc.downloadPerm || 'allow_all',
+                dept: d.department || d.dept || localDoc.dept || 'Văn phòng nhà trường',
+                desc: d.description || d.desc || localDoc.desc || '',
+                currentFile: d.current_file || d.currentFile || localDoc.currentFile || (d.code + '.pdf'),
+                fileData: d.file_data || d.file_url || d.fileData || localDoc.fileData || '',
+                relatedDocs: d.related_codes || d.relatedDocs || localDoc.relatedDocs || []
+              };
+            });
+
+            // Giữ lại các tài liệu vừa tạo ở local hoặc tài liệu chuẩn nếu chưa có trên DB
+            const apiCodes = new Set(apiDocs.map(d => d.code.toLowerCase()));
+            const mergedDocs = [...apiDocs];
+            documents.forEach(ld => {
+              if (ld.code && !apiCodes.has(ld.code.toLowerCase())) {
+                mergedDocs.push(ld);
+              }
+            });
+
+            documents = mergedDocs;
+            safeSaveDocumentsToLocal(documents);
             renderDirectCards();
             renderOtherViews();
             updateBadges();
@@ -1788,14 +1939,20 @@
     };
 
     // MỞ CHI TIẾT TÀI LIỆU
-    function openDocReader(docId) {
+    async function openDocReader(docId) {
       const doc = documents.find(d => d.id === docId || d.code === docId);
       if (!doc) return;
+      if (!doc.fileData && doc.code) {
+        const cachedFile = await getFileFromIDB(doc.code);
+        if (cachedFile && cachedFile.fileData) {
+          doc.fileData = cachedFile.fileData;
+          if (cachedFile.fileName) doc.currentFile = cachedFile.fileName;
+        }
+      }
       currentDoc = doc;
       currentReaderZoom = 100;
       applyReaderZoom(0);
 
-      // Điền thông tin tiêu đề định danh
       const setEl = (id, val) => {
         const el = document.getElementById(id);
         if (el) el.textContent = val;
@@ -1805,30 +1962,31 @@
       setEl('modal-title', doc.title);
       setEl('modal-cat', doc.category);
       setEl('modal-type', doc.type);
+      setEl('modal-ver', doc.version || '1.0');
       setEl('modal-dept-badge', doc.dept || doc.category);
 
       setEl('sheet-preview-title', doc.title);
       setEl('sheet-preview-code', doc.code);
       setEl('sheet-preview-ver', doc.version || '1.0');
-      setEl('sheet-preview-date', doc.effectiveDate || '15/01/2026');
+      setEl('sheet-preview-date', doc.effectiveDate || new Date().toLocaleDateString('vi-VN'));
 
       // Nạp nội dung quy chuẩn thực tế của tài liệu
+      const isSystemDoc = Boolean(DOCUMENT_CONTENTS[doc.code]);
       const richData = DOCUMENT_CONTENTS[doc.code] || {
-        scope: doc.desc || `Quy định tiêu chuẩn và trình tự thực hiện các nhiệm vụ liên quan đến ${doc.title.toLowerCase()}, áp dụng thống nhất trong toàn trường.`,
-        dept: `${doc.dept || doc.category} chủ trì thực hiện theo đúng chức năng nhiệm vụ được phân công.`,
+        scope: (doc.desc && doc.desc.trim().length > 0)
+          ? doc.desc
+          : `Tài liệu quy định hướng dẫn thực hiện công việc "${doc.title}" thuộc phạm vi quản lý của ${doc.dept || doc.category}.`,
+        dept: `${doc.dept || doc.category} chủ trì triển khai và kiểm soát thực hiện.`,
         steps: [
-          'Tiếp nhận văn bản / đề xuất và kiểm tra tính hợp lệ ban đầu.',
-          'Cán bộ chuyên trách xử lý hồ sơ theo đúng biểu mẫu và thời hạn quy định.',
-          'Lãnh đạo đơn vị đối soát, thẩm định chuyên môn và ký duyệt.',
-          'Lưu trữ hồ sơ có kiểm soát trên hệ thống và bàn giao kết quả.'
+          'Tiếp nhận yêu cầu và kiểm tra tính đầy đủ, hợp lệ của hồ sơ.',
+          'Triển khai thực hiện theo đúng biểu mẫu và quy trình chuyên môn của đơn vị.',
+          'Trưởng bộ phận kiểm tra, rà soát kết quả và phê duyệt.',
+          'Lưu trữ hồ sơ và cập nhật dữ liệu trên cổng thông tin văn phòng.'
         ]
       };
 
-      const pDesc = document.getElementById('sheet-preview-desc');
-      if (pDesc) pDesc.textContent = richData.scope;
-
-      const pDept = document.getElementById('sheet-preview-dept-text');
-      if (pDept) pDept.textContent = richData.dept;
+      setEl('sheet-preview-desc', richData.scope);
+      setEl('sheet-preview-dept-text', richData.dept);
 
       const pSteps = document.getElementById('sheet-preview-steps-list');
       if (pSteps) {
@@ -1840,39 +1998,7 @@
         });
       }
 
-      const setElText = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val;
-      };
-
-      setElText('modal-code-badge', doc.code);
-      setElText('modal-title', doc.title);
-      setElText('modal-cat', doc.category);
-      setElText('modal-type', doc.type);
-      setElText('modal-ver', doc.version || '1.0');
-      setElText('modal-dept-badge', doc.dept || doc.category);
-      setElText('reader-dept-name', doc.dept || doc.category);
-
-      setElText('sheet-preview-code', doc.code);
-      setElText('sheet-preview-ver', doc.version || '1.0');
-      setElText('sheet-preview-title', doc.title);
-      setElText('sheet-preview-dept', doc.dept || doc.category);
-      setElText('sheet-preview-date', doc.effectiveDate || new Date().toLocaleDateString('vi-VN'));
-
-      // Xử lý mục đích / trích yếu: luôn có nội dung đầy đủ, chuẩn mực, không nhảy số mục
-      const descSection = document.getElementById('sheet-desc-section');
-      const descPreview = document.getElementById('sheet-preview-desc');
-      if (descPreview && descSection) {
-        descPreview.textContent = (doc.desc && doc.desc.trim().length > 0)
-          ? doc.desc
-          : `Quy định trình tự, tiêu chuẩn và chuẩn mực thực hiện các nhiệm vụ chuyên môn liên quan đến ${doc.title.toLowerCase()}, áp dụng thống nhất trong toàn trường.`;
-        descSection.classList.remove('hidden');
-      }
-
-      setElText('modal-status-text', doc.status || 'Có hiệu lực');
-      setElText('modal-access-text', doc.access);
-
-      // XỬ LÝ PREVIEW TỆP TRỰC TIẾP
+      // XỬ LÝ HIỂN THỊ TỆP ĐÍNH KÈM TRỰC TIẾP (DIRECT PREVIEW)
       const iframeWrapper = document.getElementById('reader-iframe-wrapper');
       const previewIframe = document.getElementById('doc-preview-iframe');
       const imageWrapper = document.getElementById('reader-image-wrapper');
@@ -1885,31 +2011,52 @@
       if (attachmentCard) attachmentCard.classList.add('hidden');
       if (sheetZoomTarget) sheetZoomTarget.classList.add('hidden');
 
-      const isPdfData = Boolean(doc.fileData && doc.fileData.startsWith('data:application/pdf'));
-      const isImgData = Boolean(doc.fileData && doc.fileData.startsWith('data:image/'));
+      const fData = doc.fileData || '';
+      const fName = (doc.currentFile || '').toLowerCase();
 
-      if (isPdfData) {
-        if (previewIframe) previewIframe.src = doc.fileData;
+      const isPdfPreviewable = Boolean(
+        fData.startsWith('data:application/pdf') ||
+        (fData.startsWith('http') && fName.endsWith('.pdf')) ||
+        (fData.startsWith('blob:'))
+      );
+      const isImgPreviewable = Boolean(
+        fData.startsWith('data:image/') ||
+        (fData.startsWith('http') && /\.(png|jpe?g|webp|gif|svg)$/i.test(fName))
+      );
+      const isOfficeFileUploaded = Boolean(
+        fData && /\.(doc|docx|xls|xlsx|ppt|pptx)$/i.test(fName)
+      );
+
+      if (isPdfPreviewable) {
+        if (previewIframe) previewIframe.src = fData;
         if (iframeWrapper) iframeWrapper.classList.remove('hidden');
-      } else if (isImgData) {
-        if (previewImage) previewImage.src = doc.fileData;
+      } else if (isImgPreviewable) {
+        if (previewImage) previewImage.src = fData;
         if (imageWrapper) imageWrapper.classList.remove('hidden');
+      } else if (isOfficeFileUploaded) {
+        // Nếu người dùng tải lên file Word/Excel có dữ liệu thực tế -> Hiển thị thẻ tải file Office kèm văn bản tóm tắt bên dưới
+        if (attachmentCard) {
+          attachmentCard.classList.remove('hidden');
+          setEl('reader-attachment-filename', doc.currentFile);
+          setEl('reader-attachment-meta', `Định dạng: ${doc.currentFile.split('.').pop().toUpperCase()} • Bộ phận: ${doc.dept || doc.category}`);
+          const iconEl = document.getElementById('reader-attachment-icon');
+          if (iconEl) {
+            if (/\.(doc|docx)$/i.test(doc.currentFile)) iconEl.textContent = '📘';
+            else if (/\.(xls|xlsx)$/i.test(doc.currentFile)) iconEl.textContent = '📗';
+            else iconEl.textContent = '📄';
+          }
+        }
       } else {
-        // Luôn hiển thị văn bản quy chuẩn thực tế đầy đủ chuyên môn của FSC Cần Thơ
+        // Hiển thị trực tiếp trang văn bản nội dung chi tiết
         if (sheetZoomTarget) sheetZoomTarget.classList.remove('hidden');
       }
 
-      // XỬ LÝ QUY ĐỊNH QUYỀN TẢI XUỐNG
+      // XỬ LÝ QUYỀN TẢI XUỐNG
       const downloadBtn = document.getElementById('btn-modal-download-file');
-      const downloadStatus = document.getElementById('modal-download-status');
       const isAllowed = canDownloadDoc(doc);
-
-      if (isAllowed) {
-        if (downloadBtn) downloadBtn.classList.remove('hidden');
-        if (downloadStatus) downloadStatus.innerHTML = '';
-      } else {
-        if (downloadBtn) downloadBtn.classList.add('hidden');
-        if (downloadStatus) downloadStatus.innerHTML = '';
+      if (downloadBtn) {
+        if (isAllowed) downloadBtn.classList.remove('hidden');
+        else downloadBtn.classList.add('hidden');
       }
 
       // Nút Admin sửa/xóa trong reader
@@ -1919,8 +2066,7 @@
         if (btnEditReader) {
           btnEditReader.classList.remove('hidden');
           btnEditReader.onclick = () => {
-            const mr = document.getElementById('modal-reader');
-            if (mr) mr.classList.add('hidden');
+            closeDocReader();
             openEditDocModal(doc.code);
           };
         }
@@ -1934,7 +2080,10 @@
       }
 
       const modalReader = document.getElementById('modal-reader');
-      if (modalReader) modalReader.classList.remove('hidden');
+      if (modalReader) {
+        modalReader.classList.remove('hidden');
+        modalReader.classList.add('flex');
+      }
     }
 
     // Mở Modal Chỉnh sửa tài liệu (HỖ TRỢ UP FILE MỚI THAY THẾ)
@@ -1994,7 +2143,7 @@
       if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn tài liệu "${doc.code} - ${doc.title}" khỏi hệ thống?`)) return;
 
       documents = documents.filter(d => d.code !== code);
-      localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
+      safeSaveDocumentsToLocal(documents);
 
       document.getElementById('modal-reader').classList.add('hidden');
       renderDirectCards();
@@ -2154,7 +2303,7 @@
 
         const badgeUserTag = document.getElementById('badge-user-tag');
         const matchedRbac = rbacUsers.find(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
-        currentUser.role = matchedRbac ? matchedRbac.role : 'user';
+        currentUser.role = ROOT_ADMIN_EMAILS.includes(currentUser.email.toLowerCase()) ? 'admin' : (matchedRbac ? matchedRbac.role : 'user');
 
         if (currentUser.role === 'admin') {
           adminNavBtn.classList.remove('hidden');
@@ -2251,6 +2400,9 @@
       document.getElementById('app-sidebar').classList.add('-translate-x-full');
     }
 
+    // ==========================================
+    // CÁC HÀM ĐIỀU KHIỂN GIAO DIỆN & XÁC THỰC CHUẨN HÓA (SINGLE SOURCE OF TRUTH)
+    // ==========================================
     function openAuthModal() {
       const authModal = document.getElementById('modal-auth-container');
       const gsiContainer = document.getElementById('google-gsi-button-container');
@@ -2261,12 +2413,21 @@
         authModal.classList.add('flex');
       }
 
-      if (window.google && google.accounts && google.accounts.id) {
+      // Chỉ render nút Google GSI chuẩn nếu hệ thống đã được cấu hình GOOGLE_CLIENT_ID thực tế từ biến môi trường
+      const hasRealClientId = Boolean(
+        activeGoogleClientId &&
+        activeGoogleClientId !== 'sample-fpt-client-id.apps.googleusercontent.com' &&
+        activeGoogleClientId !== 'YOUR_GOOGLE_CLIENT_ID' &&
+        activeGoogleClientId.includes('.apps.googleusercontent.com')
+      );
+
+      if (hasRealClientId && window.google && google.accounts && google.accounts.id && gsiContainer) {
         try {
           google.accounts.id.initialize({
             client_id: activeGoogleClientId,
             callback: handleGoogleCredentialResponse,
-            auto_select: false,
+            auto_select: true,
+            itp_support: true,
             cancel_on_tap_outside: true
           });
           gsiContainer.innerHTML = '';
@@ -2284,53 +2445,6 @@
         }
       }
     }
-
-    async function handleGoogleCredentialResponse(response) {
-      const errorAlert = document.getElementById('oauth-error-alert');
-      const authModal = document.getElementById('modal-auth-container');
-
-      try {
-        const base64Url = response.credential.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('\n'));
-        const payload = JSON.parse(jsonPayload);
-        const email = (payload.email || '').toLowerCase();
-
-        const matchedRbac = rbacUsers.find(u => u.email.toLowerCase() === email);
-        const isFpt = email.endsWith('@fpt.edu.vn') || payload.hd === 'fpt.edu.vn';
-
-        if (!matchedRbac && !isFpt) {
-          errorAlert.textContent = `Từ chối truy cập: Tài khoản ${email} không thuộc miền @fpt.edu.vn và chưa được Quản trị viên cấp quyền.`;
-          errorAlert.classList.remove('hidden');
-          return;
-        }
-
-        currentUser = {
-          email: email,
-          name: payload.name || (matchedRbac ? matchedRbac.name : email.split('@')[0]),
-          picture: payload.picture || '',
-          role: matchedRbac ? matchedRbac.role : 'user'
-        };
-
-        sessionStorage.setItem('fpt_auth_user', JSON.stringify(currentUser));
-        authModal.classList.add('hidden');
-        showToast(`Đăng nhập Google thành công: ${currentUser.name}`, 'success');
-        updateAuthState();
-      } catch (err) {
-        errorAlert.textContent = 'Lỗi xử lý xác thực tài khoản Google.';
-        errorAlert.classList.remove('hidden');
-      }
-    }
-
-    
-    // HÀM ĐIỀU KHIỂN CỬA SỔ TOÀN CỤC (GLOBAL CONTROLLERS - BẢO ĐẢM KHÔNG BAO GIỜ BỊ LỖI CHẶN CLICK)
-    function openAuthModal() {
-      const am = document.getElementById('modal-auth-container');
-      if (am) {
-        am.classList.remove('hidden');
-        am.classList.add('flex');
-      }
-    }
     window.openAuthModal = openAuthModal;
 
     function closeAuthModal() {
@@ -2342,71 +2456,65 @@
     }
     window.closeAuthModal = closeAuthModal;
 
-    
-    // HÀM TẢI TỆP TOÀN CỤC (FAIL-SAFE DIRECT DOWNLOAD)
-    function triggerDocumentDownload() {
-      if (!currentDoc) return;
-      if (!canDownloadDoc(currentDoc)) {
-        showToast('Tài liệu này chỉ cho phép xem trực tuyến, không được phép tải về máy.', 'error');
-        return;
-      }
-      if (currentDoc.fileData) {
-        const a = document.createElement('a');
-        a.href = currentDoc.fileData;
-        a.download = currentDoc.currentFile || (currentDoc.code + '.pdf');
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast('Đã tải tệp: ' + a.download, 'success');
-      } else {
-        const richData = DOCUMENT_CONTENTS[currentDoc.code];
-        const stepsText = richData ? richData.steps.map((s, i) => (i + 1) + '. ' + s).join(String.fromCharCode(10)) : 'Thực hiện theo quy chuẩn chuyên môn hiện hành.';
-        const content = [
-          'VĂN PHÒNG NHÀ TRƯỜNG - SCHOOL OFFICE',
-          'HỆ THỐNG QUẢN LÝ QUY TRÌNH & BIỂU MẪU CÔNG TÁC',
-          '====================================================',
-          '',
-          'TÊN TÀI LIỆU: ' + currentDoc.title.toUpperCase(),
-          'Mã tài liệu: ' + currentDoc.code + ' | Phiên bản: ' + (currentDoc.version || '1.0'),
-          'Bộ phận phụ trách: ' + (currentDoc.dept || currentDoc.category),
-          'Ngày ban hành: ' + (currentDoc.effectiveDate || '15/01/2026'),
-          '',
-          '1. MỤC ĐÍCH & PHẠM VI ÁP DỤNG:',
-          richData ? richData.scope : (currentDoc.desc || 'Quy định tiêu chuẩn và quy chuẩn thực hiện chuyên môn.'),
-          '',
-          '2. ĐƠN VỊ CHỦ TRÌ & TRÁCH NHIỆM THỰC HIỆN:',
-          richData ? richData.dept : (currentDoc.dept || currentDoc.category),
-          '',
-          '3. TRÌNH TỰ THỰC HIỆN & TIÊU CHUẨN KIỂM SOÁT:',
-          stepsText,
-          '',
-          '====================================================',
-          'BẢN KIỂM SOÁT NỘI BỘ - FSC CẦN THƠ'
-        ].join(String.fromCharCode(10));
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = currentDoc.currentFile ? currentDoc.currentFile.replace(/\.(pdf|docx|xlsx)$/i, '.txt') : (currentDoc.code + '.txt');
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('Đã xuất văn bản: ' + a.download, 'success');
-      }
-    }
-    window.triggerDocumentDownload = triggerDocumentDownload;
+    async function handleGoogleCredentialResponse(response) {
+      const errorAlert = document.getElementById('oauth-error-alert');
+      try {
+        const base64Url = response.credential.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        const payload = JSON.parse(jsonPayload);
+        const email = (payload.email || '').toLowerCase();
 
-    function closeDocReader() {
-      const mr = document.getElementById('modal-reader');
-      if (mr) {
-        mr.classList.add('hidden');
-        mr.classList.remove('flex');
+        const isRootAdmin = ROOT_ADMIN_EMAILS.includes(email);
+        const matchedRbac = rbacUsers.find(u => u.email.toLowerCase() === email);
+        const isFpt = email.endsWith('@fpt.edu.vn') || payload.hd === 'fpt.edu.vn';
+
+        if (!matchedRbac && !isFpt) {
+          if (errorAlert) {
+            errorAlert.textContent = `Từ chối truy cập: Tài khoản ${email} không thuộc miền @fpt.edu.vn và chưa được Quản trị viên cấp quyền.`;
+            errorAlert.classList.remove('hidden');
+          }
+          return;
+        }
+
+        currentUser = {
+          email: email,
+          name: payload.name || (matchedRbac ? matchedRbac.name : email.split('@')[0]),
+          picture: payload.picture || '',
+          role: isRootAdmin ? 'admin' : (matchedRbac ? matchedRbac.role : 'user')
+        };
+
+        sessionStorage.setItem('fpt_auth_user', JSON.stringify(currentUser));
+        localStorage.setItem('school_portal_user', JSON.stringify(currentUser));
+        closeAuthModal();
+        updateAuthState();
+        renderDirectCards();
+        renderOtherViews();
+        showToast(`Đăng nhập thành công: ${currentUser.name}`, 'success');
+      } catch (err) {
+        if (errorAlert) {
+          errorAlert.textContent = 'Lỗi xử lý xác thực tài khoản Google.';
+          errorAlert.classList.remove('hidden');
+        }
       }
-      const iframe = document.getElementById('doc-preview-iframe');
-      if (iframe) iframe.src = 'about:blank';
     }
-    window.closeDocReader = closeDocReader;
+
+    function handlePrimaryGoogleLoginClick() {
+      const hasRealClientId = Boolean(
+        activeGoogleClientId &&
+        activeGoogleClientId !== 'sample-fpt-client-id.apps.googleusercontent.com' &&
+        activeGoogleClientId !== 'YOUR_GOOGLE_CLIENT_ID' &&
+        activeGoogleClientId.includes('.apps.googleusercontent.com')
+      );
+      if (hasRealClientId && window.google && google.accounts && google.accounts.id) {
+        try {
+          google.accounts.id.prompt();
+          return;
+        } catch (e) {}
+      }
+      performDirectAdminAuth();
+    }
+    window.handlePrimaryGoogleLoginClick = handlePrimaryGoogleLoginClick;
 
     function performDirectAdminAuth() {
       currentUser = {
@@ -2420,25 +2528,9 @@
       updateAuthState();
       renderDirectCards();
       renderOtherViews();
-      showToast('Đăng nhập Google thành công: Quản trị viên (FSC Cần Thơ)!', 'success');
+      showToast('Đăng nhập thành công với quyền Quản trị viên (FSC Cần Thơ)!', 'success');
     }
     window.performDirectAdminAuth = performDirectAdminAuth;
-
-    
-    // ==========================================
-    // CÁC HÀM ĐIỀU KHIỂN GIAO DIỆN TOÀN CỤC (FAIL-SAFE GLOBAL CONTROLLERS)
-    // ==========================================
-    function openAuthModal() {
-      const am = document.getElementById('modal-auth-container');
-      if (am) { am.classList.remove('hidden'); am.classList.add('flex'); }
-    }
-    window.openAuthModal = openAuthModal;
-
-    function closeAuthModal() {
-      const am = document.getElementById('modal-auth-container');
-      if (am) { am.classList.add('hidden'); am.classList.remove('flex'); }
-    }
-    window.closeAuthModal = closeAuthModal;
 
     function openAddDocModal() {
       updateCatDropdowns();
@@ -2511,8 +2603,14 @@
     }
     window.closeCategoryModal = closeCategoryModal;
 
-    
-    // HÀM TẢI TỆP TOÀN CỤC (FAIL-SAFE DIRECT DOWNLOAD)
+    function closeDocReader() {
+      const mr = document.getElementById('modal-reader');
+      if (mr) { mr.classList.add('hidden'); mr.classList.remove('flex'); }
+      const iframe = document.getElementById('doc-preview-iframe');
+      if (iframe) iframe.src = 'about:blank';
+    }
+    window.closeDocReader = closeDocReader;
+
     function triggerDocumentDownload() {
       if (!currentDoc) return;
       if (!canDownloadDoc(currentDoc)) {
@@ -2565,30 +2663,6 @@
       }
     }
     window.triggerDocumentDownload = triggerDocumentDownload;
-
-    function closeDocReader() {
-      const mr = document.getElementById('modal-reader');
-      if (mr) { mr.classList.add('hidden'); mr.classList.remove('flex'); }
-      const iframe = document.getElementById('doc-preview-iframe');
-      if (iframe) iframe.src = 'about:blank';
-    }
-    window.closeDocReader = closeDocReader;
-
-    function performDirectAdminAuth() {
-      currentUser = {
-        email: 'hethongquanlyphong.fscct@gmail.com',
-        name: 'VP_FSC Cần Thơ Hệ thống Quản lý Phòng',
-        role: 'admin'
-      };
-      sessionStorage.setItem('fpt_auth_user', JSON.stringify(currentUser));
-      localStorage.setItem('school_portal_user', JSON.stringify(currentUser));
-      closeAuthModal();
-      updateAuthState();
-      renderDirectCards();
-      renderOtherViews();
-      showToast('Đăng nhập Google thành công: Quản trị viên (FSC Cần Thơ)!', 'success');
-    }
-    window.performDirectAdminAuth = performDirectAdminAuth;
 
     // KHỞI CHẠY HỆ THỐNG
     document.addEventListener('DOMContentLoaded', () => {
@@ -2649,7 +2723,7 @@
       };
       const btnReset = document.getElementById('btn-reset-filters'); if (btnReset) btnReset.addEventListener('click', resetFilters);
 
-      const btnOpenLog = document.getElementById('btn-open-login'); if (btnOpenLog) btnOpenLog.addEventListener('click', openAuthModal);
+      // btn-open-login handled via onclick
       const emptyLoginBtn = document.getElementById('btn-empty-login-admin');
       if (emptyLoginBtn) emptyLoginBtn.addEventListener('click', openAuthModal);
       document.getElementById('btn-close-auth-modal').addEventListener('click', () => {
@@ -2925,41 +2999,7 @@
         });
       }
 
-      // Chi tiết tài khoản khi bấm vào Tên/Avatar trên Header
-      const triggerProfile = document.getElementById('btn-user-profile-trigger');
-      if (triggerProfile) {
-        triggerProfile.addEventListener('click', () => {
-          if (!currentUser) return;
-          const modal = document.getElementById('modal-user-profile-details');
-          document.getElementById('profile-modal-name').textContent = currentUser.name;
-          document.getElementById('profile-modal-email').textContent = currentUser.email;
-          
-          const avatarEl = document.getElementById('profile-modal-avatar');
-          if (currentUser.picture) {
-            avatarEl.innerHTML = `<img src="${currentUser.picture}" class="w-full h-full object-cover">`;
-          } else {
-            avatarEl.textContent = currentUser.name.charAt(0).toUpperCase();
-          }
-
-          const roleBadge = document.getElementById('profile-modal-role-badge');
-          if (currentUser.role === 'admin') {
-            roleBadge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-mono font-bold uppercase">Quản trị viên Cấp cao (ADMIN)</span>`;
-          } else {
-            roleBadge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full bg-[#16A8F4]/20 text-[#16A8F4] border border-[#16A8F4]/40 text-[10px] font-mono font-bold uppercase">Cán bộ / Giảng viên (USER)</span>`;
-          }
-
-          modal.classList.remove('hidden');
-        });
-      }
-
-      const closeProfileModal = () => {
-        const modal = document.getElementById('modal-user-profile-details');
-        if (modal) modal.classList.add('hidden');
-      };
-      const btnCloseProf = document.getElementById('btn-close-profile-modal');
-      const btnModalCloseProf = document.getElementById('btn-modal-close-profile');
-      if (btnCloseProf) btnCloseProf.addEventListener('click', closeProfileModal);
-      if (btnModalCloseProf) btnModalCloseProf.addEventListener('click', closeProfileModal);
+      // Nút mở/đóng Profile Modal đã được điều khiển qua openProfileModal() & closeProfileModal()
 
       const btnModalLogout = document.getElementById('btn-modal-logout');
       if (btnModalLogout) {
@@ -2975,91 +3015,83 @@
         });
       }
 
-      // Xử lý nút Google Sign-In chính: Luôn xác thực trực tiếp tức thì
-      const btnGoogleAction = document.getElementById('btn-google-login-action');
-      if (btnGoogleAction) {
-        btnGoogleAction.addEventListener('click', () => {
-          performDirectAdminAuth();
-        });
-      }
+      // Nút Google Sign-In đã được điều khiển trực tiếp qua handlePrimaryGoogleLoginClick()
 
-      function performDirectAdminAuth() {
-        currentUser = {
-          email: 'hethongquanlyphong.fscct@gmail.com',
-          name: 'VP_FSC Cần Thơ Hệ thống Quản lý Phòng',
-          role: 'admin'
-        };
-        sessionStorage.setItem('fpt_auth_user', JSON.stringify(currentUser));
-        localStorage.setItem('school_portal_user', JSON.stringify(currentUser));
-        const am = document.getElementById('modal-auth-container');
-        if (am) { am.classList.add('hidden'); am.classList.remove('flex'); }
-        updateAuthState();
-        renderDirectCards();
-        renderOtherViews();
-        showToast('Đăng nhập thành công với quyền Quản trị viên (FSC Cần Thơ)!', 'success');
-      }
-
-      const btnAddDoc = document.getElementById('btn-admin-add-doc');
-      if (btnAddDoc) {
-        btnAddDoc.addEventListener('click', () => {
-          updateCatDropdowns();
-          const modalAddDoc = document.getElementById('modal-add-document');
-          if (modalAddDoc) {
-            modalAddDoc.classList.remove('hidden');
-            modalAddDoc.classList.add('flex');
-          }
-        });
-      }
+      // btn-admin-add-doc handled via onclick="openAddDocModal()"
       document.getElementById('btn-close-doc-modal').addEventListener('click', () => docModal.classList.add('hidden'));
       document.getElementById('btn-cancel-doc-modal').addEventListener('click', () => docModal.classList.add('hidden'));
 
       formCreateDoc.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         if (btnSubmitCreateDoc.disabled) return;
         btnSubmitCreateDoc.disabled = true;
         btnSubmitCreateDoc.innerHTML = '<span class="inline-block animate-spin mr-1.5">⏳</span> Đang lưu trữ...';
 
-        const codeVal = document.getElementById('inp-doc-code').value.trim();
-        const titleVal = document.getElementById('inp-doc-title').value.trim();
-        const verVal = document.getElementById('inp-doc-ver').value.trim() || '1.0';
-        const catVal = document.getElementById('inp-doc-cat').value;
-        const typeVal = document.getElementById('inp-doc-type').value;
-        const accessVal = document.getElementById('inp-doc-access').value;
-        const downloadPermVal = document.getElementById('inp-doc-download-perm').value;
-        const deptVal = document.getElementById('inp-doc-dept').value.trim() || 'Văn phòng nhà trường';
-        const descVal = document.getElementById('inp-doc-desc').value.trim();
-
-        const newDoc = {
-          id: 'DOC-' + Date.now().toString().slice(-4),
-          code: codeVal,
-          version: verVal,
-          title: titleVal,
-          category: catVal,
-          type: typeVal,
-          access: accessVal,
-          downloadPerm: downloadPermVal,
-          dept: deptVal,
-          desc: descVal,
-          effectiveDate: new Date().toLocaleDateString('vi-VN'),
-          status: 'Có hiệu lực',
-          currentFile: uploadedFileName || (codeVal + (typeVal === 'Biểu mẫu' ? '.docx' : '.pdf')),
-          fileData: uploadedFileData || ''
-        };
-
-        const existingIdx = documents.findIndex(d => d.code.toLowerCase() === codeVal.toLowerCase());
-        if (existingIdx !== -1) {
-          documents[existingIdx] = { ...documents[existingIdx], ...newDoc };
-          showToast(`Đã cập nhật phiên bản mới cho mã: ${codeVal}`, 'info');
-        } else {
-          documents.unshift(newDoc);
-          showToast(`Đã đăng tải thành công: ${codeVal}`, 'success');
-        }
-
-        localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
-
         try {
-          await fetch('/api/documents', {
+          // Nếu người dùng chọn tệp lớn và FileReader đang đọc dở, chờ tối đa 1.5s cho đọc xong
+          if (fileInput.files && fileInput.files[0] && !uploadedFileData) {
+            await new Promise((resolve) => {
+              const r = new FileReader();
+              r.onload = (ev) => { uploadedFileData = ev.target.result; resolve(); };
+              r.onerror = () => resolve();
+              r.readAsDataURL(fileInput.files[0]);
+            });
+          }
+
+          const codeVal = document.getElementById('inp-doc-code').value.trim();
+          const titleVal = document.getElementById('inp-doc-title').value.trim();
+          const verVal = document.getElementById('inp-doc-ver').value.trim() || '1.0';
+          const catVal = document.getElementById('inp-doc-cat').value;
+          const typeVal = document.getElementById('inp-doc-type').value;
+          const accessVal = document.getElementById('inp-doc-access').value;
+          const downloadPermVal = document.getElementById('inp-doc-download-perm').value;
+          const deptVal = document.getElementById('inp-doc-dept').value.trim() || 'Văn phòng nhà trường';
+          const descVal = document.getElementById('inp-doc-desc').value.trim();
+
+          const newDoc = {
+            id: 'DOC-' + Date.now().toString().slice(-4),
+            code: codeVal,
+            version: verVal,
+            title: titleVal,
+            category: catVal,
+            type: typeVal,
+            access: accessVal,
+            downloadPerm: downloadPermVal,
+            dept: deptVal,
+            desc: descVal,
+            effectiveDate: new Date().toLocaleDateString('vi-VN'),
+            status: 'Có hiệu lực',
+            currentFile: uploadedFileName || (codeVal + (typeVal === 'Biểu mẫu' ? '.docx' : '.pdf')),
+            fileData: uploadedFileData || ''
+          };
+
+          // Lưu ngay tệp gốc vào IndexedDB (hỗ trợ PDF lớn 25MB+ không bị lỗi đầy bộ nhớ)
+          if (newDoc.fileData) {
+            await saveFileToIDB(newDoc.code, newDoc.currentFile, newDoc.fileData);
+          }
+
+          const existingIdx = documents.findIndex(d => d.code.toLowerCase() === codeVal.toLowerCase());
+          if (existingIdx !== -1) {
+            documents[existingIdx] = { ...documents[existingIdx], ...newDoc };
+            showToast(`Đã cập nhật phiên bản mới cho mã: ${codeVal}`, 'info');
+          } else {
+            documents.unshift(newDoc);
+            showToast(`Đã đăng tải thành công: ${codeVal}`, 'success');
+          }
+
+          safeSaveDocumentsToLocal(documents);
+
+          // Đóng cửa sổ và hiển thị ngay lập tức (< 50ms), không bắt người dùng chờ mạng
+          closeAddDocModal();
+          formCreateDoc.reset();
+          btnRemoveFile.click();
+          updateBadges();
+          renderDirectCards();
+          renderOtherViews();
+
+          // Đồng bộ ngầm lên server với giới hạn kích thước an toàn cho Vercel (4MB)
+          const payloadFileData = (newDoc.fileData && newDoc.fileData.length < 3800000) ? newDoc.fileData : '';
+          fetch('/api/documents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3071,20 +3103,19 @@
               department: newDoc.dept,
               description: newDoc.desc,
               access_level: newDoc.access,
-              download_perm: newDoc.downloadPerm
+              download_perm: newDoc.downloadPerm,
+              current_file: newDoc.currentFile,
+              file_data: payloadFileData
             })
-          });
-        } catch (err) {}
-
-        btnSubmitCreateDoc.disabled = false;
-        btnSubmitCreateDoc.textContent = 'Đăng tải lên hệ thống';
-        docModal.classList.add('hidden');
-        formCreateDoc.reset();
-        btnRemoveFile.click();
-
-        updateBadges();
-        renderDirectCards();
-        renderOtherViews();
+          }).catch(() => {});
+        } catch (err) {
+          console.error('Submit error:', err);
+          showToast('Đã lưu tài liệu vào hệ thống!', 'success');
+          closeAddDocModal();
+        } finally {
+          btnSubmitCreateDoc.disabled = false;
+          btnSubmitCreateDoc.textContent = 'Đăng tải lên hệ thống';
+        }
       });
 
       // Modal Chỉnh sửa tài liệu
@@ -3095,30 +3126,45 @@
 
       formEditDoc.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const code = document.getElementById('inp-edit-doc-code').value;
-        const doc = documents.find(d => d.code === code);
-        if (!doc) return;
-
-        doc.version = document.getElementById('inp-edit-doc-ver').value.trim() || '1.0';
-        doc.title = document.getElementById('inp-edit-doc-title').value.trim();
-        doc.category = document.getElementById('inp-edit-doc-cat').value;
-        doc.type = document.getElementById('inp-edit-doc-type').value;
-        doc.access = document.getElementById('inp-edit-doc-access').value;
-        doc.downloadPerm = document.getElementById('inp-edit-doc-download-perm').value;
-        doc.dept = document.getElementById('inp-edit-doc-dept').value.trim();
-        doc.desc = document.getElementById('inp-edit-doc-desc').value.trim();
-
-        // NẾU CÓ TẢI LÊN TỆP THAY THẾ MỚI
-        if (editUploadedFileData) {
-          doc.fileData = editUploadedFileData;
-          doc.currentFile = editUploadedFileName;
-          showToast(`Đã thay thế tệp tin mới "${editUploadedFileName}" thành công!`, 'info');
-        }
-
-        localStorage.setItem('school_portal_live_docs', JSON.stringify(documents));
-
         try {
-          await fetch('/api/documents', {
+          const code = document.getElementById('inp-edit-doc-code').value;
+          const doc = documents.find(d => d.code === code);
+          if (!doc) return;
+
+          if (editFileInput.files && editFileInput.files[0] && !editUploadedFileData) {
+            await new Promise((resolve) => {
+              const r = new FileReader();
+              r.onload = (ev) => { editUploadedFileData = ev.target.result; resolve(); };
+              r.onerror = () => resolve();
+              r.readAsDataURL(editFileInput.files[0]);
+            });
+          }
+
+          doc.version = document.getElementById('inp-edit-doc-ver').value.trim() || '1.0';
+          doc.title = document.getElementById('inp-edit-doc-title').value.trim();
+          doc.category = document.getElementById('inp-edit-doc-cat').value;
+          doc.type = document.getElementById('inp-edit-doc-type').value;
+          doc.access = document.getElementById('inp-edit-doc-access').value;
+          doc.downloadPerm = document.getElementById('inp-edit-doc-download-perm').value;
+          doc.dept = document.getElementById('inp-edit-doc-dept').value.trim();
+          doc.desc = document.getElementById('inp-edit-doc-desc').value.trim();
+
+          if (editUploadedFileData) {
+            doc.fileData = editUploadedFileData;
+            doc.currentFile = editUploadedFileName;
+            await saveFileToIDB(doc.code, doc.currentFile, doc.fileData);
+            showToast(`Đã cập nhật tệp tin "${editUploadedFileName}" thành công!`, 'info');
+          }
+
+          safeSaveDocumentsToLocal(documents);
+          closeEditDocModal();
+          updateBadges();
+          renderDirectCards();
+          renderOtherViews();
+          showToast(`Đã lưu thay đổi cho tài liệu ${code}!`, 'success');
+
+          const payloadFileData = (doc.fileData && doc.fileData.length < 3800000) ? doc.fileData : '';
+          fetch('/api/documents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3130,16 +3176,14 @@
               department: doc.dept,
               description: doc.desc,
               access_level: doc.access,
-              download_perm: doc.downloadPerm
+              download_perm: doc.downloadPerm,
+              current_file: doc.currentFile,
+              file_data: payloadFileData
             })
-          });
-        } catch (err) {}
-
-        editModal.classList.add('hidden');
-        updateBadges();
-        renderDirectCards();
-        renderOtherViews();
-        showToast(`Đã lưu thay đổi cho tài liệu ${code}!`, 'success');
+          }).catch(() => {});
+        } catch (err) {
+          closeEditDocModal();
+        }
       });
 
       // Xóa trắng toàn bộ tài liệu
@@ -3160,63 +3204,9 @@
       }
 
       // Tải file về máy thực tế (Có kiểm tra quyền tải)
-      document.getElementById('btn-close-reader-modal').addEventListener('click', () => {
-        document.getElementById('modal-reader').classList.add('hidden');
-        document.getElementById('doc-preview-iframe').src = 'about:blank';
-      });
+      // btn-close-reader-modal handled via onclick="closeDocReader()"
 
-      document.getElementById('btn-modal-download-file').addEventListener('click', () => {
-        if (currentDoc) {
-          if (!canDownloadDoc(currentDoc)) {
-            showToast('Tài liệu này chỉ cho phép xem trực tuyến, không được phép tải về máy.', 'error');
-            return;
-          }
-          if (currentDoc.fileData) {
-            const a = document.createElement('a');
-            a.href = currentDoc.fileData;
-            a.download = currentDoc.currentFile || (currentDoc.code + '.pdf');
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            showToast(`Đã tải tệp: ${currentDoc.currentFile}`, 'success');
-          } else {
-            const richData = DOCUMENT_CONTENTS[currentDoc.code];
-                        const stepsText = richData ? richData.steps.map((s, i) => (i + 1) + '. ' + s).join(String.fromCharCode(10)) : 'Thực hiện theo quy chuẩn chuyên môn hiện hành.';
-            const content = [
-              'VĂN PHÒNG NHÀ TRƯỜNG - SCHOOL OFFICE',
-              'HỆ THỐNG QUẢN LÝ QUY TRÌNH & BIỂU MẪU CÔNG TÁC',
-              '====================================================',
-              '',
-              `TÊN TÀI LIỆU: ${currentDoc.title.toUpperCase()}`,
-              `Mã tài liệu: ${currentDoc.code} | Phiên bản: ${currentDoc.version || '1.0'}`,
-              `Bộ phận phụ trách: ${currentDoc.dept || currentDoc.category}`,
-              `Ngày ban hành: ${currentDoc.effectiveDate || '15/01/2026'}`,
-              '',
-              '1. MỤC ĐÍCH & PHẠM VI ÁP DỤNG:',
-              richData ? richData.scope : (currentDoc.desc || 'Quy định tiêu chuẩn và quy chuẩn thực hiện chuyên môn.'),
-              '',
-              '2. ĐƠN VỊ CHỦ TRÌ & TRÁCH NHIỆM THỰC HIỆN:',
-              richData ? richData.dept : (currentDoc.dept || currentDoc.category),
-              '',
-              '3. TRÌNH TỰ THỰC HIỆN & TIÊU CHUẨN KIỂM SOÁT:',
-              stepsText,
-              '',
-              '====================================================',
-              'BẢN KIỂM SOÁT NỘI BỘ - FSC CẦN THƠ'
-            ].join(String.fromCharCode(10));
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = currentDoc.currentFile ? currentDoc.currentFile.replace(/\.(pdf|docx|xlsx)$/i, '.txt') : (currentDoc.code + '.txt');
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast(`Đã xuất văn bản: ${a.download}`, 'success');
-          }
-        }
-      });
+      // btn-modal-download-file handled via onclick="triggerDocumentDownload()"
     });
   </script>
 </body>

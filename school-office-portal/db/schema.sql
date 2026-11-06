@@ -70,5 +70,6 @@ DELETE FROM users WHERE email LIKE '%@fpt.edu.vn' AND role = 'admin';
 
 INSERT INTO users (email, full_name, role, department) VALUES
 ('buitandat1727@gmail.com', 'Bùi Tấn Đạt (Quản trị viên)', 'admin', 'Quản trị hệ thống'),
-('hethongquanlyphong.fscct@gmail.com', 'Hệ thống Quản lý Phòng', 'admin', 'Quản trị hệ thống')
+('hethongquanlyphong.fscct@gmail.com', 'Hệ thống Quản lý Phòng', 'admin', 'Quản trị hệ thống'),
+('vp.fsc@fpt.edu.vn', 'Văn phòng FSchool Cần Thơ', 'admin', 'Quản trị hệ thống')
 ON CONFLICT (email) DO UPDATE SET role = 'admin';

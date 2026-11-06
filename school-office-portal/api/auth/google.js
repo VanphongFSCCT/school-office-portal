@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     const hd = payload.hd || '';
 
     // CHỈ các email được set riêng trong ADMIN_EMAILS mới là Super Admin gốc (KHÔNG gán mặc định cho @fpt.edu.vn)
-    const rootAdmins = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com'];
+    const rootAdmins = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com', 'vp.fsc@fpt.edu.vn'];
     const envAdmins = (process.env.ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
     const superAdmins = [...new Set([...rootAdmins, ...envAdmins])];
 
