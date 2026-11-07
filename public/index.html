@@ -241,10 +241,31 @@
     #modal-edit-document:not(.hidden),
     #modal-user-profile-details:not(.hidden),
     #modal-create-admin:not(.hidden),
-    #modal-category:not(.hidden) {
+    #modal-category:not(.hidden),
+    #modal-confirm-close-edit:not(.hidden) {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
+    }
+    .excel-edit-table {
+      border-collapse: collapse !important;
+      width: 100% !important;
+    }
+    .excel-edit-table td,
+    .excel-edit-table th {
+      border: 1px solid #94a3b8 !important;
+      padding: 6px 10px !important;
+      min-width: 64px !important;
+      height: 28px !important;
+      line-height: 1.4 !important;
+      vertical-align: middle !important;
+    }
+    #office-editor-canvas[contenteditable="true"] td:focus,
+    #office-editor-canvas[contenteditable="true"] th:focus,
+    #office-editor-canvas td.active-excel-cell,
+    #office-editor-canvas th.active-excel-cell {
+      outline: 2px solid #0284c7 !important;
+      background-color: #e0f2fe !important;
     }
 
     /* CSS cho docx-preview giữ nguyên 100% bố cục trang Word trên máy */
@@ -1087,10 +1108,13 @@
 
               <span class="text-slate-300">|</span>
 
-              <!-- Danh sách & Bảng Excel -->
+              <!-- Danh sách & Công cụ Thêm/Xóa Dòng/Cột Bảng biểu (Excel & Word) -->
               <button type="button" onclick="applyWordFormat('insertUnorderedList')" class="word-toolbar-btn" title="Danh sách dấu chấm">• Danh sách</button>
-              <button type="button" id="btn-excel-add-row" onclick="addExcelEditorRow()" class="hidden px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer">+ Thêm dòng</button>
-              <button type="button" id="btn-excel-add-col" onclick="addExcelEditorCol()" class="hidden px-2.5 py-1 rounded bg-teal-600 hover:bg-teal-700 text-white font-semibold cursor-pointer">+ Thêm cột</button>
+              <span class="text-slate-300">|</span>
+              <button type="button" id="btn-excel-add-row" onclick="addExcelEditorRow()" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer shadow-sm" title="Thêm 1 dòng mới vào dưới dòng đang chọn (hoặc cuối bảng)">+ Thêm dòng</button>
+              <button type="button" id="btn-excel-del-row" onclick="deleteExcelEditorRow()" class="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white font-semibold cursor-pointer shadow-sm" title="Xóa dòng đang chọn (hoặc dòng cuối bảng)">- Xóa dòng</button>
+              <button type="button" id="btn-excel-add-col" onclick="addExcelEditorCol()" class="px-2.5 py-1 rounded bg-teal-600 hover:bg-teal-700 text-white font-semibold cursor-pointer shadow-sm" title="Thêm 1 cột mới vào bảng">+ Thêm cột</button>
+              <button type="button" id="btn-excel-del-col" onclick="deleteExcelEditorCol()" class="px-2.5 py-1 rounded bg-amber-700 hover:bg-amber-800 text-white font-semibold cursor-pointer shadow-sm" title="Xóa cột đang chọn (hoặc cột cuối bảng)">- Xóa cột</button>
             </div>
 
             <!-- Vùng hiển thị trang tài liệu (Mặc định contenteditable="false" - CHỈ XEM, giữ nguyên 100% cỡ chữ và font chữ gốc của Word) -->
@@ -1206,6 +1230,38 @@
 
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL XÁC NHẬN TRƯỚC KHI ĐÓNG KHI ĐANG CHỈNH SỬA TÀI LIỆU / BIỂU MẪU -->
+  <div id="modal-confirm-close-edit" class="fixed inset-0 z-[75] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-[#071F3D] border-2 border-[#FFC857] rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl text-slate-100 animate-fadeIn">
+      <div class="flex items-start space-x-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-[#FFC857]/50 flex items-center justify-center text-2xl shrink-0">
+          ⚠️
+        </div>
+        <div>
+          <h3 class="text-base font-extrabold text-[#FFC857]">Xác nhận trước khi đóng tài liệu</h3>
+          <p class="text-xs text-[#B8C8DC] mt-1.5 leading-relaxed">
+            Bạn đang bật chế độ <strong class="text-white">Chỉnh sửa / Điền biểu mẫu trực tiếp</strong>. Nếu đóng ngay bây giờ, các nội dung vừa chỉnh sửa sẽ bị hủy và quay về bản mặc định của hệ thống.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-5 flex flex-col gap-2">
+        <button type="button" onclick="downloadAndCloseWhileEditing()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] hover:brightness-110 text-[#03152D] font-extrabold text-xs transition flex items-center justify-center space-x-2 shadow-md cursor-pointer">
+          <span>⬇️</span>
+          <span>Tải bản đã chỉnh sửa về máy & Đóng</span>
+        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="cancelCloseWhileEditing()" class="py-2.5 px-3 rounded-xl bg-[#102E52] hover:bg-[#163B68] text-white border border-[#B98A33]/40 font-bold text-xs transition cursor-pointer">
+            ↩️ Tiếp tục chỉnh sửa
+          </button>
+          <button type="button" onclick="confirmDiscardAndCloseReader()" class="py-2.5 px-3 rounded-xl bg-rose-950/90 hover:bg-rose-800 text-rose-200 border border-rose-500/40 font-bold text-xs transition cursor-pointer">
+            🗑️ Đóng (Không lưu)
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2769,8 +2825,8 @@
 
       if (fnameEl) fnameEl.textContent = doc.currentFile || doc.title;
       if (tabsBar) { tabsBar.classList.add('hidden'); tabsBar.classList.remove('flex'); tabsBar.innerHTML = ''; }
-      if (btnAddRow) btnAddRow.classList.add('hidden');
-      if (btnAddCol) btnAddCol.classList.add('hidden');
+      if (btnAddRow) btnAddRow.classList.remove('hidden');
+      if (btnAddCol) btnAddCol.classList.remove('hidden');
 
       // Trường hợp 1: Tệp Excel (.xlsx, .xls) -> Hỗ trợ chuyển đổi nhiều Sheet & kiểm tra định dạng bảng chuẩn
       if (/\.(xls|xlsx)$/i.test(fName) && fData && window.XLSX) {
@@ -2822,46 +2878,8 @@
 
           if (window.docx && typeof window.docx.renderAsync === 'function') {
             editorCanvas.innerHTML = '';
-            let docxBufferToRender = bytes.buffer;
-
-            // Chuẩn hóa phông chữ mặc định trong cấu trúc XML của file .docx (Normal.dotm / theme1.xml / styles.xml)
-            // Khi Word trên máy dùng Times New Roman làm mặc định nhưng theme1.xml lưu minorFont là Calibri/Aptos,
-            // ta đồng bộ về Times New Roman để hiển thị trên web giống 100% với bản Word trên máy tính.
-            if (window.JSZip) {
-              try {
-                const zip = await window.JSZip.loadAsync(bytes.buffer);
-                const docXmlFile = zip.file('word/document.xml');
-                const docXmlText = docXmlFile ? await docXmlFile.async('string') : '';
-                const usesExplicitCalibri = /w:ascii="Calibri"/i.test(docXmlText);
-
-                if (!usesExplicitCalibri) {
-                  const themeFile = zip.file('word/theme/theme1.xml');
-                  if (themeFile) {
-                    let themeXml = await themeFile.async('string');
-                    themeXml = themeXml.replace(/typeface="(Calibri|Calibri Light|Cambria|Aptos|Aptos Display|Arial)"/gi, 'typeface="Times New Roman"');
-                    zip.file('word/theme/theme1.xml', themeXml);
-                  }
-                  const stylesFile = zip.file('word/styles.xml');
-                  if (stylesFile) {
-                    let stylesXml = await stylesFile.async('string');
-                    stylesXml = stylesXml.replace(/w:(ascii|hAnsi|cs|eastAsia)="(Calibri|Calibri Light|Cambria|Aptos)"/gi, 'w:$1="Times New Roman"');
-                    stylesXml = stylesXml.replace(/w:(asciiTheme|hAnsiTheme|cstheme|eastAsiaTheme)="[^"]*"/gi, 'w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"');
-                    zip.file('word/styles.xml', stylesXml);
-                  }
-                  const fontTableFile = zip.file('word/fontTable.xml');
-                  if (fontTableFile) {
-                    let fontTableXml = await fontTableFile.async('string');
-                    fontTableXml = fontTableXml.replace(/w:name="(Calibri|Calibri Light|Cambria|Aptos)"/gi, 'w:name="Times New Roman"');
-                    zip.file('word/fontTable.xml', fontTableXml);
-                  }
-                  docxBufferToRender = await zip.generateAsync({ type: 'arraybuffer' });
-                }
-              } catch (zipErr) {
-                console.warn('JSZip font normalization skipped:', zipErr);
-              }
-            }
-
-            await window.docx.renderAsync(docxBufferToRender, editorCanvas, null, {
+            // Truyền trực tiếp bytes.buffer nguyên bản vào docx-preview để giữ nguyên 100% căn giữa, thụt đầu dòng, căn phải chữ ký và trang A4
+            await window.docx.renderAsync(bytes.buffer, editorCanvas, null, {
               className: 'docx',
               inWrapper: true,
               ignoreWidth: false,
@@ -2999,42 +3017,188 @@
     }
     window.applyWordFontSizePt = applyWordFontSizePt;
 
+    let lastFocusedTableCell = null;
+
+    document.addEventListener('click', (e) => {
+      const cell = e.target.closest('#office-editor-canvas td, #office-editor-canvas th');
+      if (cell) {
+        document.querySelectorAll('#office-editor-canvas .active-excel-cell').forEach(el => el.classList.remove('active-excel-cell'));
+        lastFocusedTableCell = cell;
+        if (isLiveEditMode) cell.classList.add('active-excel-cell');
+      }
+    });
+
+    function getTargetEditorTable() {
+      if (lastFocusedTableCell && document.body.contains(lastFocusedTableCell)) {
+        const t = lastFocusedTableCell.closest('table');
+        if (t) return t;
+      }
+      return document.querySelector('#office-editor-canvas table');
+    }
+
+    function getMaxTableColumns(tbl) {
+      let maxCols = 0;
+      Array.from(tbl.rows).forEach(r => {
+        let count = 0;
+        Array.from(r.cells).forEach(c => {
+          count += (parseInt(c.getAttribute('colspan') || '1', 10) || 1);
+        });
+        if (count > maxCols) maxCols = count;
+      });
+      return Math.max(1, maxCols || 4);
+    }
+
     function addExcelEditorRow() {
       if (!isLiveEditMode) {
-        showToast('Vui lòng bật chế độ Chỉnh sửa trước khi thêm dòng!', 'info');
+        showToast('Vui lòng bấm nút "Chỉnh sửa / Điền biểu mẫu" trước khi thêm dòng!', 'info');
         return;
       }
-      const tbl = document.querySelector('#office-editor-canvas table');
+      const editorCanvas = document.getElementById('office-editor-canvas');
+      let tbl = getTargetEditorTable();
+
+      // Nếu trong văn bản chưa có bảng nào, tự động chèn 1 bảng mới chuẩn
+      if (!tbl && editorCanvas) {
+        tbl = document.createElement('table');
+        tbl.className = 'excel-edit-table';
+        tbl.innerHTML = '<tbody><tr><th contenteditable="true">STT</th><th contenteditable="true">Nội dung</th><th contenteditable="true">Số lượng</th><th contenteditable="true">Ghi chú</th></tr></tbody>';
+        editorCanvas.appendChild(tbl);
+      }
       if (!tbl) return;
-      const firstRow = tbl.querySelector('tr');
-      const colCount = firstRow ? firstRow.children.length : 4;
+
+      const maxCols = getMaxTableColumns(tbl);
       const tr = document.createElement('tr');
-      for (let i = 0; i < colCount; i++) {
+      for (let i = 0; i < maxCols; i++) {
         const td = document.createElement('td');
         td.setAttribute('contenteditable', 'true');
-        td.textContent = '';
+        td.style.minWidth = '64px';
+        td.style.height = '28px';
+        td.style.border = '1px solid #94a3b8';
+        td.style.padding = '6px 10px';
+        // Dùng &nbsp; để dòng mới luôn có chiều cao hiển thị rõ ràng, không bị xẹp 0px
+        td.innerHTML = '&nbsp;';
         tr.appendChild(td);
       }
-      const tbody = tbl.querySelector('tbody') || tbl;
-      tbody.appendChild(tr);
+
+      const activeRow = (lastFocusedTableCell && document.body.contains(lastFocusedTableCell) && tbl.contains(lastFocusedTableCell))
+        ? lastFocusedTableCell.closest('tr')
+        : null;
+
+      if (activeRow && activeRow.parentNode) {
+        activeRow.parentNode.insertBefore(tr, activeRow.nextSibling);
+      } else {
+        const tbody = tbl.querySelector('tbody') || tbl;
+        tbody.appendChild(tr);
+      }
+
+      const firstNewCell = tr.querySelector('td');
+      if (firstNewCell) {
+        document.querySelectorAll('#office-editor-canvas .active-excel-cell').forEach(el => el.classList.remove('active-excel-cell'));
+        lastFocusedTableCell = firstNewCell;
+        firstNewCell.classList.add('active-excel-cell');
+        firstNewCell.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        firstNewCell.focus();
+      }
+      showToast('Đã thêm 1 dòng mới vào bảng!', 'success');
     }
     window.addExcelEditorRow = addExcelEditorRow;
 
-    function addExcelEditorCol() {
+    function deleteExcelEditorRow() {
       if (!isLiveEditMode) {
-        showToast('Vui lòng bật chế độ Chỉnh sửa trước khi thêm cột!', 'info');
+        showToast('Vui lòng bấm nút "Chỉnh sửa / Điền biểu mẫu" trước khi xóa dòng!', 'info');
         return;
       }
-      const tbl = document.querySelector('#office-editor-canvas table');
+      const tbl = getTargetEditorTable();
+      if (!tbl || tbl.rows.length === 0) {
+        showToast('Không tìm thấy bảng để xóa dòng!', 'error');
+        return;
+      }
+      if (tbl.rows.length <= 1) {
+        showToast('Bảng phải giữ lại tối thiểu 1 dòng!', 'info');
+        return;
+      }
+
+      const activeRow = (lastFocusedTableCell && document.body.contains(lastFocusedTableCell) && tbl.contains(lastFocusedTableCell))
+        ? lastFocusedTableCell.closest('tr')
+        : tbl.rows[tbl.rows.length - 1];
+
+      if (activeRow) {
+        const nextFocusRow = activeRow.previousElementSibling || activeRow.nextElementSibling;
+        activeRow.remove();
+        lastFocusedTableCell = nextFocusRow ? nextFocusRow.cells[0] : null;
+        if (lastFocusedTableCell) lastFocusedTableCell.classList.add('active-excel-cell');
+        showToast('Đã xóa 1 dòng khỏi bảng!', 'info');
+      }
+    }
+    window.deleteExcelEditorRow = deleteExcelEditorRow;
+
+    function addExcelEditorCol() {
+      if (!isLiveEditMode) {
+        showToast('Vui lòng bấm nút "Chỉnh sửa / Điền biểu mẫu" trước khi thêm cột!', 'info');
+        return;
+      }
+      const tbl = getTargetEditorTable();
       if (!tbl) return;
-      tbl.querySelectorAll('tr').forEach((tr, idx) => {
+      const maxCols = getMaxTableColumns(tbl);
+
+      Array.from(tbl.rows).forEach((tr, idx) => {
+        // Nếu dòng chỉ có 1 ô tiêu đề gộp toàn bảng (colspan >= maxCols && maxCols > 1), tăng colspan để không vỡ khung
+        if (tr.cells.length === 1 && maxCols > 1) {
+          const onlyCell = tr.cells[0];
+          const cs = parseInt(onlyCell.getAttribute('colspan') || '1', 10);
+          if (cs >= maxCols) {
+            onlyCell.setAttribute('colspan', String(cs + 1));
+            return;
+          }
+        }
         const cell = document.createElement(idx === 0 ? 'th' : 'td');
         cell.setAttribute('contenteditable', 'true');
-        cell.textContent = idx === 0 ? 'Cột mới' : '';
+        cell.style.minWidth = '64px';
+        cell.style.height = '28px';
+        cell.style.border = '1px solid #94a3b8';
+        cell.style.padding = '6px 10px';
+        cell.innerHTML = idx === 0 ? 'Cột mới' : '&nbsp;';
         tr.appendChild(cell);
       });
+      showToast('Đã thêm 1 cột mới vào bảng!', 'success');
     }
     window.addExcelEditorCol = addExcelEditorCol;
+
+    function deleteExcelEditorCol() {
+      if (!isLiveEditMode) {
+        showToast('Vui lòng bấm nút "Chỉnh sửa / Điền biểu mẫu" trước khi xóa cột!', 'info');
+        return;
+      }
+      const tbl = getTargetEditorTable();
+      if (!tbl) return;
+      const maxCols = getMaxTableColumns(tbl);
+      if (maxCols <= 1) {
+        showToast('Bảng phải giữ lại tối thiểu 1 cột!', 'info');
+        return;
+      }
+
+      let targetColIdx = -1;
+      if (lastFocusedTableCell && document.body.contains(lastFocusedTableCell) && tbl.contains(lastFocusedTableCell)) {
+        targetColIdx = lastFocusedTableCell.cellIndex;
+      }
+
+      Array.from(tbl.rows).forEach(tr => {
+        if (tr.cells.length === 1 && maxCols > 1) {
+          const onlyCell = tr.cells[0];
+          const cs = parseInt(onlyCell.getAttribute('colspan') || '1', 10);
+          if (cs > 1) {
+            onlyCell.setAttribute('colspan', String(cs - 1));
+            return;
+          }
+        }
+        if (tr.cells.length > 1) {
+          const idxToRemove = (targetColIdx >= 0 && targetColIdx < tr.cells.length) ? targetColIdx : (tr.cells.length - 1);
+          tr.deleteCell(idxToRemove);
+        }
+      });
+      lastFocusedTableCell = null;
+      showToast('Đã xóa 1 cột khỏi bảng!', 'info');
+    }
+    window.deleteExcelEditorCol = deleteExcelEditorCol;
 
     function enablePdfPageClickToFill() {
       const mainPane = document.getElementById('pdf-right-main-pane');
@@ -3415,6 +3579,11 @@
 
     function resetLiveFormToDefault() {
       if (!currentDoc) return;
+      if (isLiveEditMode) {
+        if (!confirm('Bạn có chắc chắn muốn hủy các nội dung vừa chỉnh sửa và khôi phục về bản gốc mặc định của hệ thống không?')) {
+          return;
+        }
+      }
       isLiveEditMode = false;
       openDocReader(currentDoc.id || currentDoc.code);
       showToast('Đã khôi phục biểu mẫu về bản mặc định của hệ thống!', 'info');
@@ -4262,13 +4431,54 @@
     }
     window.closeCategoryModal = closeCategoryModal;
 
-    function closeDocReader() {
+    function closeDocReader(forceClose = false) {
       const mr = document.getElementById('modal-reader');
-      if (mr) { mr.classList.add('hidden'); mr.classList.remove('flex'); }
+      if (!mr || mr.classList.contains('hidden')) return;
+
+      // BƯỚC XÁC NHẬN TRƯỚC KHI ĐÓNG NẾU NGƯỜI DÙNG ĐANG BẬT CHẾ ĐỘ CHỈNH SỬA / ĐIỀN BIỂU MẪU
+      if (isLiveEditMode && !forceClose) {
+        const confirmModal = document.getElementById('modal-confirm-close-edit');
+        if (confirmModal) {
+          confirmModal.classList.remove('hidden');
+          confirmModal.classList.add('flex');
+          return;
+        }
+      }
+
+      const confirmModal = document.getElementById('modal-confirm-close-edit');
+      if (confirmModal) {
+        confirmModal.classList.add('hidden');
+        confirmModal.classList.remove('flex');
+      }
+
+      isLiveEditMode = false;
+      mr.classList.add('hidden');
+      mr.classList.remove('flex');
       const iframe = document.getElementById('doc-preview-iframe');
       if (iframe) iframe.src = 'about:blank';
     }
     window.closeDocReader = closeDocReader;
+
+    function cancelCloseWhileEditing() {
+      const confirmModal = document.getElementById('modal-confirm-close-edit');
+      if (confirmModal) {
+        confirmModal.classList.add('hidden');
+        confirmModal.classList.remove('flex');
+      }
+    }
+    window.cancelCloseWhileEditing = cancelCloseWhileEditing;
+
+    function confirmDiscardAndCloseReader() {
+      closeDocReader(true);
+      showToast('Đã đóng tài liệu và giữ nguyên bản mặc định của hệ thống.', 'info');
+    }
+    window.confirmDiscardAndCloseReader = confirmDiscardAndCloseReader;
+
+    function downloadAndCloseWhileEditing() {
+      triggerDocumentDownload();
+      closeDocReader(true);
+    }
+    window.downloadAndCloseWhileEditing = downloadAndCloseWhileEditing;
 
     function triggerDocumentDownload() {
       if (!currentDoc) return;
