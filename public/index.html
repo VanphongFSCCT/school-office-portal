@@ -14,6 +14,13 @@
   
   <!-- TAILWIND CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PDF.JS LIBRARY FOR CUSTOM SPLIT-PANE RESIZABLE PDF VIEWER -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -200,8 +207,8 @@
 
       </div>
 
-
-
+      <!-- Thanh kéo điều chỉnh độ rộng Sidebar chính (Main Sidebar Resizer) -->
+      <div id="main-sidebar-resizer" title="Kéo qua lại để điều chỉnh độ rộng thanh danh mục bên trái" class="hidden md:flex absolute top-0 right-0 bottom-0 w-1.5 hover:w-2 cursor-col-resize bg-transparent hover:bg-[#FFC857]/60 active:bg-[#FFC857] transition-all z-50 items-center justify-center"></div>
     </aside>
 
     <!-- MAIN CONTENT VIEW AREA -->
@@ -285,11 +292,15 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
               </div>
-              <input type="text" id="main-search-input" placeholder="Tìm kiếm nhanh: Gõ tên quy trình, mã hiệu, phòng ban..." class="w-full pl-11 pr-28 py-2 rounded-full bg-white text-slate-900 placeholder-slate-500 text-xs sm:text-sm font-medium border-2 border-[#FFC857]/80 focus:border-[#FFC857] shadow-[0_0_20px_rgba(255,200,87,0.3)] focus:outline-none transition">
+              <input type="text" id="main-search-input" autocomplete="off" placeholder="Tìm kiếm nhanh: Gõ tên quy trình, mã hiệu, phòng ban..." class="w-full pl-11 pr-28 py-2 rounded-full bg-white text-slate-900 placeholder-slate-500 text-xs sm:text-sm font-medium border-2 border-[#FFC857]/80 focus:border-[#FFC857] shadow-[0_0_20px_rgba(255,200,87,0.3)] focus:outline-none transition">
               <div class="absolute inset-y-0 right-1.5 flex items-center space-x-1">
-                <button id="btn-reset-filters" class="px-3.5 py-1.5 rounded-full bg-[#102E52] hover:bg-[#FFC857] text-[#B8C8DC] hover:text-[#03152D] text-xs font-semibold transition border border-[#B98A33]/30">
+                <button id="btn-reset-filters" class="px-3.5 py-1.5 rounded-full bg-[#102E52] hover:bg-[#FFC857] text-[#B8C8DC] hover:text-[#03152D] text-xs font-semibold transition border border-[#B98A33]/30 cursor-pointer">
                   Làm mới
                 </button>
+              </div>
+
+              <!-- DANH SÁCH GỢI Ý TÌM KIẾM THÔNG MINH TRONG LÚC GÕ (LIVE SEARCH SUGGESTIONS) -->
+              <div id="search-suggestions-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 z-50 bg-[#071F3D]/98 backdrop-blur-xl border border-[#FFC857]/50 rounded-2xl shadow-[0_12px_35px_rgba(0,0,0,0.65)] overflow-hidden max-h-80 overflow-y-auto divide-y divide-[#B98A33]/20">
               </div>
             </div>
 
@@ -302,11 +313,21 @@
 
           <!-- KHO TÀI LIỆU TRỰC DIỆN -->
           <div class="space-y-3">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between flex-wrap gap-2">
               <h2 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
                 <span>Tài liệu & Quy trình đang lưu hành</span>
                 <span class="text-xs font-mono font-bold text-[#FFC857] bg-[#102E52] px-2 py-0.5 rounded-full border border-[#B98A33]/30" id="results-count-text">0 kết quả</span>
               </h2>
+              <div class="inline-flex items-center bg-[#071F3D] p-0.5 rounded-xl border border-[#B98A33]/35 shadow-inner">
+                <button type="button" onclick="setDocLayoutMode('grid')" class="btn-layout-grid px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition cursor-pointer" title="Xem dạng Thẻ lưới (Grid)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                  <span class="hidden sm:inline">Thẻ</span>
+                </button>
+                <button type="button" onclick="setDocLayoutMode('list')" class="btn-layout-list px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition cursor-pointer" title="Xem dạng Danh sách (List)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                  <span class="hidden sm:inline">Danh sách</span>
+                </button>
+              </div>
             </div>
 
             <!-- GRID TÀI LIỆU (CÓ HIỂN THỊ RÕ BỘ PHẬN PHỤ TRÁCH, KHÔNG HIỂN THỊ DUNG LƯỢNG) -->
@@ -338,7 +359,19 @@
               <h2 class="text-sm sm:text-base font-bold text-white">Quy trình Chuẩn Vận hành (SOP)</h2>
               <p class="text-xs text-[#B8C8DC]">Các quy trình liên bộ phận có hiệu lực áp dụng trong toàn trường</p>
             </div>
-            <span id="sop-count-label" class="px-2.5 py-2 rounded-lg bg-[#102E52] border border-[#16A8F4]/30 text-[#16A8F4] font-mono text-xs font-bold">0 quy trình</span>
+            <div class="flex items-center space-x-2">
+              <div class="inline-flex items-center bg-[#071F3D] p-0.5 rounded-xl border border-[#B98A33]/35 shadow-inner">
+                <button type="button" onclick="setDocLayoutMode('grid')" class="btn-layout-grid px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition cursor-pointer" title="Xem dạng Thẻ lưới (Grid)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                  <span class="hidden sm:inline">Thẻ</span>
+                </button>
+                <button type="button" onclick="setDocLayoutMode('list')" class="btn-layout-list px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition cursor-pointer" title="Xem dạng Danh sách (List)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                  <span class="hidden sm:inline">Danh sách</span>
+                </button>
+              </div>
+              <span id="sop-count-label" class="px-2.5 py-1.5 rounded-xl bg-[#102E52] border border-[#16A8F4]/30 text-[#16A8F4] font-mono text-xs font-bold">0 quy trình</span>
+            </div>
           </div>
           <div id="sop-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
         </div>
@@ -350,7 +383,19 @@
               <h2 class="text-sm sm:text-base font-bold text-white">Hướng dẫn Công việc (Work Instructions)</h2>
               <p class="text-xs text-[#B8C8DC]">Tài liệu thao tác cụ thể cho từng vị trí và nghiệp vụ văn phòng</p>
             </div>
-            <span id="wi-count-label" class="px-2.5 py-2 rounded-lg bg-[#102E52] border border-[#16A8F4]/30 text-[#16A8F4] font-mono text-xs font-bold">0 hướng dẫn</span>
+            <div class="flex items-center space-x-2">
+              <div class="inline-flex items-center bg-[#071F3D] p-0.5 rounded-xl border border-[#B98A33]/35 shadow-inner">
+                <button type="button" onclick="setDocLayoutMode('grid')" class="btn-layout-grid px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition cursor-pointer" title="Xem dạng Thẻ lưới (Grid)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                  <span class="hidden sm:inline">Thẻ</span>
+                </button>
+                <button type="button" onclick="setDocLayoutMode('list')" class="btn-layout-list px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition cursor-pointer" title="Xem dạng Danh sách (List)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                  <span class="hidden sm:inline">Danh sách</span>
+                </button>
+              </div>
+              <span id="wi-count-label" class="px-2.5 py-1.5 rounded-xl bg-[#102E52] border border-[#16A8F4]/30 text-[#16A8F4] font-mono text-xs font-bold">0 hướng dẫn</span>
+            </div>
           </div>
           <div id="wi-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
         </div>
@@ -362,7 +407,19 @@
               <h2 class="text-sm sm:text-base font-bold text-white">Biểu mẫu Hành chính & Nghiệp vụ</h2>
               <p class="text-xs text-[#B8C8DC]">Tải xuống trực tiếp tệp tin (.docx, .xlsx, .pdf) theo mẫu chuẩn nhà trường</p>
             </div>
-            <span id="forms-count-label" class="px-2.5 py-2 rounded-lg bg-[#102E52] border border-[#22C58B]/30 text-[#22C58B] font-mono text-xs font-bold">0 biểu mẫu</span>
+            <div class="flex items-center space-x-2">
+              <div class="inline-flex items-center bg-[#071F3D] p-0.5 rounded-xl border border-[#B98A33]/35 shadow-inner">
+                <button type="button" onclick="setDocLayoutMode('grid')" class="btn-layout-grid px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition cursor-pointer" title="Xem dạng Thẻ lưới (Grid)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                  <span class="hidden sm:inline">Thẻ</span>
+                </button>
+                <button type="button" onclick="setDocLayoutMode('list')" class="btn-layout-list px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition cursor-pointer" title="Xem dạng Danh sách (List)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                  <span class="hidden sm:inline">Danh sách</span>
+                </button>
+              </div>
+              <span id="forms-count-label" class="px-2.5 py-1.5 rounded-xl bg-[#102E52] border border-[#22C58B]/30 text-[#22C58B] font-mono text-xs font-bold">0 biểu mẫu</span>
+            </div>
           </div>
           <div id="forms-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
         </div>
@@ -668,13 +725,8 @@
             <span>Tải về</span>
           </button>
 
-          <!-- BỘ ĐIỀU CHỈNH TỶ LỆ XEM TÀI LIỆU (ZOOM CONTROLS) -->
-          <div class="flex items-center space-x-1 bg-[#102E52] px-2 py-1 rounded-lg border border-[#B98A33]/30 text-xs">
-            <button onclick="applyReaderZoom(-15)" title="Thu nhỏ" class="hover:text-[#FFC857] px-1.5 font-mono font-bold">-</button>
-            <span id="reader-zoom-val" class="font-mono text-[11px] text-[#FFC857] w-10 text-center font-bold">100%</span>
-            <button onclick="applyReaderZoom(15)" title="Phóng to" class="hover:text-[#FFC857] px-1.5 font-mono font-bold">+</button>
-            <button onclick="applyReaderZoom(0)" title="Mặc định" class="text-[10px] text-slate-400 hover:text-white pl-1.5 border-l border-[#B98A33]/30">Reset</button>
-          </div>
+          <!-- Đã bỏ cụm điều chỉnh tỷ lệ thừa trong cửa sổ đọc theo yêu cầu -->
+          <span id="reader-zoom-val" class="hidden">100%</span>
 
           <!-- Nút Toàn màn hình -->
           <button id="btn-toggle-reader-fullscreen" title="Toàn màn hình" class="p-1.5 text-slate-300 hover:text-[#FFC857] bg-[#102E52] hover:bg-[#14345B] rounded-lg border border-[#B98A33]/30 transition cursor-pointer">
@@ -699,9 +751,49 @@
         <!-- VÙNG XEM TÀI LIỆU TRỰC TIẾP (DIRECT PREVIEW CONTAINER) -->
         <div id="reader-preview-scroll-box" class="flex-1 bg-slate-900/60 rounded-xl p-1.5 sm:p-3 border border-[#B98A33]/20 overflow-y-auto flex justify-center items-start min-h-0">
           
-          <!-- KHUNG PREVIEW CHO TỆP PDF VÀ TỆP WEB (HIỂN THỊ TRỰC TIẾP FULL CHIỀU CAO) -->
-          <div id="reader-iframe-wrapper" class="hidden w-full h-full rounded-xl overflow-hidden shadow-2xl border border-slate-400 flex flex-col">
-            <iframe id="doc-preview-iframe" class="w-full flex-1 h-full border-0 bg-white" src="about:blank"></iframe>
+          <!-- KHUNG PREVIEW PDF CHIA 2 CỘT CÓ THANH KÉO TÙY CHỈNH ĐỘ RỘNG (RESIZABLE SPLIT-PANE PDF VIEWER) -->
+          <div id="reader-iframe-wrapper" class="hidden w-full h-full rounded-xl overflow-hidden shadow-2xl border border-[#B98A33]/35 flex flex-col bg-[#1E2227]">
+            <!-- Thanh điều khiển PDF nhỏ gọn -->
+            <div class="px-3 py-1.5 bg-[#14171A] border-b border-slate-700/80 flex items-center justify-between text-xs text-slate-200 shrink-0 select-none">
+              <div class="flex items-center space-x-2">
+                <button type="button" id="btn-toggle-pdf-thumbs" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[#FFC857] font-semibold flex items-center space-x-1 transition cursor-pointer" title="Ẩn / Hiện danh sách trang bên trái">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                  <span>Danh sách trang</span>
+                </button>
+                <span class="text-slate-500">|</span>
+                <span id="pdf-page-indicator" class="font-mono text-[11px] text-slate-300">Trang <strong id="pdf-curr-page" class="text-[#FFC857]">1</strong> / <span id="pdf-total-pages">1</span></span>
+              </div>
+
+              <div class="flex items-center space-x-1.5">
+                <button type="button" onclick="adjustCustomPdfScale(-0.15)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold cursor-pointer" title="Thu nhỏ trang PDF">-</button>
+                <span id="custom-pdf-scale-label" class="font-mono text-[11px] text-[#FFC857] w-11 text-center font-bold">100%</span>
+                <button type="button" onclick="adjustCustomPdfScale(0.15)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold cursor-pointer" title="Phóng to trang PDF">+</button>
+                <button type="button" onclick="adjustCustomPdfScale(0)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 cursor-pointer" title="Vừa khung nhìn">Vừa trang</button>
+              </div>
+
+              <div class="hidden sm:flex items-center space-x-1 text-[10.5px] text-slate-400">
+                <span>↔ Kéo thanh chia ở giữa để chỉnh diện tích 2 bên</span>
+              </div>
+            </div>
+
+            <!-- Vùng Split-Pane: Bên trái (Các trang nhỏ) | Thanh kéo (Resizer) | Bên phải (Trang xem chính) -->
+            <div id="pdf-split-container" class="flex-1 flex overflow-hidden relative min-h-0 select-none">
+              <!-- Cột trái: Danh sách các trang thu nhỏ -->
+              <div id="pdf-left-thumbs-pane" style="width: 190px; min-width: 90px; max-width: 50%;" class="h-full bg-[#181B1F] overflow-y-auto p-3 space-y-3 flex flex-col items-center shrink-0">
+              </div>
+
+              <!-- Thanh kéo phân chia (Draggable Splitter Bar) -->
+              <div id="pdf-splitter-resizer" title="Giữ chuột và kéo qua lại để tăng/giảm diện tích từng bên" class="w-2 hover:w-2.5 h-full bg-[#2A3038] hover:bg-[#FFC857] active:bg-[#FFC857] cursor-col-resize transition-colors flex items-center justify-center shrink-0 z-20 group">
+                <div class="w-0.5 h-8 bg-slate-400 group-hover:bg-[#03152D] rounded-full"></div>
+              </div>
+
+              <!-- Cột phải: Khung đọc trang PDF chính -->
+              <div id="pdf-right-main-pane" class="flex-1 h-full bg-[#252930] overflow-auto p-3 sm:p-5 flex flex-col items-center space-y-4 min-w-0">
+              </div>
+
+              <!-- Iframe dự phòng nếu trình duyệt chặn CDN -->
+              <iframe id="doc-preview-iframe" class="hidden w-full flex-1 h-full border-0 bg-white" src="about:blank"></iframe>
+            </div>
           </div>
 
           <!-- KHUNG PREVIEW CHO ẢNH (NẾU TẢI LÊN FILE ẢNH) -->
@@ -1061,6 +1153,7 @@
     let selectedType = 'all';
     let currentSearch = '';
     let currentZoom = 100;
+    let docLayoutMode = localStorage.getItem('fsc_doc_layout_mode') || 'grid';
     let currentReaderZoom = 100;
     let currentDoc = null;
     let isReaderFullscreen = false;
@@ -1437,6 +1530,123 @@
       return card;
     }
 
+
+    function updateLayoutModeButtons() {
+      document.querySelectorAll('.btn-layout-grid').forEach(btn => {
+        if (docLayoutMode === 'grid') {
+          btn.className = 'btn-layout-grid px-2.5 py-1 rounded-lg text-xs font-bold bg-[#FFC857] text-[#03152D] shadow-sm flex items-center space-x-1 transition cursor-pointer';
+        } else {
+          btn.className = 'btn-layout-grid px-2.5 py-1 rounded-lg text-xs font-medium text-[#B8C8DC] hover:text-white flex items-center space-x-1 transition cursor-pointer';
+        }
+      });
+      document.querySelectorAll('.btn-layout-list').forEach(btn => {
+        if (docLayoutMode === 'list') {
+          btn.className = 'btn-layout-list px-2.5 py-1 rounded-lg text-xs font-bold bg-[#FFC857] text-[#03152D] shadow-sm flex items-center space-x-1 transition cursor-pointer';
+        } else {
+          btn.className = 'btn-layout-list px-2.5 py-1 rounded-lg text-xs font-medium text-[#B8C8DC] hover:text-white flex items-center space-x-1 transition cursor-pointer';
+        }
+      });
+    }
+
+    function setDocLayoutMode(mode) {
+      docLayoutMode = mode === 'list' ? 'list' : 'grid';
+      localStorage.setItem('fsc_doc_layout_mode', docLayoutMode);
+      updateLayoutModeButtons();
+      renderDirectCards();
+      renderOtherViews();
+    }
+    window.setDocLayoutMode = setDocLayoutMode;
+
+    function createDocListItemElement(doc) {
+      const row = document.createElement('div');
+      row.className = 'card-enterprise rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 group cursor-pointer transition hover:border-[#FFC857]';
+
+      let accessBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#22C58B]/15 text-[#22C58B] border border-[#22C58B]/30 shrink-0">Mở</span>';
+      if (doc.access === 'Nội bộ') {
+        accessBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#16A8F4]/15 text-[#16A8F4] border border-[#16A8F4]/30 shrink-0">Nội bộ</span>';
+      }
+
+      const deptDisplay = doc.dept || doc.category || 'Văn phòng';
+      const extLabel = doc.type === 'Biểu mẫu' ? 'DOCX' : 'PDF';
+
+      let adminActionsHtml = '';
+      if (currentUser && currentUser.role === 'admin') {
+        adminActionsHtml = `
+          <div class="flex items-center space-x-1.5 shrink-0">
+            <button class="btn-card-edit p-1.5 text-[#FFC857] hover:text-white rounded-lg bg-[#14345B] hover:bg-[#B98A33] transition cursor-pointer" title="Chỉnh sửa tài liệu" data-code="${doc.code}">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            </button>
+            <button class="btn-card-delete p-1.5 text-rose-400 hover:text-white rounded-lg bg-rose-950/60 hover:bg-rose-700 transition cursor-pointer" title="Xóa tài liệu này" data-code="${doc.code}">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+          </div>
+        `;
+      }
+
+      row.innerHTML = `
+        <div class="flex items-center space-x-3 min-w-0 flex-1">
+          <span class="font-mono text-xs font-bold text-[#16A8F4] bg-[#071F3D] px-2.5 py-1 rounded-lg border border-[#16A8F4]/35 shrink-0">${doc.code}</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center space-x-2">
+              <h3 class="text-xs sm:text-sm font-bold text-white group-hover:text-[#FFC857] transition truncate">${doc.title}</h3>
+              ${accessBadge}
+            </div>
+            ${doc.desc ? `<p class="text-[11px] text-[#B8C8DC] truncate mt-0.5">${doc.desc}</p>` : ''}
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3 shrink-0 text-xs">
+          <div class="hidden md:flex items-center space-x-1.5">
+            <span class="text-slate-400 text-[11px]">🏢 Bộ phận:</span>
+            <span class="font-bold text-white bg-[#071F3D] px-2 py-0.5 rounded border border-[#B98A33]/25 text-[11px]">${deptDisplay}</span>
+          </div>
+          <div class="hidden sm:flex items-center space-x-1 text-[11px] bg-[#071F3D] px-2 py-0.5 rounded border border-slate-700/70">
+            <span class="text-rose-400">📄</span>
+            <span class="font-bold text-white">${extLabel}</span>
+            <span class="text-slate-500">•</span>
+            <span class="text-[#FFC857] font-medium">${doc.category}</span>
+          </div>
+          ${adminActionsHtml}
+          <div class="w-7 h-7 rounded-full bg-[#14345B] group-hover:bg-[#FFC857] text-[#FFC857] group-hover:text-[#03152D] flex items-center justify-center transition border border-[#B98A33]/30 shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </div>
+        </div>
+      `;
+
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-card-edit') || e.target.closest('.btn-card-delete')) return;
+        openDocReader(doc.id);
+      });
+
+      const btnEdit = row.querySelector('.btn-card-edit');
+      if (btnEdit) {
+        btnEdit.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openEditDocModal(doc.code);
+        });
+      }
+
+      const btnDel = row.querySelector('.btn-card-delete');
+      if (btnDel) {
+        btnDel.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteDocument(doc.code);
+        });
+      }
+
+      return row;
+    }
+
+    function applyContainerLayoutClass(container) {
+      if (!container) return;
+      const isHidden = container.classList.contains('hidden');
+      if (docLayoutMode === 'list') {
+        container.className = 'flex flex-col space-y-2' + (isHidden ? ' hidden' : '');
+      } else {
+        container.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5' + (isHidden ? ' hidden' : '');
+      }
+    }
+
     function renderDirectCards() {
       const container = document.getElementById('documents-grid');
       const emptyState = document.getElementById('empty-state');
@@ -1472,9 +1682,11 @@
 
       container.classList.remove('hidden');
       emptyState.classList.add('hidden');
+      applyContainerLayoutClass(container);
+      updateLayoutModeButtons();
 
       filtered.forEach(doc => {
-        container.appendChild(createDocCardElement(doc));
+        container.appendChild(docLayoutMode === 'list' ? createDocListItemElement(doc) : createDocCardElement(doc));
       });
     }
 
@@ -1492,23 +1704,27 @@
     function renderOtherViews() {
       const visible = documents.filter(d => isDocVisible(d));
       
+      updateLayoutModeButtons();
       const sops = visible.filter(d => d.type === 'Quy trình');
       const sopContainer = document.getElementById('sop-container');
       sopContainer.innerHTML = '';
+      applyContainerLayoutClass(sopContainer);
       document.getElementById('sop-count-label').textContent = `${sops.length} quy trình`;
-      sops.forEach(d => sopContainer.appendChild(createDocCardElement(d)));
+      sops.forEach(d => sopContainer.appendChild(docLayoutMode === 'list' ? createDocListItemElement(d) : createDocCardElement(d)));
 
       const wis = visible.filter(d => d.type === 'Hướng dẫn công việc');
       const wiContainer = document.getElementById('wi-container');
       wiContainer.innerHTML = '';
+      applyContainerLayoutClass(wiContainer);
       document.getElementById('wi-count-label').textContent = `${wis.length} hướng dẫn`;
-      wis.forEach(d => wiContainer.appendChild(createDocCardElement(d)));
+      wis.forEach(d => wiContainer.appendChild(docLayoutMode === 'list' ? createDocListItemElement(d) : createDocCardElement(d)));
 
       const forms = visible.filter(d => d.type === 'Biểu mẫu');
       const formsContainer = document.getElementById('forms-container');
       formsContainer.innerHTML = '';
+      applyContainerLayoutClass(formsContainer);
       document.getElementById('forms-count-label').textContent = `${forms.length} biểu mẫu`;
-      forms.forEach(d => formsContainer.appendChild(createDocCardElement(d)));
+      forms.forEach(d => formsContainer.appendChild(docLayoutMode === 'list' ? createDocListItemElement(d) : createDocCardElement(d)));
 
       const statValid = document.getElementById('stat-valid-count');
       const statInternal = document.getElementById('stat-internal-count');
@@ -1765,6 +1981,152 @@
     };
 
     // MỞ CHI TIẾT TÀI LIỆU
+
+    // =========================================================================
+    // TRÌNH ĐỌC PDF 2 CỘT CÓ THANH KÉO PHÂN CHIA TÙY CHỈNH (RESIZABLE SPLIT-PANE PDF ENGINE)
+    // =========================================================================
+    let currentPdfDoc = null;
+    let customPdfScale = 1.0;
+
+    async function renderCustomSplitPdf(pdfDataUrl) {
+      const thumbsPane = document.getElementById('pdf-left-thumbs-pane');
+      const mainPane = document.getElementById('pdf-right-main-pane');
+      const resizerBar = document.getElementById('pdf-splitter-resizer');
+      const fallbackIframe = document.getElementById('doc-preview-iframe');
+
+      if (!window.pdfjsLib || !thumbsPane || !mainPane) {
+        // Fallback nếu không có mạng tải pdfjsLib
+        if (thumbsPane) thumbsPane.classList.add('hidden');
+        if (resizerBar) resizerBar.classList.add('hidden');
+        if (mainPane) mainPane.classList.add('hidden');
+        if (fallbackIframe) {
+          fallbackIframe.classList.remove('hidden');
+          fallbackIframe.src = pdfDataUrl;
+        }
+        return;
+      }
+
+      if (fallbackIframe) fallbackIframe.classList.add('hidden');
+      thumbsPane.classList.remove('hidden');
+      if (resizerBar) resizerBar.classList.remove('hidden');
+      mainPane.classList.remove('hidden');
+
+      thumbsPane.innerHTML = '<div class="text-[11px] text-slate-400 py-8 text-center">Đang tải trang...</div>';
+      mainPane.innerHTML = '<div class="text-xs text-[#FFC857] py-12 font-semibold animate-pulse">Đang dựng bản xem PDF độ nét cao...</div>';
+
+      try {
+        let loadingTask;
+        if (pdfDataUrl.startsWith('data:application/pdf;base64,')) {
+          const b64 = pdfDataUrl.split(',')[1];
+          const bin = atob(b64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          loadingTask = window.pdfjsLib.getDocument({ data: bytes });
+        } else {
+          loadingTask = window.pdfjsLib.getDocument(pdfDataUrl);
+        }
+
+        currentPdfDoc = await loadingTask.promise;
+        const totalPages = currentPdfDoc.numPages;
+        const totalEl = document.getElementById('pdf-total-pages');
+        const currEl = document.getElementById('pdf-curr-page');
+        if (totalEl) totalEl.textContent = totalPages;
+        if (currEl) currEl.textContent = '1';
+
+        thumbsPane.innerHTML = '';
+        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+          const page = await currentPdfDoc.getPage(pageNum);
+          const thumbViewport = page.getViewport({ scale: 0.24 });
+
+          const thumbItem = document.createElement('div');
+          thumbItem.className = `pdf-thumb-item cursor-pointer p-1.5 rounded-lg border-2 transition flex flex-col items-center space-y-1 ${pageNum === 1 ? 'border-[#16A8F4] bg-[#102E52]/60' : 'border-transparent hover:border-slate-600'}`;
+          thumbItem.setAttribute('data-page', pageNum);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = thumbViewport.width;
+          canvas.height = thumbViewport.height;
+          canvas.className = 'bg-white shadow-md rounded-sm max-w-full h-auto';
+
+          const label = document.createElement('span');
+          label.className = 'text-[10.5px] font-mono text-slate-300 font-semibold';
+          label.textContent = pageNum;
+
+          thumbItem.appendChild(canvas);
+          thumbItem.appendChild(label);
+          thumbsPane.appendChild(thumbItem);
+
+          page.render({ canvasContext: canvas.getContext('2d'), viewport: thumbViewport });
+
+          thumbItem.addEventListener('click', () => {
+            const targetCanvas = mainPane.querySelector(`[data-main-page="${pageNum}"]`);
+            if (targetCanvas) {
+              targetCanvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            thumbsPane.querySelectorAll('.pdf-thumb-item').forEach(el => {
+              const isMatch = Number(el.getAttribute('data-page')) === pageNum;
+              el.className = `pdf-thumb-item cursor-pointer p-1.5 rounded-lg border-2 transition flex flex-col items-center space-y-1 ${isMatch ? 'border-[#16A8F4] bg-[#102E52]/60' : 'border-transparent hover:border-slate-600'}`;
+            });
+            if (currEl) currEl.textContent = pageNum;
+          });
+        }
+
+        await renderMainPdfPages();
+      } catch (err) {
+        console.warn('PDF.js fallback to native iframe:', err);
+        thumbsPane.classList.add('hidden');
+        if (resizerBar) resizerBar.classList.add('hidden');
+        mainPane.classList.add('hidden');
+        if (fallbackIframe) {
+          fallbackIframe.classList.remove('hidden');
+          fallbackIframe.src = pdfDataUrl;
+        }
+      }
+    }
+
+    async function renderMainPdfPages() {
+      const mainPane = document.getElementById('pdf-right-main-pane');
+      if (!currentPdfDoc || !mainPane) return;
+      mainPane.innerHTML = '';
+
+      const paneWidth = Math.max(320, mainPane.clientWidth - 48);
+      const totalPages = currentPdfDoc.numPages;
+
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await currentPdfDoc.getPage(pageNum);
+        const unscaledViewport = page.getViewport({ scale: 1 });
+        const autoFitScale = paneWidth / unscaledViewport.width;
+        const finalScale = autoFitScale * customPdfScale;
+        const dpr = window.devicePixelRatio || 1;
+        const viewport = page.getViewport({ scale: finalScale * dpr });
+
+        const pageContainer = document.createElement('div');
+        pageContainer.setAttribute('data-main-page', pageNum);
+        pageContainer.className = 'bg-white shadow-2xl rounded-sm overflow-hidden shrink-0 transition-all';
+        pageContainer.style.width = `${Math.floor(viewport.width / dpr)}px`;
+        pageContainer.style.height = `${Math.floor(viewport.height / dpr)}px`;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+
+        pageContainer.appendChild(canvas);
+        mainPane.appendChild(pageContainer);
+
+        page.render({ canvasContext: canvas.getContext('2d'), viewport });
+      }
+    }
+
+    function adjustCustomPdfScale(delta) {
+      if (delta === 0) customPdfScale = 1.0;
+      else customPdfScale = Math.min(2.2, Math.max(0.5, +(customPdfScale + delta).toFixed(2)));
+      const lbl = document.getElementById('custom-pdf-scale-label');
+      if (lbl) lbl.textContent = `${Math.round(customPdfScale * 100)}%`;
+      renderMainPdfPages();
+    }
+    window.adjustCustomPdfScale = adjustCustomPdfScale;
+
     async function openDocReader(docId) {
       const doc = documents.find(d => d.id === docId || d.code === docId);
       if (!doc) return;
@@ -1854,26 +2216,11 @@
       );
 
       if (isPdfPreviewable) {
-        if (previewIframe) {
-          if (fData.startsWith('data:application/pdf;base64,')) {
-            try {
-              const b64 = fData.split(',')[1];
-              const bin = atob(b64);
-              const len = bin.length;
-              const bytes = new Uint8Array(len);
-              for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
-              const blob = new Blob([bytes], { type: 'application/pdf' });
-              if (window.currentPdfBlobUrl) URL.revokeObjectURL(window.currentPdfBlobUrl);
-              window.currentPdfBlobUrl = URL.createObjectURL(blob);
-              previewIframe.src = window.currentPdfBlobUrl;
-            } catch (e) {
-              previewIframe.src = fData;
-            }
-          } else {
-            previewIframe.src = fData;
-          }
-        }
         if (iframeWrapper) iframeWrapper.classList.remove('hidden');
+        customPdfScale = 1.0;
+        const lbl = document.getElementById('custom-pdf-scale-label');
+        if (lbl) lbl.textContent = '100%';
+        setTimeout(() => renderCustomSplitPdf(fData), 40);
       } else if (isImgPreviewable) {
         if (previewImage) previewImage.src = fData;
         if (imageWrapper) imageWrapper.classList.remove('hidden');
@@ -2524,6 +2871,85 @@
         }
       });
 
+
+      // =========================================================
+      // TÍNH NĂNG KÉO THANH PHÂN CHIA QUA LẠI (DRAGGABLE SPLITTERS)
+      // =========================================================
+      // 1. Thanh kéo giữa Cột trang thu nhỏ bên trái và Trang xem PDF bên phải
+      const pdfSplitter = document.getElementById('pdf-splitter-resizer');
+      const pdfLeftPane = document.getElementById('pdf-left-thumbs-pane');
+      const pdfSplitContainer = document.getElementById('pdf-split-container');
+      const btnToggleThumbs = document.getElementById('btn-toggle-pdf-thumbs');
+
+      if (btnToggleThumbs && pdfLeftPane && pdfSplitter) {
+        btnToggleThumbs.addEventListener('click', () => {
+          const isHidden = pdfLeftPane.classList.toggle('hidden');
+          pdfSplitter.classList.toggle('hidden', isHidden);
+          setTimeout(() => renderMainPdfPages(), 50);
+        });
+      }
+
+      if (pdfSplitter && pdfLeftPane && pdfSplitContainer) {
+        let isDraggingPdfSplit = false;
+
+        pdfSplitter.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          isDraggingPdfSplit = true;
+          document.body.style.cursor = 'col-resize';
+          pdfSplitter.classList.add('bg-[#FFC857]');
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!isDraggingPdfSplit) return;
+          const containerRect = pdfSplitContainer.getBoundingClientRect();
+          const newLeftWidth = e.clientX - containerRect.left;
+          const maxLeftWidth = containerRect.width * 0.55;
+          if (newLeftWidth >= 85 && newLeftWidth <= maxLeftWidth) {
+            pdfLeftPane.style.width = `${newLeftWidth}px`;
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          if (isDraggingPdfSplit) {
+            isDraggingPdfSplit = false;
+            document.body.style.cursor = '';
+            pdfSplitter.classList.remove('bg-[#FFC857]');
+            renderMainPdfPages();
+          }
+        });
+      }
+
+      // 2. Thanh kéo điều chỉnh độ rộng Sidebar danh mục chính của Cổng thông tin
+      const mainSidebarResizer = document.getElementById('main-sidebar-resizer');
+      const appSidebar = document.getElementById('app-sidebar');
+      const appFooter = document.querySelector('footer');
+
+      if (mainSidebarResizer && appSidebar) {
+        let isDraggingMainSidebar = false;
+
+        mainSidebarResizer.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          isDraggingMainSidebar = true;
+          document.body.style.cursor = 'col-resize';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!isDraggingMainSidebar) return;
+          const newWidth = Math.min(380, Math.max(180, e.clientX));
+          appSidebar.style.width = `${newWidth}px`;
+          if (appFooter && window.innerWidth >= 768) {
+            appFooter.style.left = `${newWidth}px`;
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          if (isDraggingMainSidebar) {
+            isDraggingMainSidebar = false;
+            document.body.style.cursor = '';
+          }
+        });
+      }
+
       restoreSession();
       syncBackendConfigAndData();
       renderFilterChips();
@@ -2542,9 +2968,165 @@
       document.getElementById('btn-close-sidebar-mobile').addEventListener('click', closeMobileSidebar);
 
       const searchInput = document.getElementById('main-search-input');
+      const suggestionsBox = document.getElementById('search-suggestions-dropdown');
+      let activeSuggestionIdx = -1;
+
+      function highlightMatch(text, query) {
+        if (!text) return '';
+        if (!query) return text;
+        const normText = removeVietnameseTones(text);
+        const normQuery = removeVietnameseTones(query);
+        const idx = normText.indexOf(normQuery);
+        if (idx === -1) return text;
+        const before = text.slice(0, idx);
+        const match = text.slice(idx, idx + query.length);
+        const after = text.slice(idx + query.length);
+        return `${before}<span class="bg-[#FFC857]/30 text-[#FFC857] font-bold px-0.5 rounded">${match}</span>${after}`;
+      }
+
+      function renderSearchSuggestions(rawQuery) {
+        if (!suggestionsBox) return;
+        const q = (rawQuery || '').trim();
+        const normQ = removeVietnameseTones(q);
+
+        const visibleDocs = documents.filter(d => isDocVisible(d));
+        if (visibleDocs.length === 0 || !q) {
+          suggestionsBox.classList.add('hidden');
+          activeSuggestionIdx = -1;
+          return;
+        }
+
+        const matchedDocs = visibleDocs.filter(doc => {
+          const matchTitle = removeVietnameseTones(doc.title).includes(normQ);
+          const matchCode = removeVietnameseTones(doc.code).includes(normQ);
+          const matchDept = removeVietnameseTones(doc.dept || '').includes(normQ);
+          const matchCat = removeVietnameseTones(doc.category || '').includes(normQ);
+          return matchTitle || matchCode || matchDept || matchCat;
+        }).slice(0, 6);
+
+        const matchedCats = CATEGORIES.filter(c =>
+          c.status !== 'Tạm ẩn' &&
+          (removeVietnameseTones(c.name).includes(normQ) || removeVietnameseTones(c.id).includes(normQ))
+        ).slice(0, 3);
+
+        if (matchedDocs.length === 0 && matchedCats.length === 0) {
+          suggestionsBox.innerHTML = `
+            <div class="px-4 py-3 text-xs text-[#B8C8DC] flex items-center justify-between">
+              <span>Không tìm thấy gợi ý khớp với "<strong class="text-white">${q}</strong>"</span>
+              <span class="text-[10px] text-slate-400">Nhấn ESC để đóng</span>
+            </div>
+          `;
+          suggestionsBox.classList.remove('hidden');
+          return;
+        }
+
+        let htmlItems = `
+          <div class="px-3.5 py-1.5 bg-[#03152D]/90 text-[10px] font-bold uppercase tracking-wider text-[#FFC857] flex items-center justify-between">
+            <span>⚡ Gợi ý nhanh (${matchedDocs.length} tài liệu)</span>
+            <span class="text-slate-400 font-normal normal-case">Chọn để mở trực tiếp</span>
+          </div>
+        `;
+
+        matchedDocs.forEach((doc, idx) => {
+          const hlCode = highlightMatch(doc.code, q);
+          const hlTitle = highlightMatch(doc.title, q);
+          const deptLabel = doc.dept || doc.category || 'Văn phòng';
+          htmlItems += `
+            <div class="suggestion-item px-4 py-2.5 hover:bg-[#102E52] cursor-pointer transition flex items-center justify-between gap-3 group" data-doc-id="${doc.id}" data-idx="${idx}">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <span class="px-2 py-0.5 rounded bg-[#03152D] text-[#16A8F4] border border-[#16A8F4]/35 font-mono text-xs font-bold shrink-0">${hlCode}</span>
+                <div class="min-w-0">
+                  <div class="text-xs font-bold text-white group-hover:text-[#FFC857] truncate transition">${hlTitle}</div>
+                  <div class="text-[10.5px] text-[#B8C8DC] flex items-center space-x-1.5 mt-0.5">
+                    <span>🏢 Bộ phận: <strong class="text-white">${deptLabel}</strong></span>
+                    <span>•</span>
+                    <span class="text-[#FFC857]">${doc.type || 'Quy trình'}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="shrink-0 flex items-center space-x-1.5 text-[10.5px] text-[#FFC857] opacity-80 group-hover:opacity-100 font-semibold">
+                <span class="hidden sm:inline">Xem ngay</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+              </div>
+            </div>
+          `;
+        });
+
+        if (matchedCats.length > 0) {
+          htmlItems += `
+            <div class="px-3.5 py-1.5 bg-[#03152D]/70 flex items-center space-x-2 flex-wrap gap-1.5">
+              <span class="text-[10px] text-[#B8C8DC] font-medium">Lọc nhanh lĩnh vực:</span>
+              ${matchedCats.map(c => `
+                <button type="button" class="suggestion-cat-btn px-2.5 py-0.5 rounded-full bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-[11px] font-semibold transition flex items-center space-x-1 cursor-pointer" data-cat-name="${c.name}">
+                  <span>${c.icon || '📁'}</span>
+                  <span>${c.name}</span>
+                </button>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        suggestionsBox.innerHTML = htmlItems;
+        suggestionsBox.classList.remove('hidden');
+        activeSuggestionIdx = -1;
+
+        suggestionsBox.querySelectorAll('.suggestion-item').forEach(item => {
+          item.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            const docId = item.getAttribute('data-doc-id');
+            suggestionsBox.classList.add('hidden');
+            openDocReader(docId);
+          });
+        });
+
+        suggestionsBox.querySelectorAll('.suggestion-cat-btn').forEach(btn => {
+          btn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            selectedCat = btn.getAttribute('data-cat-name');
+            suggestionsBox.classList.add('hidden');
+            renderFilterChips();
+            renderDirectCards();
+          });
+        });
+      }
+
       searchInput.addEventListener('input', (e) => {
         currentSearch = e.target.value.trim();
         renderDirectCards();
+        renderSearchSuggestions(e.target.value);
+      });
+
+      searchInput.addEventListener('focus', () => {
+        if (searchInput.value.trim().length > 0) {
+          renderSearchSuggestions(searchInput.value);
+        }
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (!suggestionsBox || suggestionsBox.classList.contains('hidden')) return;
+        const items = suggestionsBox.querySelectorAll('.suggestion-item');
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          activeSuggestionIdx = (activeSuggestionIdx + 1) % items.length;
+          items.forEach((it, i) => it.classList.toggle('bg-[#102E52]', i === activeSuggestionIdx));
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          activeSuggestionIdx = (activeSuggestionIdx - 1 + items.length) % items.length;
+          items.forEach((it, i) => it.classList.toggle('bg-[#102E52]', i === activeSuggestionIdx));
+        } else if (e.key === 'Enter' && activeSuggestionIdx >= 0) {
+          e.preventDefault();
+          items[activeSuggestionIdx].click();
+        } else if (e.key === 'Escape') {
+          suggestionsBox.classList.add('hidden');
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (suggestionsBox && !e.target.closest('#main-search-input') && !e.target.closest('#search-suggestions-dropdown')) {
+          suggestionsBox.classList.add('hidden');
+        }
       });
 
       const typeSelect = document.getElementById('filter-type-select');
@@ -2560,6 +3142,7 @@
         selectedType = 'all';
         currentSearch = '';
         if (searchInput) searchInput.value = '';
+        if (suggestionsBox) suggestionsBox.classList.add('hidden');
         const ts = document.getElementById('filter-type-select');
         if (ts) ts.value = 'all';
         renderFilterChips();
