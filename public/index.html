@@ -57,19 +57,53 @@
       outline: none;
     }
 
-    /* CSS cho docx-preview giữ nguyên 100% bố cục trang Word trên máy */
+    /* CSS cho docx-preview giữ nguyên 100% bố cục và phông chữ Times New Roman chuẩn như trên máy */
+    #office-editor-canvas {
+      font-family: 'Times New Roman', Times, Georgia, serif;
+      color: #000000;
+    }
     .docx-wrapper {
       background: #334155 !important;
       padding: 18px !important;
       display: flex;
       flex-direction: column;
       align-items: center;
+      font-family: 'Times New Roman', Times, Georgia, serif !important;
     }
     .docx-wrapper > section.docx {
       background: #ffffff !important;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
       margin-bottom: 16px !important;
       color: #000000 !important;
+      font-family: 'Times New Roman', Times, Georgia, serif;
+    }
+    .docx-wrapper section.docx p:not([data-custom-font]),
+    .docx-wrapper section.docx span:not([data-custom-font]),
+    .docx-wrapper section.docx div:not([data-custom-font]),
+    .docx-wrapper section.docx td:not([data-custom-font]),
+    .docx-wrapper section.docx th:not([data-custom-font]),
+    .docx-wrapper section.docx li:not([data-custom-font]) {
+      font-family: 'Times New Roman', Times, Georgia, serif !important;
+    }
+    .pdf-converted-word-page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 20px auto;
+      padding: 20mm 20mm 20mm 25mm;
+      background: #ffffff;
+      color: #000000;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 13pt;
+      line-height: 1.5;
+      box-sizing: border-box;
+    }
+    @media (max-width: 860px) {
+      .pdf-converted-word-page {
+        width: 100%;
+        min-height: auto;
+        padding: 16px 20px;
+      }
     }
     /* Khi ở chế độ Chỉ xem (View-Only Default): không hiện viền sửa */
     #office-editor-canvas[contenteditable="false"] {
@@ -1059,8 +1093,8 @@
               <button type="button" id="btn-excel-add-col" onclick="addExcelEditorCol()" class="hidden px-2.5 py-1 rounded bg-teal-600 hover:bg-teal-700 text-white font-semibold cursor-pointer">+ Thêm cột</button>
             </div>
 
-            <!-- Vùng hiển thị trang tài liệu (Mặc định contenteditable="false" - CHỈ XEM) -->
-            <div id="office-editor-canvas" contenteditable="false" spellcheck="false" class="p-4 sm:p-8 min-h-[540px] max-h-[76vh] overflow-auto text-slate-900 text-xs sm:text-sm leading-relaxed focus:outline-none">
+            <!-- Vùng hiển thị trang tài liệu (Mặc định contenteditable="false" - CHỈ XEM, giữ nguyên 100% cỡ chữ và font chữ gốc của Word) -->
+            <div id="office-editor-canvas" contenteditable="false" spellcheck="false" class="p-2 sm:p-4 min-h-[540px] max-h-[76vh] overflow-auto text-black focus:outline-none" style="font-family: 'Times New Roman', Times, serif;">
             </div>
           </div>
           
@@ -2788,7 +2822,46 @@
 
           if (window.docx && typeof window.docx.renderAsync === 'function') {
             editorCanvas.innerHTML = '';
-            await window.docx.renderAsync(bytes.buffer, editorCanvas, null, {
+            let docxBufferToRender = bytes.buffer;
+
+            // Chuẩn hóa phông chữ mặc định trong cấu trúc XML của file .docx (Normal.dotm / theme1.xml / styles.xml)
+            // Khi Word trên máy dùng Times New Roman làm mặc định nhưng theme1.xml lưu minorFont là Calibri/Aptos,
+            // ta đồng bộ về Times New Roman để hiển thị trên web giống 100% với bản Word trên máy tính.
+            if (window.JSZip) {
+              try {
+                const zip = await window.JSZip.loadAsync(bytes.buffer);
+                const docXmlFile = zip.file('word/document.xml');
+                const docXmlText = docXmlFile ? await docXmlFile.async('string') : '';
+                const usesExplicitCalibri = /w:ascii="Calibri"/i.test(docXmlText);
+
+                if (!usesExplicitCalibri) {
+                  const themeFile = zip.file('word/theme/theme1.xml');
+                  if (themeFile) {
+                    let themeXml = await themeFile.async('string');
+                    themeXml = themeXml.replace(/typeface="(Calibri|Calibri Light|Cambria|Aptos|Aptos Display|Arial)"/gi, 'typeface="Times New Roman"');
+                    zip.file('word/theme/theme1.xml', themeXml);
+                  }
+                  const stylesFile = zip.file('word/styles.xml');
+                  if (stylesFile) {
+                    let stylesXml = await stylesFile.async('string');
+                    stylesXml = stylesXml.replace(/w:(ascii|hAnsi|cs|eastAsia)="(Calibri|Calibri Light|Cambria|Aptos)"/gi, 'w:$1="Times New Roman"');
+                    stylesXml = stylesXml.replace(/w:(asciiTheme|hAnsiTheme|cstheme|eastAsiaTheme)="[^"]*"/gi, 'w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"');
+                    zip.file('word/styles.xml', stylesXml);
+                  }
+                  const fontTableFile = zip.file('word/fontTable.xml');
+                  if (fontTableFile) {
+                    let fontTableXml = await fontTableFile.async('string');
+                    fontTableXml = fontTableXml.replace(/w:name="(Calibri|Calibri Light|Cambria|Aptos)"/gi, 'w:name="Times New Roman"');
+                    zip.file('word/fontTable.xml', fontTableXml);
+                  }
+                  docxBufferToRender = await zip.generateAsync({ type: 'arraybuffer' });
+                }
+              } catch (zipErr) {
+                console.warn('JSZip font normalization skipped:', zipErr);
+              }
+            }
+
+            await window.docx.renderAsync(docxBufferToRender, editorCanvas, null, {
               className: 'docx',
               inWrapper: true,
               ignoreWidth: false,
@@ -2797,11 +2870,27 @@
               breakPages: true,
               experimental: true
             });
+
+            // Hậu kiểm các thẻ <style> và phần tử do docx-preview sinh ra để đảm bảo không bị rơi về font không chân (Calibri / Be Vietnam Pro)
+            editorCanvas.querySelectorAll('style').forEach(st => {
+              if (st.textContent) {
+                st.textContent = st.textContent
+                  .replace(/font-family:\s*['"]?(Calibri|Calibri Light|Cambria|Aptos|Be Vietnam Pro|Segoe UI|sans-serif)['"]?/gi, "font-family: 'Times New Roman', Times, serif")
+                  .replace(/--docx-[a-zA-Z]+-font:\s*['"]?(Calibri|Calibri Light|Cambria|Aptos)['"]?/gi, (m) => m.split(':')[0] + ": 'Times New Roman'");
+              }
+            });
+            editorCanvas.querySelectorAll('[style*="font-family"]').forEach(el => {
+              const ff = el.style.fontFamily || '';
+              if (/^(Calibri|Cambria|Aptos|Be Vietnam Pro)/i.test(ff.replace(/['"]/g, '').trim())) {
+                el.style.fontFamily = "'Times New Roman', Times, serif";
+              }
+            });
+
             syncOfficeEditorLockState();
             return true;
           } else if (window.mammoth) {
             const res = await window.mammoth.convertToHtml({ arrayBuffer: bytes.buffer });
-            editorCanvas.innerHTML = res.value || `<h2 style="text-align:center;font-weight:bold;">${doc.title}</h2>`;
+            editorCanvas.innerHTML = `<div style="font-family:'Times New Roman',Times,serif;font-size:13pt;line-height:1.5;color:#000;padding:24px 36px;">${res.value || `<h2 style="text-align:center;font-weight:bold;">${doc.title}</h2>`}</div>`;
             syncOfficeEditorLockState();
             return true;
           }
@@ -2878,6 +2967,14 @@
       if (editorCanvas) editorCanvas.focus();
       document.execCommand('styleWithCSS', false, true);
       document.execCommand(cmd, false, val);
+      if (cmd === 'fontName' && val && editorCanvas) {
+        editorCanvas.querySelectorAll('font[face], span[style*="font-family"]').forEach(el => {
+          el.setAttribute('data-custom-font', 'true');
+          if (el.getAttribute('face')) {
+            el.style.setProperty('font-family', el.getAttribute('face'), 'important');
+          }
+        });
+      }
     }
     window.applyWordFormat = applyWordFormat;
 
@@ -2975,7 +3072,301 @@
     }
     window.clearAllPdfOverlayBoxes = clearAllPdfOverlayBoxes;
 
-    function toggleLiveFormEditMode() {
+    // =========================================================================
+    // BỘ CHUYỂN ĐỔI TỰ ĐỘNG PDF SANG WORD (.DOCX) ĐỂ CHỈNH SỬA TRỰC TIẾP VĂN BẢN CÓ SẴN
+    // Giữ nguyên căn giữa tiêu đề, thụt đầu dòng đoạn văn, bảng chữ ký 2 cột & font Times New Roman
+    // =========================================================================
+    function escapeHtmlStr(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    async function convertPdfToEditableWord(doc) {
+      const editorWrapper = document.getElementById('reader-office-live-editor');
+      const editorCanvas = document.getElementById('office-editor-canvas');
+      const iframeWrapper = document.getElementById('reader-iframe-wrapper');
+      const badgeEl = document.getElementById('office-editor-badge');
+      const fnameEl = document.getElementById('office-editor-filename');
+      const btnAddRow = document.getElementById('btn-excel-add-row');
+      const btnAddCol = document.getElementById('btn-excel-add-col');
+
+      if (!editorWrapper || !editorCanvas) return false;
+
+      if (!currentPdfDoc && window.pdfjsLib && doc.fileData) {
+        try {
+          let loadingTask;
+          if (doc.fileData.startsWith('data:application/pdf;base64,')) {
+            const b64 = doc.fileData.split(',')[1];
+            const bin = atob(b64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            loadingTask = window.pdfjsLib.getDocument({ data: bytes });
+          } else {
+            loadingTask = window.pdfjsLib.getDocument(doc.fileData);
+          }
+          currentPdfDoc = await loadingTask.promise;
+        } catch (e) {
+          console.warn('Cannot load PDF for Word conversion:', e);
+        }
+      }
+
+      if (!currentPdfDoc) return false;
+
+      if (iframeWrapper) iframeWrapper.classList.add('hidden');
+      editorWrapper.classList.remove('hidden');
+      editorWrapper.dataset.convertedFromPdf = 'true';
+      currentOfficeEditType = 'docx';
+
+      if (badgeEl) {
+        badgeEl.textContent = 'PDF ➔ WORD (CHỈNH SỬA TRỰC TIẾP)';
+        badgeEl.className = 'px-2.5 py-0.5 rounded bg-indigo-600 text-white font-bold text-[10.5px]';
+      }
+      const baseName = (doc.currentFile || doc.title || 'Tai_lieu').replace(/\.pdf$/i, '') + '.docx';
+      if (fnameEl) fnameEl.textContent = baseName;
+      if (btnAddRow) btnAddRow.classList.remove('hidden');
+      if (btnAddCol) btnAddCol.classList.remove('hidden');
+
+      editorCanvas.innerHTML = '<div class="py-12 text-center text-slate-600 font-semibold animate-pulse">⏳ Đang chuyển đổi nội dung PDF sang định dạng Word để chỉnh sửa trực tiếp...</div>';
+
+      let allPagesHtml = '';
+      const totalPages = currentPdfDoc.numPages;
+
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const page = await currentPdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 1.0 });
+        const pageW = viewport.width || 595;
+        const textContent = await page.getTextContent();
+        const styles = textContent.styles || {};
+
+        // 1. Trích xuất các phần tử văn bản kèm tọa độ x, y, cỡ chữ, độ đậm
+        const rawItems = [];
+        for (const item of (textContent.items || [])) {
+          if (!item.str) continue;
+          const strNorm = item.str.normalize('NFC');
+          if (!strNorm.trim() && strNorm.length === 0) continue;
+          const tx = item.transform || [13, 0, 0, 13, 0, 0];
+          const x = tx[4];
+          const y = tx[5];
+          const fontSize = Math.round(Math.hypot(tx[0], tx[1]) || item.height || 13);
+          const w = item.width || (strNorm.length * fontSize * 0.45);
+          const styleObj = styles[item.fontName] || {};
+          const fontInfo = `${item.fontName || ''} ${styleObj.fontFamily || ''}`;
+          const isBold = /bold|black|heavy|demi|700|800/i.test(fontInfo);
+          const isItalic = /italic|oblique/i.test(fontInfo);
+
+          rawItems.push({
+            str: strNorm,
+            x,
+            y,
+            xEnd: x + w,
+            w,
+            fontSize,
+            isBold,
+            isItalic
+          });
+        }
+
+        if (rawItems.length === 0) {
+          // Trường hợp trang PDF là ảnh quét (Scan): hiển thị ảnh trang kèm vùng soạn thảo Word
+          const mainCanvas = document.querySelector(`#pdf-right-main-pane [data-main-page="${pageNum}"] canvas`);
+          const imgData = mainCanvas ? mainCanvas.toDataURL('image/png') : '';
+          allPagesHtml += `
+            <div class="pdf-converted-word-page">
+              ${imgData ? `<img src="${imgData}" style="max-width:100%;height:auto;display:block;margin-bottom:12px;">` : ''}
+              <p>Nhập hoặc chỉnh sửa nội dung tại đây...</p>
+            </div>
+          `;
+          continue;
+        }
+
+        // 2. Gom các từ nằm trên cùng một dòng ngang (theo tọa độ y)
+        rawItems.sort((a, b) => (Math.abs(b.y - a.y) > 4 ? (b.y - a.y) : (a.x - b.x)));
+        const rawLines = [];
+        for (const it of rawItems) {
+          let matchedLine = rawLines.find(l => Math.abs(l.y - it.y) <= Math.max(4.2, l.fontSize * 0.35));
+          if (!matchedLine) {
+            matchedLine = { y: it.y, fontSize: it.fontSize, items: [it] };
+            rawLines.push(matchedLine);
+          } else {
+            matchedLine.items.push(it);
+            matchedLine.y = (matchedLine.y * (matchedLine.items.length - 1) + it.y) / matchedLine.items.length;
+          }
+        }
+        rawLines.sort((a, b) => b.y - a.y);
+
+        // 3. Tách mỗi dòng thành các cụm cột ngang (Clusters) để nhận diện bảng chữ ký 2 cột (VD: Chủ tịch Hội đồng | Thư ký)
+        const processedLines = [];
+        let minBodyX = pageW;
+        let maxBodyX = 0;
+
+        for (const line of rawLines) {
+          line.items.sort((a, b) => a.x - b.x);
+          const clusters = [];
+          for (const it of line.items) {
+            if (clusters.length === 0) {
+              clusters.push({
+                text: it.str,
+                x: it.x,
+                xEnd: it.xEnd,
+                fontSize: it.fontSize,
+                isBold: it.isBold,
+                isItalic: it.isItalic
+              });
+            } else {
+              const prev = clusters[clusters.length - 1];
+              const gap = it.x - prev.xEnd;
+              // Nếu khoảng cách ngang > 52pt -> Tách thành cột mới trên cùng hàng (ví dụ cột trái & cột phải)
+              if (gap > 52) {
+                clusters.push({
+                  text: it.str,
+                  x: it.x,
+                  xEnd: it.xEnd,
+                  fontSize: it.fontSize,
+                  isBold: it.isBold,
+                  isItalic: it.isItalic
+                });
+              } else {
+                const needSpace = gap > 1.6 && !prev.text.endsWith(' ') && !it.str.startsWith(' ') && !/^[.,;:!?）”"]/.test(it.str);
+                prev.text = (prev.text + (needSpace ? ' ' : '') + it.str).normalize('NFC');
+                prev.xEnd = Math.max(prev.xEnd, it.xEnd);
+                prev.isBold = prev.isBold || it.isBold;
+                prev.isItalic = prev.isItalic || it.isItalic;
+              }
+            }
+          }
+
+          const cleanClusters = clusters
+            .map(c => ({ ...c, text: c.text.replace(/\s+/g, ' ').trim() }))
+            .filter(c => c.text.length > 0);
+
+          if (cleanClusters.length > 0) {
+            const lineLeft = cleanClusters[0].x;
+            const lineRight = cleanClusters[cleanClusters.length - 1].xEnd;
+            if (lineLeft < minBodyX) minBodyX = lineLeft;
+            if (lineRight > maxBodyX) maxBodyX = lineRight;
+            processedLines.push({
+              y: line.y,
+              fontSize: line.fontSize,
+              clusters: cleanClusters,
+              x: lineLeft,
+              xEnd: lineRight
+            });
+          }
+        }
+
+        if (minBodyX > pageW * 0.3) minBodyX = 72;
+        if (maxBodyX < pageW * 0.7) maxBodyX = pageW - 72;
+        const bodyWidth = Math.max(200, maxBodyX - minBodyX);
+
+        // 4. Dựng cấu trúc HTML chuẩn Word: Đoạn văn tự động nối dòng, Tiêu đề căn giữa, và Bảng chữ ký 2 cột
+        let pageInnerHtml = '';
+        let openPara = null;
+        let prevY = null;
+
+        const flushPara = () => {
+          if (!openPara) return;
+          const indentStyle = openPara.indented ? 'text-indent: 28pt;' : '';
+          const alignStyle = openPara.align || 'justify';
+          const weightStyle = openPara.isBold ? 'font-weight: bold;' : '';
+          const italicStyle = openPara.isItalic ? 'font-style: italic;' : '';
+          const mt = openPara.marginTop || 6;
+          pageInnerHtml += `<p style="margin: ${mt}px 0 6px 0; text-align: ${alignStyle}; ${indentStyle} ${weightStyle} ${italicStyle} font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.55;">${escapeHtmlStr(openPara.text)}</p>`;
+          openPara = null;
+        };
+
+        for (let i = 0; i < processedLines.length; i++) {
+          const pl = processedLines[i];
+          const gapY = prevY !== null ? (prevY - pl.y) : 0;
+          prevY = pl.y;
+
+          // Trường hợp A: Hàng có từ 2 cột trở lên (Ví dụ: "Chủ tịch Hội đồng" | "Thư ký")
+          if (pl.clusters.length >= 2) {
+            flushPara();
+            const mt = gapY > 24 ? Math.min(85, Math.round((gapY - 12) * 1.15)) : 6;
+            const colWidth = Math.floor(100 / pl.clusters.length);
+            let tds = '';
+            pl.clusters.forEach(c => {
+              const isLikelyHeaderOrName = c.isBold || /^(Chủ tịch|Thư ký|Người hướng dẫn|TS\.|PGS\.|GS\.|ThS\.|TRƯỞNG|GIÁM ĐỐC|HIỆU TRƯỞNG|NGƯỜI)/i.test(c.text);
+              tds += `<td style="width:${colWidth}%; text-align:center; border:none; padding: 4px 8px; vertical-align:top; font-family:'Times New Roman',Times,serif; font-size:13pt; ${isLikelyHeaderOrName ? 'font-weight:bold;' : ''}">${escapeHtmlStr(c.text)}</td>`;
+            });
+            pageInnerHtml += `<table style="width:100%; border-collapse:collapse; border:none; margin-top:${mt}px; margin-bottom:4px;"><tbody><tr>${tds}</tr></tbody></table>`;
+            continue;
+          }
+
+          // Trường hợp B: Hàng 1 cụm văn bản
+          const c = pl.clusters[0];
+          const cLeft = c.x;
+          const cRight = c.xEnd;
+          const cWidth = cRight - cLeft;
+          const cCenter = (cLeft + cRight) / 2;
+
+          // Kiểm tra tiêu đề căn giữa (như "CHẤP THUẬN CỦA HỘI ĐỒNG" hoặc "LỜI CẢM ƠN")
+          const isCenteredTitle = (
+            cWidth < bodyWidth * 0.82 &&
+            Math.abs(cCenter - pageW / 2) < 48 &&
+            cLeft > minBodyX + 28
+          );
+
+          // Kiểm tra khối ngày tháng / chữ ký nằm lệch hẳn sang bên phải trang
+          const isRightBlock = (
+            !isCenteredTitle &&
+            cLeft > minBodyX + bodyWidth * 0.42
+          );
+
+          if (isCenteredTitle) {
+            flushPara();
+            const mt = gapY > 24 ? Math.min(80, Math.round(gapY * 1.1)) : 8;
+            const isUpper = (c.text === c.text.toUpperCase() && c.text.length > 3);
+            const fSize = (c.fontSize >= 14 || isUpper) ? '14pt' : '13pt';
+            const fWeight = (c.isBold || isUpper) ? 'bold' : 'normal';
+            pageInnerHtml += `<p style="text-align:center; font-weight:${fWeight}; font-size:${fSize}; margin: ${mt}px 0 12px 0; font-family:'Times New Roman',Times,serif;">${escapeHtmlStr(c.text)}</p>`;
+            continue;
+          }
+
+          if (isRightBlock) {
+            flushPara();
+            const mt = gapY > 24 ? Math.min(80, Math.round(gapY * 1.1)) : 4;
+            const isBoldRight = c.isBold || /^(Tác giả|Người làm đơn|Người đề nghị|Bùi |TS\.|ThS\.)/i.test(c.text);
+            pageInnerHtml += `<p style="text-align:center; margin-left:45%; margin-top:${mt}px; margin-bottom:4px; font-weight:${isBoldRight ? 'bold' : 'normal'}; font-style:${c.isItalic ? 'italic' : 'normal'}; font-family:'Times New Roman',Times,serif; font-size:13pt;">${escapeHtmlStr(c.text)}</p>`;
+            continue;
+          }
+
+          // Đoạn văn bản thông thường: kiểm tra xem có nối tiếp đoạn đang mở hay tách đoạn mới
+          const isIndentedFirstLine = (cLeft > minBodyX + 14);
+          const isLargeVerticalGap = (gapY > pl.fontSize * 1.95);
+          const prevEndedShort = openPara ? (openPara.lastRight < maxBodyX - 48) : true;
+
+          if (!openPara || isIndentedFirstLine || isLargeVerticalGap || prevEndedShort) {
+            flushPara();
+            openPara = {
+              text: c.text,
+              indented: isIndentedFirstLine,
+              align: 'justify',
+              isBold: c.isBold,
+              isItalic: c.isItalic,
+              marginTop: isLargeVerticalGap ? Math.min(48, Math.round(gapY * 0.8)) : 6,
+              lastRight: cRight
+            };
+          } else {
+            const needSpace = !openPara.text.endsWith('-') && !openPara.text.endsWith(' ');
+            openPara.text = (openPara.text + (needSpace ? ' ' : '') + c.text).normalize('NFC');
+            openPara.lastRight = cRight;
+          }
+        }
+
+        flushPara();
+        allPagesHtml += `<div class="pdf-converted-word-page">${pageInnerHtml}</div>`;
+      }
+
+      editorCanvas.innerHTML = allPagesHtml;
+      syncOfficeEditorLockState();
+      return true;
+    }
+    window.convertPdfToEditableWord = convertPdfToEditableWord;
+
+    async function toggleLiveFormEditMode() {
       if (!currentDoc) return;
       isLiveEditMode = !isLiveEditMode;
 
@@ -2985,17 +3376,23 @@
       const officeEditor = document.getElementById('reader-office-live-editor');
       const editorCanvas = document.getElementById('office-editor-canvas');
 
-      syncOfficeEditorLockState();
-
       if (isLiveEditMode) {
+        // Nếu đang xem file PDF -> Tự động chuyển PDF sang trình soạn thảo Word (.docx) để sửa trực tiếp văn bản có sẵn!
+        if (iframeWrapper && !iframeWrapper.classList.contains('hidden')) {
+          const converted = await convertPdfToEditableWord(currentDoc);
+          syncOfficeEditorLockState();
+          if (converted && editorCanvas) {
+            editorCanvas.focus();
+            showToast('Đã tự động chuyển tệp PDF sang định dạng Word để bạn chỉnh sửa trực tiếp nội dung có sẵn!', 'success');
+            return;
+          }
+        }
+
+        syncOfficeEditorLockState();
+
         if (officeEditor && !officeEditor.classList.contains('hidden')) {
           if (editorCanvas) editorCanvas.focus();
           showToast('Đã bật Chế độ Chỉnh sửa trực tiếp kèm Thanh công cụ Word/Excel! (Bản gốc vẫn được bảo toàn)', 'info');
-        } else if (iframeWrapper && !iframeWrapper.classList.contains('hidden')) {
-          currentOfficeEditType = 'pdf';
-          if (pdfHint) { pdfHint.classList.remove('hidden'); pdfHint.classList.add('flex'); }
-          enablePdfPageClickToFill();
-          showToast('Chế độ điền PDF: Nhấp chuột vào bất kỳ vị trí nào trên trang PDF để gõ chữ điền thông tin!', 'info');
         } else if (sheetTarget && !sheetTarget.classList.contains('hidden')) {
           currentOfficeEditType = 'sheet';
           sheetTarget.setAttribute('contenteditable', 'true');
@@ -3004,12 +3401,13 @@
           showToast('Bạn có thể nhấp trực tiếp vào văn bản bên dưới để chỉnh sửa trước khi In hoặc Tải về!', 'info');
         }
       } else {
+        // Nếu tài liệu gốc là PDF và vừa được chuyển sang Word, khi tắt chế độ sửa hoặc bấm Bản gốc có thể quay lại xem hoặc khóa vùng sửa
+        syncOfficeEditorLockState();
         if (pdfHint) { pdfHint.classList.add('hidden'); pdfHint.classList.remove('flex'); }
         if (sheetTarget) {
           sheetTarget.removeAttribute('contenteditable');
           sheetTarget.classList.remove('editable-doc-canvas');
         }
-        enablePdfPageClickToFill();
         showToast('Đã chuyển về Chế độ Chỉ xem (View-Only).', 'info');
       }
     }
