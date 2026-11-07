@@ -7,7 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quản lý Tài liệu & Quy trình - FSC Cần Thơ</title>
   
-  <!-- MAMMOTH.JS (WORD .DOCX) & SHEETJS (EXCEL .XLSX) FOR LIVE IN-BROWSER FORM EDITING -->
+  <!-- JSZIP + DOCX-PREVIEW (100% HIGH-FIDELITY WORD RENDERING) + MAMMOTH + SHEETJS (EXCEL) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.1.20/dist/docx-preview.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
@@ -54,6 +56,51 @@
       background: #ffffff;
       outline: none;
     }
+
+    /* CSS cho docx-preview giữ nguyên 100% bố cục trang Word trên máy */
+    .docx-wrapper {
+      background: #334155 !important;
+      padding: 18px !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .docx-wrapper > section.docx {
+      background: #ffffff !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+      margin-bottom: 16px !important;
+      color: #000000 !important;
+    }
+    /* Khi ở chế độ Chỉ xem (View-Only Default): không hiện viền sửa */
+    #office-editor-canvas[contenteditable="false"] {
+      cursor: default;
+      user-select: text;
+    }
+    /* Khi bật chế độ Chỉnh sửa trực tiếp */
+    #office-editor-canvas[contenteditable="true"] {
+      cursor: text;
+      outline: 2px dashed #eab308;
+      background-color: #fffef8;
+    }
+    .word-toolbar-btn {
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .word-toolbar-btn:hover {
+      background: #fef08a;
+      border-color: #eab308;
+      color: #0f172a;
+    }
+
   </style>
   <!-- GOOGLE FONTS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -165,6 +212,51 @@
       align-items: center !important;
       justify-content: center !important;
     }
+
+    /* CSS cho docx-preview giữ nguyên 100% bố cục trang Word trên máy */
+    .docx-wrapper {
+      background: #334155 !important;
+      padding: 18px !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .docx-wrapper > section.docx {
+      background: #ffffff !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+      margin-bottom: 16px !important;
+      color: #000000 !important;
+    }
+    /* Khi ở chế độ Chỉ xem (View-Only Default): không hiện viền sửa */
+    #office-editor-canvas[contenteditable="false"] {
+      cursor: default;
+      user-select: text;
+    }
+    /* Khi bật chế độ Chỉnh sửa trực tiếp */
+    #office-editor-canvas[contenteditable="true"] {
+      cursor: text;
+      outline: 2px dashed #eab308;
+      background-color: #fffef8;
+    }
+    .word-toolbar-btn {
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .word-toolbar-btn:hover {
+      background: #fef08a;
+      border-color: #eab308;
+      color: #0f172a;
+    }
+
   </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-100 antialiased selection:bg-[#FFC857] selection:text-[#03152D] bg-[#03152D]">
@@ -359,13 +451,68 @@
             </div>
           </div>
 
-          <!-- KHO TÀI LIỆU TRỰC DIỆN -->
-          <div class="space-y-3">
+          <!-- CẤP 1: MÀN HÌNH TỔNG QUAN CÁC LĨNH VỰC HOẠT ĐỘNG (CATEGORY HUB CARDS) -->
+          <div id="category-hub-section" class="space-y-3">
             <div class="flex items-center justify-between flex-wrap gap-2">
-              <h2 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
-                <span>Tài liệu & Quy trình đang lưu hành</span>
+              <div>
+                <h2 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
+                  <span>📂 Chọn Lĩnh vực Hoạt động để tra cứu</span>
+                  <span class="text-xs font-mono font-bold text-[#FFC857] bg-[#102E52] px-2.5 py-0.5 rounded-full border border-[#B98A33]/30" id="hub-total-cats-badge">7 lĩnh vực</span>
+                </h2>
+                <p class="text-xs text-[#B8C8DC] mt-0.5">Bấm chọn vào một lĩnh vực bên dưới để xem các Tab Quy trình (SOP), Hướng dẫn (WI) và Biểu mẫu của lĩnh vực đó</p>
+              </div>
+              <button type="button" onclick="openAllDocsDirectly()" class="px-3 py-1.5 rounded-xl bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-xs font-semibold transition cursor-pointer">
+                Xem tất cả tài liệu chung →
+              </button>
+            </div>
+
+            <div id="category-hub-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5"></div>
+          </div>
+
+          <!-- CẤP 2: KHÔNG GIAN CHI TIẾT LĨNH VỰC & CÁC TAB (QUY TRÌNH / HƯỚNG DẪN / BIỂU MẪU) -->
+          <div id="category-drilldown-section" class="hidden space-y-3.5">
+            <!-- Thanh Header của Lĩnh vực đang chọn + Nút Quay lại -->
+            <div class="card-enterprise rounded-2xl p-3.5 sm:p-4 border border-[#FFC857]/40 bg-gradient-to-r from-[#071F3D] via-[#102E52] to-[#071F3D] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+              <div class="flex items-center space-x-3">
+                <button type="button" onclick="backToCategoryHub()" class="px-3 py-1.5 rounded-xl bg-[#03152D] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/50 text-xs font-bold flex items-center space-x-1.5 transition cursor-pointer shrink-0 shadow-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                  <span>Tất cả lĩnh vực</span>
+                </button>
+                <div class="flex items-center space-x-2.5">
+                  <span id="drilldown-cat-icon" class="text-2xl">💻</span>
+                  <div>
+                    <h2 id="drilldown-cat-title" class="text-sm sm:text-base font-extrabold text-[#FFC857] leading-tight">Lĩnh vực IT</h2>
+                    <p id="drilldown-cat-subtitle" class="text-[11px] text-[#B8C8DC]">Chọn tab phân loại bên dưới để xem Quy trình, Hướng dẫn hoặc Biểu mẫu</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bộ chuyển Tab: Tất cả | Quy trình (SOP) | Hướng dẫn (WI) | Biểu mẫu -->
+              <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0" id="drilldown-type-tabs">
+                <button type="button" onclick="selectCategorySubTab('all')" data-subtab="all" class="subtab-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#FFC857] text-[#03152D] shadow-md flex items-center space-x-1.5 transition cursor-pointer shrink-0">
+                  <span>Tất cả</span>
+                  <span id="subtab-count-all" class="px-1.5 py-0.2 rounded-full bg-[#03152D]/20 text-[10px] font-mono">0</span>
+                </button>
+                <button type="button" onclick="selectCategorySubTab('Quy trình')" data-subtab="Quy trình" class="subtab-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#03152D]/80 text-[#B8C8DC] hover:text-white border border-[#B98A33]/30 flex items-center space-x-1.5 transition cursor-pointer shrink-0">
+                  <span>📁 Quy trình (SOP)</span>
+                  <span id="subtab-count-sop" class="px-1.5 py-0.2 rounded-full bg-[#102E52] text-[#16A8F4] text-[10px] font-mono">0</span>
+                </button>
+                <button type="button" onclick="selectCategorySubTab('Hướng dẫn công việc')" data-subtab="Hướng dẫn công việc" class="subtab-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#03152D]/80 text-[#B8C8DC] hover:text-white border border-[#B98A33]/30 flex items-center space-x-1.5 transition cursor-pointer shrink-0">
+                  <span>📄 Hướng dẫn (WI)</span>
+                  <span id="subtab-count-wi" class="px-1.5 py-0.2 rounded-full bg-[#102E52] text-[#16A8F4] text-[10px] font-mono">0</span>
+                </button>
+                <button type="button" onclick="selectCategorySubTab('Biểu mẫu')" data-subtab="Biểu mẫu" class="subtab-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#03152D]/80 text-[#B8C8DC] hover:text-white border border-[#B98A33]/30 flex items-center space-x-1.5 transition cursor-pointer shrink-0">
+                  <span>📝 Biểu mẫu</span>
+                  <span id="subtab-count-forms" class="px-1.5 py-0.2 rounded-full bg-[#102E52] text-[#22C58B] text-[10px] font-mono">0</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <h3 class="text-xs sm:text-sm font-bold text-white flex items-center space-x-2">
+                <span id="drilldown-list-heading">Danh sách tài liệu đang lưu hành</span>
                 <span class="text-xs font-mono font-bold text-[#FFC857] bg-[#102E52] px-2 py-0.5 rounded-full border border-[#B98A33]/30" id="results-count-text">0 kết quả</span>
-              </h2>
+              </h3>
               <div class="inline-flex items-center bg-[#071F3D] p-0.5 rounded-xl border border-[#B98A33]/35 shadow-inner">
                 <button type="button" onclick="setDocLayoutMode('grid')" class="btn-layout-grid px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center space-x-1 transition cursor-pointer" title="Xem dạng Thẻ lưới (Grid)">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
@@ -391,13 +538,12 @@
                 Chưa có dữ liệu tài liệu phù hợp với bộ lọc tìm kiếm hoặc hệ thống chưa cập nhật.
               </p>
               <div class="pt-2 flex justify-center space-x-3">
-                <button id="btn-empty-login-admin" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md">
+                <button id="btn-empty-login-admin" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md cursor-pointer">
                   Đăng nhập
                 </button>
               </div>
             </div>
           </div>
-
         </div>
 
         <!-- ==================== VIEW 2: QUY TRÌNH (SOP) ==================== -->
@@ -758,9 +904,16 @@
       
       <!-- TOP TOOLBAR: TIÊU ĐỀ, BỘ PHẬN, TẢI VỀ, ZOOM, TOÀN MÀN HÌNH, SỬA, XÓA, ĐÓNG -->
       <div class="px-5 py-2.5 border-b border-[#B98A33]/25 flex items-center justify-between bg-[#03152D] shrink-0">
-        <div class="flex items-center space-x-3 min-w-0">
+        <div class="flex items-center space-x-2.5 min-w-0">
           <span id="modal-code-badge" class="px-2.5 py-1 rounded-lg bg-[#102E52] text-[#16A8F4] border border-[#16A8F4]/35 text-xs font-mono font-bold shrink-0"></span>
           <h3 id="modal-title" class="text-sm sm:text-base font-bold text-white truncate leading-tight"></h3>
+          <span id="modal-ver-pill" class="px-2 py-0.5 rounded-full bg-[#FFC857]/20 text-[#FFC857] border border-[#FFC857]/40 text-[10.5px] font-mono font-bold shrink-0">v1.0</span>
+          <!-- Chọn xem lại phiên bản cũ (CHỈ HIỂN THỊ CHO ADMIN KHI TÀI LIỆU CÓ BẢN CŨ) -->
+          <div id="admin-version-history-box" class="hidden items-center space-x-1.5 bg-[#102E52] px-2 py-0.5 rounded-lg border border-amber-400/50 shrink-0">
+            <span class="text-[10px] text-amber-300 font-semibold">🕒 Bản lưu (Admin):</span>
+            <select id="admin-version-select" onchange="switchReaderVersionView(this.value)" class="bg-[#03152D] text-[#FFC857] font-mono text-[11px] font-bold px-1.5 py-0.5 rounded border border-[#B98A33]/40 focus:outline-none cursor-pointer">
+            </select>
+          </div>
           <span id="modal-cat" class="hidden"></span>
           <span id="modal-type" class="hidden"></span>
           <span id="modal-dept-badge" class="hidden"></span>
@@ -826,25 +979,88 @@
         <!-- VÙNG XEM TÀI LIỆU TRỰC TIẾP (DIRECT PREVIEW CONTAINER) -->
         <div id="reader-preview-scroll-box" class="flex-1 bg-slate-900/60 rounded-xl p-1.5 sm:p-3 border border-[#B98A33]/20 overflow-y-auto flex justify-center items-start min-h-0">
           
-          <!-- KHUNG SOẠN THẢO & ĐIỀN BIỂU MẪU TRỰC TIẾP CHO TỆP WORD (.DOCX) VÀ EXCEL (.XLSX) -->
+          <!-- KHUNG XEM & SOẠN THẢO TỆP WORD (.DOCX) VÀ EXCEL (.XLSX) CHUẨN XÁC -->
           <div id="reader-office-live-editor" class="hidden w-full max-w-5xl bg-white text-slate-900 rounded-xl shadow-2xl border border-slate-300 flex flex-col overflow-hidden my-auto">
-            <!-- Thanh công cụ định dạng nhanh cho biểu mẫu Word / Excel -->
-            <div id="office-editor-toolbar" class="px-4 py-2 bg-slate-100 border-b border-slate-300 flex items-center justify-between flex-wrap gap-2 text-xs text-slate-700 select-none">
-              <div class="flex items-center space-x-1.5">
-                <span id="office-editor-badge" class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[10.5px]">WORD / EXCEL</span>
-                <span id="office-editor-filename" class="font-bold text-slate-800 truncate max-w-[240px]"></span>
-                <span class="text-slate-400">|</span>
-                <span class="text-[11px] text-emerald-700 font-semibold">✓ Nhấp trực tiếp vào biểu mẫu bên dưới để điền thông tin</span>
+            <!-- Thanh thông tin tệp ở Chế độ Xem (Mặc định luôn hiện gọn gàng) -->
+            <div class="px-4 py-2 bg-slate-100 border-b border-slate-300 flex items-center justify-between flex-wrap gap-2 text-xs text-slate-700 select-none">
+              <div class="flex items-center space-x-2">
+                <span id="office-editor-badge" class="px-2.5 py-0.5 rounded bg-blue-600 text-white font-bold text-[10.5px]">WORD (.DOCX)</span>
+                <span id="office-editor-filename" class="font-bold text-slate-800 truncate max-w-[280px]"></span>
+                <span id="office-mode-status-pill" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10.5px]">👁️ Chế độ Chỉ xem (Mặc định)</span>
               </div>
-              <div class="flex items-center space-x-1">
-                <button type="button" onclick="document.execCommand('bold', false, null)" class="px-2 py-1 rounded bg-white hover:bg-slate-200 border border-slate-300 font-bold cursor-pointer" title="In đậm (Ctrl+B)">B</button>
-                <button type="button" onclick="document.execCommand('italic', false, null)" class="px-2 py-1 rounded bg-white hover:bg-slate-200 border border-slate-300 italic cursor-pointer" title="In nghiêng (Ctrl+I)">I</button>
-                <button type="button" onclick="document.execCommand('underline', false, null)" class="px-2 py-1 rounded bg-white hover:bg-slate-200 border border-slate-300 underline cursor-pointer" title="Gạch chân (Ctrl+U)">U</button>
-                <button type="button" id="btn-excel-add-row" onclick="addExcelEditorRow()" class="hidden px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer">+ Thêm dòng</button>
-              </div>
+              <!-- Thanh chọn Sheet cho file Excel nhiều sheet -->
+              <div id="excel-sheet-tabs-bar" class="hidden items-center space-x-1 overflow-x-auto"></div>
             </div>
-            <!-- Vùng giấy A4 cho phép gõ/sửa trực tiếp -->
-            <div id="office-editor-canvas" contenteditable="true" spellcheck="false" class="editable-doc-canvas p-6 sm:p-10 min-h-[540px] max-h-[75vh] overflow-auto text-slate-900 text-xs sm:text-sm leading-relaxed focus:outline-none">
+
+            <!-- THANH CÔNG CỤ ĐỊNH DẠNG CHUẨN WORD (CHỈ HIỂN THỊ KHI NGƯỜI DÙNG BẤM NÚT "CHỈNH SỬA / ĐIỀN BIỂU MẪU") -->
+            <div id="office-editor-toolbar" class="hidden px-3 py-2 bg-amber-50/90 border-b border-amber-300 flex items-center flex-wrap gap-1.5 text-xs text-slate-800 select-none shadow-inner">
+              <!-- Chọn Font chữ -->
+              <select id="word-font-family" onchange="applyWordFormat('fontName', this.value)" class="px-2 py-1 rounded bg-white border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none cursor-pointer" title="Phông chữ">
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Be Vietnam Pro">Be Vietnam Pro</option>
+                <option value="Arial">Arial</option>
+                <option value="Tahoma">Tahoma</option>
+                <option value="Calibri">Calibri</option>
+              </select>
+
+              <!-- Chọn Cỡ chữ -->
+              <select id="word-font-size" onchange="applyWordFontSizePt(this.value)" class="px-2 py-1 rounded bg-white border border-slate-300 text-xs font-mono font-bold text-slate-800 focus:outline-none cursor-pointer" title="Cỡ chữ (pt)">
+                <option value="10pt">10 pt</option>
+                <option value="11pt">11 pt</option>
+                <option value="12pt">12 pt</option>
+                <option value="13pt" selected>13 pt</option>
+                <option value="14pt">14 pt</option>
+                <option value="16pt">16 pt</option>
+                <option value="18pt">18 pt</option>
+                <option value="20pt">20 pt</option>
+                <option value="24pt">24 pt</option>
+              </select>
+
+              <span class="text-slate-300">|</span>
+
+              <!-- Đậm, Nghiêng, Gạch chân -->
+              <button type="button" onclick="applyWordFormat('bold')" class="word-toolbar-btn font-bold" title="In đậm (Ctrl+B)">B</button>
+              <button type="button" onclick="applyWordFormat('italic')" class="word-toolbar-btn italic font-serif" title="In nghiêng (Ctrl+I)">I</button>
+              <button type="button" onclick="applyWordFormat('underline')" class="word-toolbar-btn underline" title="Gạch chân (Ctrl+U)">U</button>
+
+              <span class="text-slate-300">|</span>
+
+              <!-- Màu chữ & Màu nền -->
+              <label class="word-toolbar-btn space-x-1" title="Chọn màu chữ">
+                <span class="font-bold underline" style="text-decoration-color:#dc2626;">A</span>
+                <input type="color" value="#0f172a" onchange="applyWordFormat('foreColor', this.value)" class="w-4 h-4 border-0 p-0 bg-transparent cursor-pointer">
+              </label>
+              <label class="word-toolbar-btn space-x-1" title="Màu tô sáng nền chữ">
+                <span class="px-1 bg-yellow-300 text-slate-900 font-bold rounded-sm text-[10px]">ab</span>
+                <input type="color" value="#fef08a" onchange="applyWordFormat('hiliteColor', this.value)" class="w-4 h-4 border-0 p-0 bg-transparent cursor-pointer">
+              </label>
+
+              <span class="text-slate-300">|</span>
+
+              <!-- Căn lề: Trái, Giữa, Phải, Đều 2 bên -->
+              <button type="button" onclick="applyWordFormat('justifyLeft')" class="word-toolbar-btn" title="Căn lề trái">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h14"></path></svg>
+              </button>
+              <button type="button" onclick="applyWordFormat('justifyCenter')" class="word-toolbar-btn" title="Căn giữa">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10M5 18h14"></path></svg>
+              </button>
+              <button type="button" onclick="applyWordFormat('justifyRight')" class="word-toolbar-btn" title="Căn lề phải">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M10 12h10M6 18h14"></path></svg>
+              </button>
+              <button type="button" onclick="applyWordFormat('justifyFull')" class="word-toolbar-btn" title="Căn đều hai bên">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+              </button>
+
+              <span class="text-slate-300">|</span>
+
+              <!-- Danh sách & Bảng Excel -->
+              <button type="button" onclick="applyWordFormat('insertUnorderedList')" class="word-toolbar-btn" title="Danh sách dấu chấm">• Danh sách</button>
+              <button type="button" id="btn-excel-add-row" onclick="addExcelEditorRow()" class="hidden px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer">+ Thêm dòng</button>
+              <button type="button" id="btn-excel-add-col" onclick="addExcelEditorCol()" class="hidden px-2.5 py-1 rounded bg-teal-600 hover:bg-teal-700 text-white font-semibold cursor-pointer">+ Thêm cột</button>
+            </div>
+
+            <!-- Vùng hiển thị trang tài liệu (Mặc định contenteditable="false" - CHỈ XEM) -->
+            <div id="office-editor-canvas" contenteditable="false" spellcheck="false" class="p-4 sm:p-8 min-h-[540px] max-h-[76vh] overflow-auto text-slate-900 text-xs sm:text-sm leading-relaxed focus:outline-none">
             </div>
           </div>
           
@@ -1119,6 +1335,18 @@
             <option value="view_only">Chỉ xem trực tuyến (Chặn tải về máy - View Only)</option>
             <option value="admin_only">Chỉ Quản trị viên được tải về</option>
           </select>
+        </div>
+
+        <!-- GHI CHÚ CẬP NHẬT PHIÊN BẢN MỚI (V1 -> V2: BẢN CŨ TỰ ĐỘNG LƯU CHO ADMIN) -->
+        <div class="p-2.5 rounded-xl bg-[#102E52]/90 border border-[#FFC857]/40 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-[#FFC857]">🔄 Cập nhật Phiên bản Quy trình (VD: v1.0 ➔ v2.0):</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Lưu bản cũ cho Admin</span>
+          </div>
+          <p class="text-[10.5px] text-[#B8C8DC] leading-relaxed">
+            Khi bạn tăng số <strong>Phiên bản</strong> (ví dụ từ <code>1.0</code> lên <code>2.0</code>) hoặc tải tệp mới thay thế, phiên bản cũ sẽ tự động được lưu vào lịch sử cho Admin tra cứu, còn người dùng sẽ chỉ thấy phiên bản mới nhất.
+          </p>
+          <div id="edit-modal-history-list" class="hidden pt-1 border-t border-[#B98A33]/25 space-y-1 max-h-24 overflow-y-auto text-[10.5px]"></div>
         </div>
 
         <!-- TÍNH NĂNG MỚI: CHO PHÉP TẢI LÊN TỆP MỚI THAY THẾ TRONG MODAL CHỈNH SỬA -->
@@ -1465,6 +1693,7 @@
                 desc: d.description || d.desc || localDoc.desc || '',
                 currentFile: d.current_file || d.currentFile || localDoc.currentFile || (d.code + '.pdf'),
                 fileData: d.file_data || d.file_url || d.fileData || localDoc.fileData || '',
+                versionHistory: (Array.isArray(d.version_history) && d.version_history.length > 0) ? d.version_history : (localDoc.versionHistory || []),
                 relatedDocs: d.related_codes || d.relatedDocs || localDoc.relatedDocs || []
               };
             });
@@ -1572,7 +1801,9 @@
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center space-x-1.5 flex-wrap gap-1">
               <span class="font-mono text-xs font-bold text-[#16A8F4] bg-[#071F3D] px-2 py-0.5 rounded border border-[#16A8F4]/30">${doc.code}</span>
+              <span class="font-mono text-[10.5px] font-bold text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">v${doc.version || '1.0'}</span>
               ${accessBadge}
+              ${(currentUser && currentUser.role === 'admin' && Array.isArray(doc.versionHistory) && doc.versionHistory.length > 0) ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40" title="Admin: Có ${doc.versionHistory.length} phiên bản cũ được lưu trữ">🕓 +${doc.versionHistory.length} bản cũ</span>` : ''}
               ${downloadBadge}
             </div>
             ${adminActionsHtml}
@@ -1713,7 +1944,7 @@
           <td class="py-3 px-3 text-center font-mono text-slate-400">${idx + 1}</td>
           <td class="py-3 px-4 font-mono font-semibold text-slate-200 whitespace-nowrap">${doc.code}</td>
           <td class="py-3 px-4 font-semibold text-[#38BDF8] group-hover:text-[#FFC857] group-hover:underline transition leading-snug">${doc.title}</td>
-          <td class="py-3 px-3 text-center font-mono text-slate-300">${verDisplay}</td>
+          <td class="py-3 px-3 text-center font-mono"><span class="px-2 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-500/30 font-bold text-xs">v${verDisplay}</span>${(isAdmin && Array.isArray(doc.versionHistory) && doc.versionHistory.length > 0) ? `<div class="text-[10px] text-amber-300 mt-0.5">🕓 +${doc.versionHistory.length} bản cũ</div>` : ''}</td>
           <td class="py-3 px-3 text-center font-mono text-slate-300 whitespace-nowrap">${dateDisplay}</td>
           <td class="py-3 px-3 text-center text-slate-300 whitespace-nowrap">${typeDisplay}</td>
           <td class="py-3 px-3 text-center text-slate-300 whitespace-nowrap">${catDisplay}</td>
@@ -1762,12 +1993,170 @@
       }
     }
 
+    // =========================================================================
+    // KIẾN TRÚC ĐIỀU HƯỚNG 2 CẤP: CẤP 1 (CÁC LĨNH VỰC) -> CẤP 2 (TAB QUY TRÌNH, HƯỚNG DẪN, BIỂU MẪU)
+    // =========================================================================
+    let isViewingAllDocsDirect = false;
+
+    function getDocsForCategory(catObj) {
+      return documents.filter(doc => {
+        if (!isDocVisible(doc)) return false;
+        return (doc.category === catObj.name) || (doc.category === catObj.id) || (doc.dept === catObj.name);
+      });
+    }
+
+    function renderCategoryHub() {
+      const hubGrid = document.getElementById('category-hub-grid');
+      if (!hubGrid) return;
+      hubGrid.innerHTML = '';
+
+      const activeCats = CATEGORIES.filter(c => c.status !== 'Tạm ẩn');
+      activeCats.forEach(c => {
+        const catDocs = getDocsForCategory(c);
+        const sopCount = catDocs.filter(d => d.type === 'Quy trình').length;
+        const wiCount = catDocs.filter(d => d.type === 'Hướng dẫn công việc').length;
+        const formCount = catDocs.filter(d => d.type === 'Biểu mẫu').length;
+
+        const card = document.createElement('div');
+        card.className = 'card-enterprise rounded-2xl p-4 sm:p-5 cursor-pointer group flex flex-col justify-between transition-all hover:border-[#FFC857]';
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div class="w-11 h-11 rounded-2xl bg-[#102E52] border border-[#B98A33]/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition">
+                ${c.icon || '📁'}
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-[#03152D] text-[#FFC857] border border-[#B98A33]/40">
+                ${catDocs.length} tài liệu
+              </span>
+            </div>
+            <h3 class="text-base font-extrabold text-white group-hover:text-[#FFC857] transition">${c.name}</h3>
+            <p class="text-[11px] text-[#B8C8DC] mt-0.5 font-mono">Mã lĩnh vực: <strong class="text-cyan-300">${c.id}</strong></p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[#B98A33]/25 grid grid-cols-3 gap-1.5 text-center">
+            <div class="bg-[#03152D]/80 rounded-lg py-1.5 px-1 border border-[#16A8F4]/20">
+              <div class="text-xs font-mono font-bold text-[#16A8F4]">${sopCount}</div>
+              <div class="text-[10px] text-[#B8C8DC]">Quy trình</div>
+            </div>
+            <div class="bg-[#03152D]/80 rounded-lg py-1.5 px-1 border border-[#22C58B]/20">
+              <div class="text-xs font-mono font-bold text-[#22C58B]">${wiCount}</div>
+              <div class="text-[10px] text-[#B8C8DC]">Hướng dẫn</div>
+            </div>
+            <div class="bg-[#03152D]/80 rounded-lg py-1.5 px-1 border border-[#FFC857]/20">
+              <div class="text-xs font-mono font-bold text-[#FFC857]">${formCount}</div>
+              <div class="text-[10px] text-[#B8C8DC]">Biểu mẫu</div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-center justify-between text-[11px] font-bold text-[#FFC857] opacity-85 group-hover:opacity-100">
+            <span>Mở xem Quy trình • Hướng dẫn • Biểu mẫu</span>
+            <span class="group-hover:translate-x-1 transition-transform">→</span>
+          </div>
+        `;
+        card.addEventListener('click', () => {
+          openCategoryDrilldown(c.name);
+        });
+        hubGrid.appendChild(card);
+      });
+    }
+
+    function openCategoryDrilldown(catName, defaultSubTab = 'all') {
+      selectedCat = catName;
+      selectedType = defaultSubTab;
+      isViewingAllDocsDirect = false;
+      renderFilterChips();
+      renderDirectCards();
+    }
+    window.openCategoryDrilldown = openCategoryDrilldown;
+
+    function backToCategoryHub() {
+      selectedCat = 'all';
+      selectedType = 'all';
+      currentSearch = '';
+      isViewingAllDocsDirect = false;
+      const searchInput = document.getElementById('main-search-input');
+      if (searchInput) searchInput.value = '';
+      renderFilterChips();
+      renderDirectCards();
+    }
+    window.backToCategoryHub = backToCategoryHub;
+
+    function openAllDocsDirectly() {
+      selectedCat = 'all';
+      selectedType = 'all';
+      isViewingAllDocsDirect = true;
+      renderFilterChips();
+      renderDirectCards();
+    }
+    window.openAllDocsDirectly = openAllDocsDirectly;
+
+    function selectCategorySubTab(typeVal) {
+      selectedType = typeVal;
+      const ts = document.getElementById('filter-type-select');
+      if (ts) ts.value = typeVal;
+      renderDirectCards();
+    }
+    window.selectCategorySubTab = selectCategorySubTab;
+
+    function updateSubTabButtonsUI(catDocsList) {
+      const countAll = catDocsList.length;
+      const countSop = catDocsList.filter(d => d.type === 'Quy trình').length;
+      const countWi = catDocsList.filter(d => d.type === 'Hướng dẫn công việc').length;
+      const countForms = catDocsList.filter(d => d.type === 'Biểu mẫu').length;
+
+      const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      setTxt('subtab-count-all', countAll);
+      setTxt('subtab-count-sop', countSop);
+      setTxt('subtab-count-wi', countWi);
+      setTxt('subtab-count-forms', countForms);
+
+      document.querySelectorAll('.cat-subtab-btn').forEach(btn => {
+        const t = btn.getAttribute('data-subtab');
+        const isActive = (t === selectedType);
+        if (isActive) {
+          btn.className = 'cat-subtab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2 bg-[#FFC857] text-[#03152D] shadow-md cursor-pointer';
+        } else {
+          btn.className = 'cat-subtab-btn px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 text-[#B8C8DC] hover:text-white bg-[#03152D]/60 border border-[#B98A33]/25 cursor-pointer';
+        }
+      });
+    }
+
     function renderDirectCards() {
       const container = document.getElementById('documents-grid');
       const emptyState = document.getElementById('empty-state');
+      const hubSection = document.getElementById('category-hub-section');
+      const drilldownSection = document.getElementById('category-drilldown-section');
       const normSearch = removeVietnameseTones(currentSearch);
 
-      const filtered = documents.filter(doc => {
+      // Luôn cập nhật số liệu trên các thẻ Lĩnh vực ở màn hình Tổng quan
+      renderCategoryHub();
+
+      const shouldShowHubOnly = (selectedCat === 'all' && !normSearch && !isViewingAllDocsDirect);
+      if (hubSection && drilldownSection) {
+        if (shouldShowHubOnly) {
+          hubSection.classList.remove('hidden');
+          drilldownSection.classList.add('hidden');
+          return;
+        } else {
+          hubSection.classList.add('hidden');
+          drilldownSection.classList.remove('hidden');
+        }
+      }
+
+      // Cập nhật tiêu đề Lĩnh vực đang chọn ở Cấp 2
+      const catTitleEl = document.getElementById('drilldown-cat-title');
+      const catIconEl = document.getElementById('drilldown-cat-icon');
+      if (selectedCat !== 'all') {
+        const catObj = CATEGORIES.find(c => c.name === selectedCat || c.id === selectedCat);
+        if (catTitleEl) catTitleEl.textContent = `Lĩnh vực: ${catObj ? catObj.name : selectedCat}`;
+        if (catIconEl) catIconEl.textContent = catObj ? (catObj.icon || '📁') : '📁';
+      } else {
+        if (catTitleEl) catTitleEl.textContent = normSearch ? `Kết quả tìm kiếm: "${currentSearch}"` : 'Tất cả Tài liệu & Quy trình đang lưu hành';
+        if (catIconEl) catIconEl.textContent = normSearch ? '🔍' : '📚';
+      }
+
+      // Tính danh sách tài liệu của lĩnh vực hiện tại (trước khi lọc theo Tab loại văn bản) để đếm số lượng từng Tab
+      const baseCatDocs = documents.filter(doc => {
         if (!isDocVisible(doc)) return false;
         if (selectedCat !== 'all') {
           const catObj = CATEGORIES.find(c => c.name === selectedCat || c.id === selectedCat);
@@ -1775,7 +2164,6 @@
                           (catObj && (doc.category === catObj.name || doc.category === catObj.id || doc.dept === catObj.name));
           if (!isMatch) return false;
         }
-        if (selectedType !== 'all' && doc.type !== selectedType) return false;
         if (normSearch) {
           const matchTitle = removeVietnameseTones(doc.title).includes(normSearch);
           const matchCode = removeVietnameseTones(doc.code).includes(normSearch);
@@ -1783,6 +2171,13 @@
           const matchDept = removeVietnameseTones(doc.dept || '').includes(normSearch);
           if (!matchTitle && !matchCode && !matchDesc && !matchDept) return false;
         }
+        return true;
+      });
+
+      updateSubTabButtonsUI(baseCatDocs);
+
+      const filtered = baseCatDocs.filter(doc => {
+        if (selectedType !== 'all' && doc.type !== selectedType) return false;
         return true;
       });
 
@@ -1940,23 +2335,19 @@
 
       const allBtn = document.createElement('button');
       allBtn.className = `px-3 py-2 rounded-full font-medium whitespace-nowrap transition ${selectedCat === 'all' ? 'bg-[#FFC857] text-[#03152D] font-bold shadow-md' : 'bg-[#071F3D] text-[#B8C8DC] hover:text-white border border-[#B98A33]/30'}`;
-      allBtn.textContent = 'Tất cả lĩnh vực';
+      allBtn.innerHTML = '🏠 Tổng quan Lĩnh vực';
       allBtn.addEventListener('click', () => {
-        selectedCat = 'all';
-        renderFilterChips();
-        renderDirectCards();
+        backToCategoryHub();
       });
       container.appendChild(allBtn);
 
       CATEGORIES.filter(c => c.status !== 'Tạm ẩn').forEach(c => {
         const btn = document.createElement('button');
         const isActive = (selectedCat === c.name || selectedCat === c.id);
-        btn.className = `px-3 py-2 rounded-full font-medium whitespace-nowrap transition flex items-center space-x-1.5 ${isActive ? 'bg-[#FFC857] text-[#03152D] font-bold shadow-md' : 'bg-[#071F3D] text-[#B8C8DC] hover:text-white border border-[#B98A33]/30'}`;
+        btn.className = `px-3 py-2 rounded-full font-medium whitespace-nowrap transition flex items-center space-x-1.5 cursor-pointer ${isActive ? 'bg-[#FFC857] text-[#03152D] font-bold shadow-md' : 'bg-[#071F3D] text-[#B8C8DC] hover:text-white border border-[#B98A33]/30'}`;
         btn.innerHTML = `<span>${c.icon}</span><span>${c.name}</span>`;
         btn.addEventListener('click', () => {
-          selectedCat = c.name;
-          renderFilterChips();
-          renderDirectCards();
+          openCategoryDrilldown(c.name, 'all');
         });
         container.appendChild(btn);
       });
@@ -2240,6 +2631,88 @@
     let isLiveEditMode = false;
     let currentOfficeEditType = null; // 'docx' | 'xlsx' | 'pdf' | 'sheet'
     let currentExcelWorkbook = null;
+    let currentExcelSheetName = '';
+
+    // Hàm áp dụng trạng thái Chỉ xem (Mặc định) hoặc Chỉnh sửa cho vùng văn bản Word/Excel
+    function syncOfficeEditorLockState() {
+      const editorCanvas = document.getElementById('office-editor-canvas');
+      const toolbar = document.getElementById('office-editor-toolbar');
+      const statusPill = document.getElementById('office-mode-status-pill');
+      const banner = document.getElementById('live-edit-status-banner');
+      const btnReset = document.getElementById('btn-reset-live-fill');
+      const lblToggle = document.getElementById('lbl-toggle-live-fill');
+      const lblDownload = document.getElementById('lbl-modal-download-btn');
+
+      if (editorCanvas) {
+        editorCanvas.setAttribute('contenteditable', isLiveEditMode ? 'true' : 'false');
+        editorCanvas.querySelectorAll('td, th').forEach(cell => {
+          cell.setAttribute('contenteditable', isLiveEditMode ? 'true' : 'false');
+        });
+      }
+
+      if (isLiveEditMode) {
+        if (toolbar) toolbar.classList.remove('hidden');
+        if (banner) banner.classList.remove('hidden');
+        if (btnReset) btnReset.classList.remove('hidden');
+        if (lblToggle) lblToggle.textContent = 'Đang bật chế độ Chỉnh sửa';
+        if (lblDownload) lblDownload.textContent = 'Tải bản đã chỉnh sửa';
+        if (statusPill) {
+          statusPill.textContent = '✍️ Đang bật Chỉnh sửa trực tiếp (Không lưu đè bản gốc)';
+          statusPill.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-400';
+        }
+      } else {
+        if (toolbar) toolbar.classList.add('hidden');
+        if (banner) banner.classList.add('hidden');
+        if (btnReset) btnReset.classList.add('hidden');
+        if (lblToggle) lblToggle.textContent = 'Chỉnh sửa / Điền biểu mẫu';
+        if (lblDownload) lblDownload.textContent = 'Tải về';
+        if (statusPill) {
+          statusPill.textContent = '👁️ Chế độ Chỉ xem (Mặc định - Bấm nút Chỉnh sửa ở trên nếu cần điền)';
+          statusPill.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700';
+        }
+      }
+    }
+
+    function renderExcelSheetByName(sheetName) {
+      if (!currentExcelWorkbook || !window.XLSX) return;
+      const editorCanvas = document.getElementById('office-editor-canvas');
+      const tabsBar = document.getElementById('excel-sheet-tabs-bar');
+      if (!editorCanvas) return;
+
+      currentExcelSheetName = sheetName;
+      const ws = currentExcelWorkbook.Sheets[sheetName];
+      if (!ws) return;
+
+      // Render bảng Excel đầy đủ dữ liệu, xử lý cả các ô merge và giữ nguyên bố cục bảng
+      const htmlTable = window.XLSX.utils.sheet_to_html(ws, { id: 'live-excel-table', editable: isLiveEditMode });
+      editorCanvas.innerHTML = `
+        <div class="mb-3 pb-2 border-b border-slate-300 flex justify-between items-center">
+          <div>
+            <strong class="text-slate-800 text-sm">${currentDoc ? currentDoc.title : 'Bảng tính Excel'}</strong>
+            <span class="ml-2 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold">Sheet: ${sheetName}</span>
+          </div>
+          <span class="text-[11px] text-slate-500">${isLiveEditMode ? 'Nhấp vào ô bất kỳ để chỉnh sửa số liệu' : 'Chế độ Chỉ xem chuẩn'}</span>
+        </div>
+        <div class="overflow-x-auto">${htmlTable}</div>
+      `;
+      const tbl = editorCanvas.querySelector('table');
+      if (tbl) {
+        tbl.className = 'excel-edit-table';
+        tbl.querySelectorAll('td, th').forEach(cell => {
+          cell.setAttribute('contenteditable', isLiveEditMode ? 'true' : 'false');
+        });
+      }
+
+      if (tabsBar) {
+        tabsBar.querySelectorAll('button[data-sheet]').forEach(btn => {
+          const isAct = btn.getAttribute('data-sheet') === sheetName;
+          btn.className = isAct
+            ? 'px-2.5 py-1 rounded text-[11px] font-bold bg-emerald-600 text-white shadow-sm cursor-pointer'
+            : 'px-2.5 py-1 rounded text-[11px] font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 cursor-pointer';
+        });
+      }
+    }
+    window.renderExcelSheetByName = renderExcelSheetByName;
 
     async function renderOfficeLiveEditor(doc) {
       const editorWrapper = document.getElementById('reader-office-live-editor');
@@ -2247,10 +2720,8 @@
       const badgeEl = document.getElementById('office-editor-badge');
       const fnameEl = document.getElementById('office-editor-filename');
       const btnAddRow = document.getElementById('btn-excel-add-row');
-      const banner = document.getElementById('live-edit-status-banner');
-      const lblToggle = document.getElementById('lbl-toggle-live-fill');
-      const btnReset = document.getElementById('btn-reset-live-fill');
-      const lblDownload = document.getElementById('lbl-modal-download-btn');
+      const btnAddCol = document.getElementById('btn-excel-add-col');
+      const tabsBar = document.getElementById('excel-sheet-tabs-bar');
 
       if (!editorWrapper || !editorCanvas) return false;
 
@@ -2258,14 +2729,16 @@
       const fData = doc.fileData || '';
 
       editorWrapper.classList.remove('hidden');
-      if (banner) banner.classList.remove('hidden');
-      if (btnReset) btnReset.classList.remove('hidden');
-      isLiveEditMode = true;
-      if (lblToggle) lblToggle.textContent = 'Đang bật chế độ điền biểu mẫu';
-      if (lblDownload) lblDownload.textContent = 'Tải bản đã chỉnh sửa';
-      if (fnameEl) fnameEl.textContent = doc.currentFile || doc.title;
+      // QUAN TRỌNG: Mặc định vào là CHỈ XEM (View-Only), KHÔNG tự động bật chế độ chỉnh sửa!
+      isLiveEditMode = false;
+      syncOfficeEditorLockState();
 
-      // Trường hợp 1: Tệp Excel (.xlsx, .xls)
+      if (fnameEl) fnameEl.textContent = doc.currentFile || doc.title;
+      if (tabsBar) { tabsBar.classList.add('hidden'); tabsBar.classList.remove('flex'); tabsBar.innerHTML = ''; }
+      if (btnAddRow) btnAddRow.classList.add('hidden');
+      if (btnAddCol) btnAddCol.classList.add('hidden');
+
+      // Trường hợp 1: Tệp Excel (.xlsx, .xls) -> Hỗ trợ chuyển đổi nhiều Sheet & kiểm tra định dạng bảng chuẩn
       if (/\.(xls|xlsx)$/i.test(fName) && fData && window.XLSX) {
         currentOfficeEditType = 'xlsx';
         if (badgeEl) {
@@ -2273,88 +2746,167 @@
           badgeEl.className = 'px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10.5px]';
         }
         if (btnAddRow) btnAddRow.classList.remove('hidden');
+        if (btnAddCol) btnAddCol.classList.remove('hidden');
         try {
           const b64 = fData.includes(',') ? fData.split(',')[1] : fData;
-          const wb = window.XLSX.read(b64, { type: 'base64' });
+          const wb = window.XLSX.read(b64, { type: 'base64', cellStyles: true });
           currentExcelWorkbook = wb;
-          const firstSheetName = wb.SheetNames[0];
-          const ws = wb.Sheets[firstSheetName];
-          const htmlTable = window.XLSX.utils.sheet_to_html(ws, { id: 'live-excel-table', editable: true });
-          editorCanvas.innerHTML = `<div class="mb-3 pb-2 border-b border-slate-200 flex justify-between items-center"><strong class="text-slate-800 text-sm">${doc.title}</strong><span class="text-[11px] text-slate-500">Sheet: ${firstSheetName}</span></div>` + htmlTable;
-          const tbl = editorCanvas.querySelector('table');
-          if (tbl) tbl.className = 'excel-edit-table';
+
+          if (wb.SheetNames.length > 1 && tabsBar) {
+            tabsBar.classList.remove('hidden');
+            tabsBar.classList.add('flex');
+            wb.SheetNames.forEach(sName => {
+              const b = document.createElement('button');
+              b.type = 'button';
+              b.setAttribute('data-sheet', sName);
+              b.textContent = `📊 ${sName}`;
+              b.onclick = () => renderExcelSheetByName(sName);
+              tabsBar.appendChild(b);
+            });
+          }
+
+          renderExcelSheetByName(wb.SheetNames[0]);
+          syncOfficeEditorLockState();
           return true;
         } catch (err) {
           console.warn('XLSX parse error:', err);
         }
       }
 
-      // Trường hợp 2: Tệp Word (.docx)
-      if (/\.docx$/i.test(fName) && fData && window.mammoth) {
+      // Trường hợp 2: Tệp Word (.docx) -> Dùng docx-preview giữ nguyên 100% căn giữa, căn phải chữ ký, font chữ, kích thước và bảng biểu như trên máy!
+      if (/\.docx$/i.test(fName) && fData) {
         currentOfficeEditType = 'docx';
         if (badgeEl) {
           badgeEl.textContent = 'WORD (.DOCX)';
           badgeEl.className = 'px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[10.5px]';
         }
-        if (btnAddRow) btnAddRow.classList.add('hidden');
         try {
           const b64 = fData.includes(',') ? fData.split(',')[1] : fData;
           const bin = atob(b64);
           const bytes = new Uint8Array(bin.length);
           for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-          const res = await window.mammoth.convertToHtml({ arrayBuffer: bytes.buffer });
-          editorCanvas.innerHTML = res.value || `<h2 style="text-align:center;font-weight:bold;">${doc.title}</h2><p>Nhập nội dung biểu mẫu tại đây...</p>`;
-          return true;
+
+          if (window.docx && typeof window.docx.renderAsync === 'function') {
+            editorCanvas.innerHTML = '';
+            await window.docx.renderAsync(bytes.buffer, editorCanvas, null, {
+              className: 'docx',
+              inWrapper: true,
+              ignoreWidth: false,
+              ignoreHeight: false,
+              ignoreFonts: false,
+              breakPages: true,
+              experimental: true
+            });
+            syncOfficeEditorLockState();
+            return true;
+          } else if (window.mammoth) {
+            const res = await window.mammoth.convertToHtml({ arrayBuffer: bytes.buffer });
+            editorCanvas.innerHTML = res.value || `<h2 style="text-align:center;font-weight:bold;">${doc.title}</h2>`;
+            syncOfficeEditorLockState();
+            return true;
+          }
         } catch (err) {
-          console.warn('Mammoth DOCX parse error:', err);
+          console.warn('DOCX high-fidelity render error, trying fallback:', err);
+          if (window.mammoth) {
+            try {
+              const b64 = fData.includes(',') ? fData.split(',')[1] : fData;
+              const bin = atob(b64);
+              const bytes = new Uint8Array(bin.length);
+              for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+              const res = await window.mammoth.convertToHtml({ arrayBuffer: bytes.buffer });
+              editorCanvas.innerHTML = res.value;
+              syncOfficeEditorLockState();
+              return true;
+            } catch (e2) {}
+          }
         }
       }
 
-      // Trường hợp 3: Tệp .doc cũ hoặc biểu mẫu chuẩn -> Tạo khung soạn thảo Biểu mẫu chuẩn A4 cho phép điền trực tiếp
+      // Trường hợp 3: Tệp .doc hoặc Biểu mẫu chuẩn trên hệ thống -> Hiển thị trang A4 chuẩn quốc gia (Mặc định Chỉ xem, bấm Chỉnh sửa mới cho sửa)
       currentOfficeEditType = 'docx';
       if (badgeEl) {
-        badgeEl.textContent = 'BIỂU MẪU TRỰC TUYẾN';
+        badgeEl.textContent = 'BIỂU MẪU CHUẨN A4';
         badgeEl.className = 'px-2 py-0.5 rounded bg-amber-600 text-white font-bold text-[10.5px]';
       }
-      if (btnAddRow) btnAddRow.classList.add('hidden');
       editorCanvas.innerHTML = `
-        <div style="border-bottom: 2px solid #1e293b; padding-bottom: 12px; margin-bottom: 18px; text-align: center;">
-          <div style="font-weight: bold; font-size: 13px; text-transform: uppercase;">TRƯỜNG THPT FPT CẦN THƠ - VĂN PHÒNG NHÀ TRƯỜNG</div>
-          <div style="font-size: 11px; color: #475569;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM | Độc lập - Tự do - Hạnh phúc</div>
-          <h2 style="font-size: 18px; font-weight: 800; margin-top: 12px; text-transform: uppercase;">${doc.title}</h2>
-          <div style="font-size: 12px; color: #334155;">Mã biểu mẫu: <strong>${doc.code}</strong> | Bộ phận: <strong>${doc.dept || doc.category}</strong></div>
-        </div>
-        <div style="line-height: 1.8; font-size: 13.5px;">
-          <p><strong>Kính gửi:</strong> Ban Giám hiệu / Trưởng bộ phận ${doc.dept || doc.category}</p>
-          <p><strong>Họ và tên người đề nghị:</strong> .........................................................................................</p>
-          <p><strong>Đơn vị / Bộ phận công tác:</strong> ....................................................................................</p>
-          <p><strong>Nội dung đề nghị / kê khai chi tiết:</strong></p>
-          <p>${doc.desc || '...........................................................................................................................................'}</p>
-          <table class="excel-edit-table" style="margin-top: 12px; margin-bottom: 16px;">
-            <thead>
-              <tr style="background:#f1f5f9;font-weight:bold;">
-                <th>STT</th>
-                <th>Nội dung / Hạng mục</th>
-                <th>Số lượng / ĐVT</th>
-                <th>Ghi chú</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>1</td><td>..................................................</td><td>...............</td><td>.........................</td></tr>
-              <tr><td>2</td><td>..................................................</td><td>...............</td><td>.........................</td></tr>
-              <tr><td>3</td><td>..................................................</td><td>...............</td><td>.........................</td></tr>
-            </tbody>
-          </table>
-          <div style="display:flex; justify-content:space-between; margin-top: 28px; text-align:center;">
-            <div><strong>TRƯỞNG BỘ PHẬN</strong><br><em>(Ký và ghi rõ họ tên)</em><br><br><br><br></div>
-            <div><strong>Cần Thơ, ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}</strong><br><strong>NGƯỜI LÀM ĐƠN</strong><br><em>(Ký và ghi rõ họ tên)</em><br><br><br><br></div>
+        <div style="padding: 28px 36px; font-family: 'Times New Roman', serif; color: #000;">
+          <div style="border-bottom: 2px solid #1e293b; padding-bottom: 12px; margin-bottom: 18px; text-align: center;">
+            <div style="font-weight: bold; font-size: 13pt; text-transform: uppercase;">TRƯỜNG THPT FPT CẦN THƠ - VĂN PHÒNG NHÀ TRƯỜNG</div>
+            <div style="font-size: 11.5pt; color: #334155;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM | Độc lập - Tự do - Hạnh phúc</div>
+            <h2 style="font-size: 16pt; font-weight: bold; margin-top: 14px; text-transform: uppercase; text-align: center;">${doc.title}</h2>
+            <div style="font-size: 11.5pt; color: #334155;">Mã tài liệu: <strong>${doc.code}</strong> | Phiên bản: <strong>v${doc.version || '1.0'}</strong> | Bộ phận: <strong>${doc.dept || doc.category}</strong></div>
+          </div>
+          <div style="line-height: 1.8; font-size: 13pt;">
+            <p><strong>Kính gửi:</strong> Ban Giám hiệu / Trưởng bộ phận ${doc.dept || doc.category}</p>
+            <p><strong>Họ và tên người đề nghị:</strong> .........................................................................................</p>
+            <p><strong>Đơn vị / Bộ phận công tác:</strong> ....................................................................................</p>
+            <p><strong>Nội dung đề nghị / kê khai chi tiết:</strong></p>
+            <p>${doc.desc || '...........................................................................................................................................'}</p>
+            <table class="excel-edit-table" style="margin-top: 12px; margin-bottom: 16px;">
+              <thead>
+                <tr style="background:#f1f5f9;font-weight:bold;">
+                  <th>STT</th>
+                  <th>Nội dung / Hạng mục</th>
+                  <th>Số lượng / ĐVT</th>
+                  <th>Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>1</td><td>..................................................</td><td>...............</td><td>.........................</td></tr>
+                <tr><td>2</td><td>..................................................</td><td>...............</td><td>.........................</td></tr>
+                <tr><td>3</td><td>..................................................</td><td>...............</td><td>.........................</td></tr>
+              </tbody>
+            </table>
+            <div style="display:flex; justify-content:space-between; margin-top: 28px; text-align:center;">
+              <div><strong>TRƯỞNG BỘ PHẬN</strong><br><em>(Ký và ghi rõ họ tên)</em><br><br><br><br></div>
+              <div><strong>Cần Thơ, ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}</strong><br><strong>NGƯỜI LÀM ĐƠN</strong><br><em>(Ký và ghi rõ họ tên)</em><br><br><br><br></div>
+            </div>
           </div>
         </div>
       `;
+      syncOfficeEditorLockState();
       return true;
     }
 
+    // Các hàm thanh công cụ định dạng Word (Font, Size, Màu sắc, Căn lề trái/giữa/phải/đều)
+    function applyWordFormat(cmd, val = null) {
+      if (!isLiveEditMode) {
+        showToast('Vui lòng bấm nút "Chỉnh sửa / Điền biểu mẫu" ở thanh trên cùng trước khi định dạng!', 'info');
+        return;
+      }
+      const editorCanvas = document.getElementById('office-editor-canvas');
+      if (editorCanvas) editorCanvas.focus();
+      document.execCommand('styleWithCSS', false, true);
+      document.execCommand(cmd, false, val);
+    }
+    window.applyWordFormat = applyWordFormat;
+
+    function applyWordFontSizePt(ptVal) {
+      if (!isLiveEditMode) {
+        showToast('Vui lòng bấm nút "Chỉnh sửa / Điền biểu mẫu" trước khi đổi cỡ chữ!', 'info');
+        return;
+      }
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+        document.execCommand('fontSize', false, '4');
+        return;
+      }
+      document.execCommand('fontSize', false, '7');
+      const editorCanvas = document.getElementById('office-editor-canvas');
+      if (editorCanvas) {
+        editorCanvas.querySelectorAll('font[size="7"], span[style*="xxx-large"]').forEach(el => {
+          el.removeAttribute('size');
+          el.style.fontSize = ptVal;
+        });
+      }
+    }
+    window.applyWordFontSizePt = applyWordFontSizePt;
+
     function addExcelEditorRow() {
+      if (!isLiveEditMode) {
+        showToast('Vui lòng bật chế độ Chỉnh sửa trước khi thêm dòng!', 'info');
+        return;
+      }
       const tbl = document.querySelector('#office-editor-canvas table');
       if (!tbl) return;
       const firstRow = tbl.querySelector('tr');
@@ -2370,6 +2922,22 @@
       tbody.appendChild(tr);
     }
     window.addExcelEditorRow = addExcelEditorRow;
+
+    function addExcelEditorCol() {
+      if (!isLiveEditMode) {
+        showToast('Vui lòng bật chế độ Chỉnh sửa trước khi thêm cột!', 'info');
+        return;
+      }
+      const tbl = document.querySelector('#office-editor-canvas table');
+      if (!tbl) return;
+      tbl.querySelectorAll('tr').forEach((tr, idx) => {
+        const cell = document.createElement(idx === 0 ? 'th' : 'td');
+        cell.setAttribute('contenteditable', 'true');
+        cell.textContent = idx === 0 ? 'Cột mới' : '';
+        tr.appendChild(cell);
+      });
+    }
+    window.addExcelEditorCol = addExcelEditorCol;
 
     function enablePdfPageClickToFill() {
       const mainPane = document.getElementById('pdf-right-main-pane');
@@ -2411,21 +2979,19 @@
       if (!currentDoc) return;
       isLiveEditMode = !isLiveEditMode;
 
-      const banner = document.getElementById('live-edit-status-banner');
       const pdfHint = document.getElementById('pdf-edit-tools-hint');
-      const lblToggle = document.getElementById('lbl-toggle-live-fill');
-      const btnReset = document.getElementById('btn-reset-live-fill');
-      const lblDownload = document.getElementById('lbl-modal-download-btn');
       const sheetTarget = document.getElementById('reader-sheet-zoom-target');
       const iframeWrapper = document.getElementById('reader-iframe-wrapper');
+      const officeEditor = document.getElementById('reader-office-live-editor');
+      const editorCanvas = document.getElementById('office-editor-canvas');
+
+      syncOfficeEditorLockState();
 
       if (isLiveEditMode) {
-        if (banner) banner.classList.remove('hidden');
-        if (btnReset) btnReset.classList.remove('hidden');
-        if (lblToggle) lblToggle.textContent = 'Đang bật sửa trực tiếp';
-        if (lblDownload) lblDownload.textContent = 'Tải bản đã chỉnh sửa';
-
-        if (iframeWrapper && !iframeWrapper.classList.contains('hidden')) {
+        if (officeEditor && !officeEditor.classList.contains('hidden')) {
+          if (editorCanvas) editorCanvas.focus();
+          showToast('Đã bật Chế độ Chỉnh sửa trực tiếp kèm Thanh công cụ Word/Excel! (Bản gốc vẫn được bảo toàn)', 'info');
+        } else if (iframeWrapper && !iframeWrapper.classList.contains('hidden')) {
           currentOfficeEditType = 'pdf';
           if (pdfHint) { pdfHint.classList.remove('hidden'); pdfHint.classList.add('flex'); }
           enablePdfPageClickToFill();
@@ -2438,15 +3004,13 @@
           showToast('Bạn có thể nhấp trực tiếp vào văn bản bên dưới để chỉnh sửa trước khi In hoặc Tải về!', 'info');
         }
       } else {
-        if (banner) banner.classList.add('hidden');
         if (pdfHint) { pdfHint.classList.add('hidden'); pdfHint.classList.remove('flex'); }
-        if (lblToggle) lblToggle.textContent = 'Điền / Chỉnh sửa trực tiếp';
-        if (lblDownload) lblDownload.textContent = 'Tải về';
         if (sheetTarget) {
           sheetTarget.removeAttribute('contenteditable');
           sheetTarget.classList.remove('editable-doc-canvas');
         }
         enablePdfPageClickToFill();
+        showToast('Đã chuyển về Chế độ Chỉ xem (View-Only).', 'info');
       }
     }
     window.toggleLiveFormEditMode = toggleLiveFormEditMode;
@@ -2516,6 +3080,8 @@
             body { font-family: 'Times New Roman', serif; font-size: 13pt; line-height: 1.6; color: #000; }
             table { border-collapse: collapse; width: 100%; margin: 12px 0; }
             table, th, td { border: 1px solid #333; padding: 6px 10px; }
+            .docx-wrapper { background: transparent !important; padding: 0 !important; }
+            .docx-wrapper > section.docx { box-shadow: none !important; margin: 0 auto !important; }
           </style>
         </head>
         <body>
@@ -2556,7 +3122,34 @@
       setEl('modal-cat', doc.category);
       setEl('modal-type', doc.type);
       setEl('modal-ver', doc.version || '1.0');
+      setEl('modal-ver-pill', 'v' + (doc.version || '1.0'));
       setEl('modal-dept-badge', doc.dept || doc.category);
+
+      // HIỂN THỊ LỊCH SỬ PHIÊN BẢN CŨ (v1 -> v2) DÀNH RIÊNG CHO ADMIN
+      const verBox = document.getElementById('admin-version-history-box');
+      const verSelect = document.getElementById('admin-version-select');
+      if (verBox && verSelect) {
+        const historyList = Array.isArray(doc.versionHistory) ? doc.versionHistory : [];
+        if (currentUser && currentUser.role === 'admin' && historyList.length > 0) {
+          verBox.classList.remove('hidden');
+          verBox.classList.add('flex');
+          verSelect.innerHTML = '';
+          const latestOpt = document.createElement('option');
+          latestOpt.value = 'latest';
+          latestOpt.textContent = `v${doc.version || '1.0'} (Bản hiện hành - Đang áp dụng)`;
+          verSelect.appendChild(latestOpt);
+
+          historyList.slice().reverse().forEach((h, idx) => {
+            const opt = document.createElement('option');
+            opt.value = String(historyList.length - 1 - idx);
+            opt.textContent = `v${h.version} (Bản lưu cũ - ${h.updatedAt || h.effectiveDate || ''})`;
+            verSelect.appendChild(opt);
+          });
+        } else {
+          verBox.classList.add('hidden');
+          verBox.classList.remove('flex');
+        }
+      }
 
       setEl('sheet-preview-title', doc.title);
       setEl('sheet-preview-code', doc.code);
@@ -2691,6 +3284,67 @@
         modalReader.classList.add('flex');
       }
     }
+
+    // Cho phép Admin chuyển đổi xem giữa Phiên bản mới hiện hành (v2.0) và các Phiên bản cũ đã lưu trữ (v1.0)
+    async function switchReaderVersionView(verIndexValue) {
+      if (!currentDoc || !currentUser || currentUser.role !== 'admin') return;
+      const baseDoc = documents.find(d => d.code === currentDoc.code) || currentDoc;
+      if (verIndexValue === 'latest') {
+        await openDocReader(baseDoc.id || baseDoc.code);
+        showToast(`Đang xem phiên bản hiện hành: v${baseDoc.version}`, 'info');
+        return;
+      }
+      const idx = parseInt(verIndexValue, 10);
+      const historyList = Array.isArray(baseDoc.versionHistory) ? baseDoc.versionHistory : [];
+      const archived = historyList[idx];
+      if (!archived) return;
+
+      let archivedFileData = archived.fileData || '';
+      if (!archivedFileData && archived.fileDataKey) {
+        const cachedOld = await getFileFromIDB(archived.fileDataKey);
+        if (cachedOld && cachedOld.fileData) archivedFileData = cachedOld.fileData;
+      }
+
+      const tempArchivedDoc = {
+        ...baseDoc,
+        version: archived.version,
+        effectiveDate: archived.effectiveDate || baseDoc.effectiveDate,
+        desc: archived.desc !== undefined ? archived.desc : baseDoc.desc,
+        currentFile: archived.currentFile || baseDoc.currentFile,
+        fileData: archivedFileData || baseDoc.fileData
+      };
+
+      currentDoc = tempArchivedDoc;
+      const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      setEl('modal-ver', archived.version);
+      setEl('modal-ver-pill', `v${archived.version} (BẢN CŨ LƯU TRỮ)`);
+      setEl('sheet-preview-ver', archived.version);
+      setEl('sheet-preview-date', archived.effectiveDate || '');
+      setEl('sheet-preview-desc', archived.desc || '');
+
+      const fData = tempArchivedDoc.fileData || '';
+      const fName = (tempArchivedDoc.currentFile || '').toLowerCase();
+      const iframeWrapper = document.getElementById('reader-iframe-wrapper');
+      const imageWrapper = document.getElementById('reader-image-wrapper');
+      const officeEditor = document.getElementById('reader-office-live-editor');
+      const sheetZoomTarget = document.getElementById('reader-sheet-zoom-target');
+
+      if (iframeWrapper) iframeWrapper.classList.add('hidden');
+      if (imageWrapper) imageWrapper.classList.add('hidden');
+      if (officeEditor) officeEditor.classList.add('hidden');
+      if (sheetZoomTarget) sheetZoomTarget.classList.add('hidden');
+
+      if (fData.startsWith('data:application/pdf') || fName.endsWith('.pdf')) {
+        if (iframeWrapper) iframeWrapper.classList.remove('hidden');
+        setTimeout(() => renderCustomSplitPdf(fData), 40);
+      } else if (/\.(doc|docx|xls|xlsx)$/i.test(fName) || tempArchivedDoc.type === 'Biểu mẫu') {
+        await renderOfficeLiveEditor(tempArchivedDoc);
+      } else {
+        if (sheetZoomTarget) sheetZoomTarget.classList.remove('hidden');
+      }
+      showToast(`Admin: Đang xem bản lưu cũ v${archived.version} (${archived.currentFile || 'Tài liệu'})`, 'info');
+    }
+    window.switchReaderVersionView = switchReaderVersionView;
 
     // Mở Modal Chỉnh sửa tài liệu (HỖ TRỢ UP FILE MỚI THAY THẾ)
     function openEditDocModal(code) {
@@ -3972,11 +4626,27 @@
 
           const existingIdx = documents.findIndex(d => d.code.toLowerCase() === codeVal.toLowerCase());
           if (existingIdx !== -1) {
-            documents[existingIdx] = { ...documents[existingIdx], ...newDoc };
-            showToast(`Đã cập nhật phiên bản mới cho mã: ${codeVal}`, 'info');
+            const oldDoc = documents[existingIdx];
+            const prevHistory = Array.isArray(oldDoc.versionHistory) ? [...oldDoc.versionHistory] : [];
+            const archiveKey = `${oldDoc.code}__v_${oldDoc.version || '1.0'}_${Date.now()}`;
+            if (oldDoc.fileData) {
+              await saveFileToIDB(archiveKey, oldDoc.currentFile, oldDoc.fileData);
+            }
+            prevHistory.push({
+              version: oldDoc.version || '1.0',
+              effectiveDate: oldDoc.effectiveDate || new Date().toLocaleDateString('vi-VN'),
+              currentFile: oldDoc.currentFile || '',
+              fileDataKey: archiveKey,
+              desc: oldDoc.desc || '',
+              updatedAt: new Date().toLocaleString('vi-VN')
+            });
+            newDoc.versionHistory = prevHistory;
+            documents[existingIdx] = { ...oldDoc, ...newDoc };
+            showToast(`Đã nâng cấp tài liệu ${codeVal} lên v${newDoc.version} (Bản cũ v${oldDoc.version || '1.0'} đã lưu cho Admin)!`, 'info');
           } else {
+            newDoc.versionHistory = [];
             documents.unshift(newDoc);
-            showToast(`Đã đăng tải thành công: ${codeVal}`, 'success');
+            showToast(`Đã đăng tải thành công: ${codeVal} (v${newDoc.version})`, 'success');
           }
 
           safeSaveDocumentsToLocal(documents);
@@ -4005,7 +4675,8 @@
               access_level: newDoc.access,
               download_perm: newDoc.downloadPerm,
               current_file: newDoc.currentFile,
-              file_data: payloadFileData
+              file_data: payloadFileData,
+              version_history: newDoc.versionHistory || []
             })
           }).catch(() => {});
         } catch (err) {
@@ -4040,7 +4711,34 @@
             });
           }
 
-          doc.version = document.getElementById('inp-edit-doc-ver').value.trim() || '1.0';
+          const oldVer = doc.version || '1.0';
+          const newVerInput = document.getElementById('inp-edit-doc-ver').value.trim() || '1.0';
+          const isVersionUpgraded = (newVerInput !== oldVer) || Boolean(editUploadedFileData);
+
+          if (isVersionUpgraded) {
+            if (!Array.isArray(doc.versionHistory)) doc.versionHistory = [];
+            const archiveKey = `${doc.code}__v_${oldVer}_${Date.now()}`;
+            let oldFileBlob = doc.fileData || '';
+            if (!oldFileBlob) {
+              const cached = await getFileFromIDB(doc.code);
+              if (cached && cached.fileData) oldFileBlob = cached.fileData;
+            }
+            if (oldFileBlob) {
+              await saveFileToIDB(archiveKey, doc.currentFile, oldFileBlob);
+            }
+            doc.versionHistory.push({
+              version: oldVer,
+              effectiveDate: doc.effectiveDate || new Date().toLocaleDateString('vi-VN'),
+              currentFile: doc.currentFile || '',
+              fileDataKey: archiveKey,
+              desc: doc.desc || '',
+              updatedAt: new Date().toLocaleString('vi-VN')
+            });
+            // Nếu tải tệp mới mà quên tăng số phiên bản, tự động gợi ý tăng nhẹ hoặc giữ số phiên bản mới đã nhập
+            doc.effectiveDate = new Date().toLocaleDateString('vi-VN');
+          }
+
+          doc.version = newVerInput;
           doc.title = document.getElementById('inp-edit-doc-title').value.trim();
           doc.category = document.getElementById('inp-edit-doc-cat').value;
           doc.type = document.getElementById('inp-edit-doc-type').value;
@@ -4053,7 +4751,9 @@
             doc.fileData = editUploadedFileData;
             doc.currentFile = editUploadedFileName;
             await saveFileToIDB(doc.code, doc.currentFile, doc.fileData);
-            showToast(`Đã cập nhật tệp tin "${editUploadedFileName}" thành công!`, 'info');
+            showToast(`Đã cập nhật phiên bản v${doc.version} kèm tệp "${editUploadedFileName}" (Bản cũ v${oldVer} đã lưu cho Admin)!`, 'info');
+          } else if (isVersionUpgraded) {
+            showToast(`Đã nâng cấp phiên bản từ v${oldVer} lên v${doc.version} (Bản cũ vẫn lưu cho Admin xem)!`, 'info');
           }
 
           safeSaveDocumentsToLocal(documents);
@@ -4078,7 +4778,8 @@
               access_level: doc.access,
               download_perm: doc.downloadPerm,
               current_file: doc.currentFile,
-              file_data: payloadFileData
+              file_data: payloadFileData,
+              version_history: doc.versionHistory || []
             })
           }).catch(() => {});
         } catch (err) {

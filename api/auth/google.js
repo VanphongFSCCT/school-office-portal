@@ -1,10 +1,13 @@
 import { neon } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -26,7 +29,6 @@ export default async function handler(req, res) {
     const picture = payload.picture || '';
     const hd = payload.hd || '';
 
-    // CHỈ các email được set riêng trong ADMIN_EMAILS mới là Super Admin gốc (KHÔNG gán mặc định cho @fpt.edu.vn)
     const rootAdmins = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com', 'vp.fsc@fpt.edu.vn'];
     const envAdmins = (process.env.ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
     const superAdmins = [...new Set([...rootAdmins, ...envAdmins])];
@@ -34,7 +36,6 @@ export default async function handler(req, res) {
     const isSuperAdmin = superAdmins.includes(email);
     const isFptDomain = (hd === 'fpt.edu.vn') || email.endsWith('@fpt.edu.vn');
 
-    // Mặc định tài khoản @fpt.edu.vn chỉ là 'user' (Cán bộ xem nội bộ), KHÔNG phải 'admin'
     let userRole = isSuperAdmin ? 'admin' : 'user';
     let userDept = isSuperAdmin ? 'Quản trị hệ thống' : 'Cán bộ FPT Education';
 
@@ -56,14 +57,10 @@ export default async function handler(req, res) {
 
         const existing = await sql`SELECT * FROM users WHERE email = ${email}`;
         if (existing.length > 0) {
-          // Lấy đúng quyền được set riêng trong bảng users (hoặc giữ quyền admin nếu là rootAdmins)
           userRole = isSuperAdmin ? 'admin' : existing[0].role;
           userDept = existing[0].department || userDept;
           await sql`UPDATE users SET full_name = ${name}, picture = ${picture}, role = ${userRole}, updated_at = CURRENT_TIMESTAMP WHERE email = ${email}`;
         } else {
-          // Nếu chưa có trong bảng phân quyền:
-          // - Nếu là @fpt.edu.vn -> chỉ được quyền 'user' (xem & tải tài liệu nội bộ được cấp phép)
-          // - Nếu là Gmail ngoài và không nằm trong bảng phân quyền -> từ chối
           if (!isSuperAdmin && !isFptDomain) {
             return res.status(403).json({
               error: `Tài khoản ${email} chưa được cấp quyền trong hệ thống. Vui lòng sử dụng tài khoản @fpt.edu.vn hoặc liên hệ Quản trị viên để được cấp quyền.`
