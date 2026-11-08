@@ -344,35 +344,35 @@
           <svg class="w-4 h-4 shrink-0 text-white" fill="currentColor" viewBox="0 0 20 20">
             <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
           </svg>
-          <span class="flex-1 text-left">Tổng quan (Home)</span>
+          <span class="flex-1 text-left">Tổng quan</span>
         </button>
 
-        <!-- CÂY DANH MỤC CON THEO BỘ PHẬN ĐANG CHỌN (CHUẨN GIAO DIỆN QMS ẢNH 2) -->
+        <!-- CÂY DANH MỤC CON THEO BỘ PHẬN ĐANG CHỌN -->
         <div id="sidebar-qms-dept-tree" class="hidden pl-2 pr-1 py-1.5 space-y-1 bg-[#03152D]/65 rounded-xl border border-[#B98A33]/30 my-1">
           <div class="px-2.5 py-1 flex items-center justify-between text-xs font-extrabold text-[#FFC857]">
             <span id="sidebar-tree-dept-name" class="truncate">📂 Bộ phận</span>
             <span class="text-[10px] font-mono text-cyan-300">▾</span>
           </div>
           <button type="button" onclick="selectCategorySubTab('all')" data-tree-tab="all" class="sidebar-tree-subbtn w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-white bg-[#102E52] font-bold transition cursor-pointer">
-            <span>⊞ Tất cả văn bản</span>
+            <span>⊞ Tất cả tài liệu</span>
             <span id="tree-count-all" class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#03152D] text-[#FFC857]">0</span>
           </button>
           <button type="button" onclick="selectCategorySubTab('Quy trình')" data-tree-tab="Quy trình" class="sidebar-tree-subbtn w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-[#B8C8DC] hover:text-white hover:bg-[#102E52]/60 transition cursor-pointer">
-            <span>⊞ Mô tả quá trình (SOP)</span>
+            <span>⊞ Quy trình</span>
             <span id="tree-count-sop" class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#03152D] text-[#16A8F4]">0</span>
           </button>
           <button type="button" onclick="selectCategorySubTab('Hướng dẫn công việc')" data-tree-tab="Hướng dẫn công việc" class="sidebar-tree-subbtn w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-[#B8C8DC] hover:text-white hover:bg-[#102E52]/60 transition cursor-pointer">
-            <span>⊞ Hướng dẫn (WI)</span>
+            <span>⊞ Hướng dẫn công việc</span>
             <span id="tree-count-wi" class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#03152D] text-[#22C58B]">0</span>
           </button>
           <button type="button" onclick="selectCategorySubTab('Biểu mẫu')" data-tree-tab="Biểu mẫu" class="sidebar-tree-subbtn w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-[#B8C8DC] hover:text-white hover:bg-[#102E52]/60 transition cursor-pointer">
-            <span>⊞ Biểu mẫu (Forms)</span>
+            <span>⊞ Biểu mẫu</span>
             <span id="tree-count-forms" class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#03152D] text-[#FFC857]">0</span>
           </button>
         </div>
 
-        <!-- TRUY CẬP NHANH CHUẨN QMS: TÀI LIỆU YÊU THÍCH & TÀI LIỆU VỪA XEM -->
-        <div class="pt-2 pb-1 px-3 text-[10px] uppercase font-bold tracking-wider text-[#B8C8DC]/80">Truy cập nhanh (QMS)</div>
+        <!-- TRUY CẬP NHANH: TÀI LIỆU YÊU THÍCH & TÀI LIỆU VỪA XEM -->
+        <div class="pt-2 pb-1 px-3 text-[10px] uppercase font-bold tracking-wider text-[#B8C8DC]/80">Truy cập nhanh</div>
         <button type="button" onclick="openSpecialDocFilter('favourites')" id="btn-sidebar-fav" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium text-[#B8C8DC] hover:text-white hover:bg-[#102E52]/60 transition cursor-pointer">
           <span class="flex items-center space-x-2.5">
             <span class="text-rose-400">❤️</span>
@@ -390,13 +390,13 @@
 
         <!-- PHÂN LOẠI TÀI LIỆU TRÊN SIDEBAR: CHỈ HIỂN THỊ CHO ADMIN (CÁC TÀI KHOẢN KHÁC TRA CỨU THEO TỔNG QUAN) -->
         <div id="section-admin-doc-types" class="hidden space-y-1">
-          <div class="pt-2 pb-1 px-3 text-[10px] uppercase font-bold tracking-wider text-[#FFC857]/80">Phân loại tài liệu (Admin)</div>
+          <div class="pt-2 pb-1 px-3 text-[10px] uppercase font-bold tracking-wider text-[#FFC857]/80">Phân loại tài liệu</div>
 
           <button class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl nav-btn-inactive" data-view="sop">
             <svg class="w-4 h-4 shrink-0 text-[#16A8F4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
             </svg>
-            <span class="flex-1 text-left font-medium">Quy trình (SOP)</span>
+            <span class="flex-1 text-left font-medium">Quy trình</span>
             <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-[#102E52] border border-[#16A8F4]/30 text-[#16A8F4] font-bold" id="badge-count-sop">0</span>
           </button>
 
@@ -404,7 +404,7 @@
             <svg class="w-4 h-4 shrink-0 text-[#16A8F4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
-            <span class="flex-1 text-left font-medium">Hướng dẫn (WI)</span>
+            <span class="flex-1 text-left font-medium">Hướng dẫn công việc</span>
             <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-[#102E52] border border-[#16A8F4]/30 text-[#16A8F4] font-bold" id="badge-count-wi">0</span>
           </button>
 
@@ -463,17 +463,11 @@
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
           </button>
           <div class="flex items-center space-x-2.5 text-xs sm:text-sm flex-wrap gap-y-1">
-            <span class="text-[#B8C8DC] font-medium cursor-pointer hover:text-white" onclick="backToCategoryHub()">School Office QMS</span>
+            <span class="text-[#B8C8DC] font-medium cursor-pointer hover:text-white" onclick="backToCategoryHub()">Văn phòng Trường</span>
             <span class="text-slate-600">/</span>
             <span id="top-breadcrumb-title" class="text-[#FFC857] font-bold">Tổng quan</span>
-            <button type="button" onclick="openSpecialDocFilter('new')" class="ml-2 px-2.5 py-1 rounded-full bg-[#102E52] hover:bg-[#163B68] border border-[#B98A33]/40 text-xs font-semibold text-white flex items-center space-x-1.5 transition cursor-pointer shadow-sm" title="Xem danh sách văn bản mới ban hành / cập nhật">
-              <span>Văn bản mới ban hành</span>
-              <span class="px-1.5 py-0.2 rounded-full bg-orange-500 text-white text-[9.5px] font-extrabold uppercase">New</span>
-            </button>
-            <span class="hidden lg:inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10px] font-mono text-emerald-300" title="Dữ liệu tài liệu và định danh được mã hóa đầu-cuối AES-256-GCM & chống AI thu thập dữ liệu">
-              <span>🛡️</span>
-              <span>AES-256 E2EE</span>
-            </span>
+
+
           </div>
         </div>
 
@@ -490,7 +484,7 @@
             <button onclick="applyZoom(-10)" title="Thu nhỏ" class="hover:text-[#FFC857] px-1 font-mono font-bold">-</button>
             <span id="zoom-text-val" class="font-mono text-[11px] text-[#FFC857] w-9 text-center font-bold">100%</span>
             <button onclick="applyZoom(10)" title="Phóng to" class="hover:text-[#FFC857] px-1 font-mono font-bold">+</button>
-            <button onclick="applyZoom(0)" title="Mặc định" class="text-[10px] text-slate-400 hover:text-white pl-1 border-l border-[#B98A33]/30">Reset</button>
+            <button onclick="applyZoom(0)" title="Mặc định" class="text-[10px] text-slate-400 hover:text-white pl-1 border-l border-[#B98A33]/30">Mặc định</button>
           </div>
 
           <!-- Khi chưa đăng nhập -->
@@ -514,7 +508,7 @@
               </div>
               <div class="flex items-center space-x-1.5">
                 <span id="logged-user-name-display" class="text-xs font-bold text-white max-w-[120px] sm:max-w-[180px] truncate">VP_FSC Cần Thơ</span>
-                <span id="badge-admin-tag" class="hidden px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-mono">ADMIN</span>
+                <span id="badge-admin-tag" class="hidden px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-mono">QUẢN TRỊ</span>
                 <span id="badge-user-tag" class="hidden px-1.5 py-0.5 rounded bg-[#16A8F4]/20 text-[#16A8F4] border border-[#16A8F4]/40 text-[9px] font-mono">CÁN BỘ</span>
                 <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-[#FFC857] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
@@ -532,28 +526,27 @@
         <!-- ==================== VIEW 1: TỔNG QUAN (DASHBOARD - ĐÃ LOẠI BỎ BANNER CỒNG KỀNH THEO YÊU CẦU) ==================== -->
         <div id="view-dashboard" class="space-y-4 view-pane">
           
-          <!-- SEARCH & QUICK FILTER BAR (THIẾT KẾ ĐẸP CHUẨN ẢNH MẪU) -->
-          <div class="card-enterprise rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3 border border-[#B98A33]/25">
-            <!-- Search bar: Pill shape, glowing border, gold search icon -->
+          <!-- THANH TÌM KIẾM TRANG TỔNG QUAN (TỰ ĐỘNG ẨN KHI ĐÃ CHỌN VÀO BỘ PHẬN CỤ THỂ) -->
+          <div id="home-top-search-card" class="card-enterprise rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3 border border-[#B98A33]/25">
             <div class="relative w-full">
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <svg class="w-5 h-5 text-[#FFC857]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
               </div>
-              <input type="text" id="main-search-input" autocomplete="off" placeholder="Tìm kiếm nhanh: Gõ tên quy trình, mã hiệu, phòng ban..." class="w-full pl-11 pr-28 py-2 rounded-full bg-white text-slate-900 placeholder-slate-500 text-xs sm:text-sm font-medium border-2 border-[#FFC857]/80 focus:border-[#FFC857] shadow-[0_0_20px_rgba(255,200,87,0.3)] focus:outline-none transition">
+              <input type="text" id="main-search-input" autocomplete="off" placeholder="Tìm kiếm nhanh: Gõ tên quy trình, mã tài liệu, bộ phận..." class="w-full pl-11 pr-28 py-2 rounded-full bg-white text-slate-900 placeholder-slate-500 text-xs sm:text-sm font-medium border-2 border-[#FFC857]/80 focus:border-[#FFC857] shadow-[0_0_20px_rgba(255,200,87,0.3)] focus:outline-none transition">
               <div class="absolute inset-y-0 right-1.5 flex items-center space-x-1">
                 <button id="btn-reset-filters" class="px-3.5 py-1.5 rounded-full bg-[#102E52] hover:bg-[#FFC857] text-[#B8C8DC] hover:text-[#03152D] text-xs font-semibold transition border border-[#B98A33]/30 cursor-pointer">
                   Làm mới
                 </button>
               </div>
 
-              <!-- DANH SÁCH GỢI Ý TÌM KIẾM THÔNG MINH TRONG LÚC GÕ (LIVE SEARCH SUGGESTIONS) -->
+              <!-- DANH SÁCH GỢI Ý TÌM KIẾM THÔNG MINH TRONG LÚC GÕ -->
               <div id="search-suggestions-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 z-50 bg-[#071F3D]/98 backdrop-blur-xl border border-[#FFC857]/50 rounded-2xl shadow-[0_12px_35px_rgba(0,0,0,0.65)] overflow-hidden max-h-80 overflow-y-auto divide-y divide-[#B98A33]/20">
               </div>
             </div>
 
-            <!-- Tùy chọn phạm vi tìm kiếm chuẩn QMS (Search in: Tất cả | Tên tài liệu | Mã & Nội dung) -->
+            <!-- Tùy chọn phạm vi tìm kiếm thuần Việt -->
             <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-[#B8C8DC]">
               <div class="flex items-center space-x-3 flex-wrap gap-y-1">
                 <span class="font-bold text-white">Tìm kiếm trong:</span>
@@ -563,137 +556,135 @@
                 </label>
                 <label class="inline-flex items-center space-x-1 cursor-pointer hover:text-white">
                   <input type="radio" name="qms-search-scope" value="name" onchange="setQmsSearchScope(this.value)" class="accent-[#FFC857]">
-                  <span>Tên tài liệu (Document name)</span>
+                  <span>Tên tài liệu</span>
                 </label>
                 <label class="inline-flex items-center space-x-1 cursor-pointer hover:text-white">
                   <input type="radio" name="qms-search-scope" value="content" onchange="setQmsSearchScope(this.value)" class="accent-[#FFC857]">
-                  <span>Mã hiệu & Nội dung (Document content)</span>
+                  <span>Mã tài liệu & Nội dung</span>
                 </label>
               </div>
-              <div class="text-[11px] text-emerald-300 font-mono hidden sm:block">🔒 Dữ liệu mã hóa đầu-cuối AES-256-GCM</div>
+              
             </div>
 
-            <!-- Chips Lọc theo bộ phận -->
+            <!-- Chuyển nhanh Bộ phận (chỉ hiện ở Tổng quan) -->
             <div class="space-y-1.5 pt-1 border-t border-[#B98A33]/20">
-              <div class="text-xs font-semibold text-[#B8C8DC]">Chuyển nhanh Bộ phận:</div>
+              <div class="text-xs font-semibold text-[#B8C8DC]">Chọn nhanh Bộ phận:</div>
               <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs" id="filter-cat-row"></div>
             </div>
           </div>
 
-          <!-- HÀNG 5 THẺ CHỨC NĂNG MÀU SẮC CHUẨN QMS (QMS QUICK ACCESS TILES - THAM KHẢO ẢNH 1) -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <!-- HÀNG 5 THẺ TRUY CẬP NHANH TRANG TỔNG QUAN (BIỂU TƯỢNG VECTOR CHUYÊN NGHIỆP) -->
+          <div id="home-quick-tiles-row" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <div onclick="backToCategoryHub()" class="cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#1E62B5] to-[#134078] border border-sky-400/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
               <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-sky-200 font-bold">Handbooks</div>
-                <div class="text-sm font-extrabold mt-0.5">Sổ tay Bộ phận</div>
+                <div class="text-[10.5px] uppercase tracking-wider text-sky-200 font-bold">Danh mục đơn vị</div>
+                <div class="text-sm font-extrabold mt-0.5">Các Bộ phận</div>
                 <div class="text-[11px] text-sky-100/90 mt-1 font-mono" id="tile-count-depts">7 bộ phận</div>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-2xl group-hover:rotate-6 transition">🏛️</div>
+              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+              </div>
             </div>
 
             <div onclick="openGlobalTypeFilter('Quy trình')" class="cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#F27A24] to-[#C85408] border border-orange-300/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
               <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-orange-100 font-bold">Processes (SOP)</div>
-                <div class="text-sm font-extrabold mt-0.5">Mô tả Quá trình</div>
+                <div class="text-[10.5px] uppercase tracking-wider text-orange-100 font-bold">Văn bản vận hành</div>
+                <div class="text-sm font-extrabold mt-0.5">Quy trình</div>
                 <div class="text-[11px] text-orange-100 mt-1 font-mono" id="tile-count-sop">0 quy trình</div>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-2xl group-hover:rotate-6 transition">📘</div>
+              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+              </div>
             </div>
 
             <div onclick="openGlobalTypeFilter('Hướng dẫn công việc')" class="cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#2B68E0] to-[#1B459B] border border-indigo-300/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
               <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-indigo-100 font-bold">Work Instructions</div>
-                <div class="text-sm font-extrabold mt-0.5">Hướng dẫn (WI)</div>
+                <div class="text-[10.5px] uppercase tracking-wider text-indigo-100 font-bold">Tài liệu nghiệp vụ</div>
+                <div class="text-sm font-extrabold mt-0.5">Hướng dẫn công việc</div>
                 <div class="text-[11px] text-indigo-100 mt-1 font-mono" id="tile-count-wi">0 hướng dẫn</div>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-2xl group-hover:rotate-6 transition">📋</div>
+              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+              </div>
             </div>
 
             <div onclick="openGlobalTypeFilter('Biểu mẫu')" class="cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#D99B1E] to-[#9E6B06] border border-amber-300/50 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
               <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-amber-100 font-bold">Templates & Forms</div>
-                <div class="text-sm font-extrabold mt-0.5">Biểu mẫu Điện tử</div>
+                <div class="text-[10.5px] uppercase tracking-wider text-amber-100 font-bold">Biểu mẫu công tác</div>
+                <div class="text-sm font-extrabold mt-0.5">Biểu mẫu điện tử</div>
                 <div class="text-[11px] text-amber-100 mt-1 font-mono" id="tile-count-forms">0 biểu mẫu</div>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-2xl group-hover:rotate-6 transition">📝</div>
+              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              </div>
             </div>
 
             <div onclick="openSpecialDocFilter('favourites')" class="col-span-2 sm:col-span-1 cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#0F9D84] to-[#086656] border border-emerald-300/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
               <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-emerald-100 font-bold">For You</div>
-                <div class="text-sm font-extrabold mt-0.5">Tài liệu Yêu thích</div>
+                <div class="text-[10.5px] uppercase tracking-wider text-emerald-100 font-bold">Danh mục cá nhân</div>
+                <div class="text-sm font-extrabold mt-0.5">Tài liệu yêu thích</div>
                 <div class="text-[11px] text-emerald-100 mt-1 font-mono" id="tile-count-fav">0 đã lưu</div>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-2xl group-hover:rotate-6 transition">❤️</div>
+              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+              </div>
             </div>
           </div>
 
-          <!-- CẤP 1: MÀN HÌNH TỔNG QUAN CÁC BỘ PHẬN CHUẨN QMS HANDBOOKS (ẢNH 1) -->
+          <!-- CẤP 1: MÀN HÌNH TỔNG QUAN CÁC BỘ PHẬN -->
           <div id="category-hub-section" class="space-y-3 card-enterprise rounded-2xl p-4 sm:p-5 border border-[#B98A33]/30">
             <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-[#B98A33]/20">
               <div>
                 <h2 class="text-sm sm:text-base font-extrabold text-white flex items-center space-x-2">
-                  <span>📂 Danh mục Bộ phận Chức năng (Handbooks)</span>
+                  <span>📂 Danh mục các Bộ phận</span>
                   <span class="text-xs font-mono font-bold text-[#FFC857] bg-[#03152D] px-2.5 py-0.5 rounded-full border border-[#B98A33]/40" id="hub-total-cats-badge">7 bộ phận</span>
                 </h2>
-                <p class="text-xs text-[#B8C8DC] mt-0.5">Bấm chọn vào một Bộ phận bên dưới để mở danh mục Quy trình (Mô tả quá trình), Hướng dẫn và Biểu mẫu của bộ phận đó</p>
+                <p class="text-xs text-[#B8C8DC] mt-0.5">Bấm chọn vào một Bộ phận bên dưới để mở danh mục Quy trình, Hướng dẫn công việc và Biểu mẫu của bộ phận đó</p>
               </div>
               <button type="button" onclick="openAllDocsDirectly()" class="px-3.5 py-1.5 rounded-xl bg-[#03152D] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-xs font-bold transition cursor-pointer">
-                Xem Master List (Tất cả tài liệu) →
+                Xem tất cả tài liệu →
               </button>
             </div>
 
             <div id="category-hub-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 pt-1"></div>
           </div>
 
-          <!-- CẤP 2: KHÔNG GIAN CHI TIẾT BỘ PHẬN & CÁC TAB (QUY TRÌNH / HƯỚNG DẪN / BIỂU MẪU) -->
+          <!-- CẤP 2: KHÔNG GIAN KHI ĐÃ CHỌN BỘ PHẬN (CHỈ HIỂN THỊ Ô TÌM MÃ TÀI LIỆU / TÊN TÀI LIỆU & DANH MỤC TÀI LIỆU; CÁC PHÂN LOẠI CON NẰM Ở CỘT TRÁI) -->
           <div id="category-drilldown-section" class="hidden space-y-3.5">
-            <!-- Thanh Header của Bộ phận đang chọn + Nút Quay lại -->
-            <div class="card-enterprise rounded-2xl p-3.5 sm:p-4 border border-[#FFC857]/40 bg-gradient-to-r from-[#071F3D] via-[#102E52] to-[#071F3D] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+            <!-- Thanh tiêu đề Bộ phận đang chọn + Nút Quay lại Tổng quan -->
+            <div class="card-enterprise rounded-2xl p-3 sm:p-3.5 border border-[#FFC857]/40 bg-gradient-to-r from-[#071F3D] via-[#102E52] to-[#071F3D] flex items-center justify-between gap-3 shadow-lg">
               <div class="flex items-center space-x-3">
                 <button type="button" onclick="backToCategoryHub()" class="px-3 py-1.5 rounded-xl bg-[#03152D] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/50 text-xs font-bold flex items-center space-x-1.5 transition cursor-pointer shrink-0 shadow-sm">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                  <span>Tất cả bộ phận</span>
+                  <span>Quay lại Tổng quan</span>
                 </button>
                 <div class="flex items-center space-x-2.5">
                   <span id="drilldown-cat-icon" class="text-2xl">💻</span>
                   <div>
                     <h2 id="drilldown-cat-title" class="text-sm sm:text-base font-extrabold text-[#FFC857] leading-tight">Bộ phận IT</h2>
-                    <p id="drilldown-cat-subtitle" class="text-[11px] text-[#B8C8DC]">Chọn tab phân loại bên dưới để xem Quy trình, Hướng dẫn hoặc Biểu mẫu</p>
+                    <p id="drilldown-cat-subtitle" class="text-[11px] text-[#B8C8DC]">Chọn Quy trình, Hướng dẫn công việc hoặc Biểu mẫu ở danh mục bên trái</p>
                   </div>
                 </div>
               </div>
 
-              <!-- Bộ chuyển Tab: Tất cả | Quy trình (SOP) | Hướng dẫn (WI) | Biểu mẫu -->
-              <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0" id="drilldown-type-tabs">
-                <button type="button" onclick="selectCategorySubTab('all')" data-subtab="all" class="subtab-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#FFC857] text-[#03152D] shadow-md flex items-center space-x-1.5 transition cursor-pointer shrink-0">
-                  <span>Tất cả</span>
-                  <span id="subtab-count-all" class="px-1.5 py-0.2 rounded-full bg-[#03152D]/20 text-[10px] font-mono">0</span>
-                </button>
-                <button type="button" onclick="selectCategorySubTab('Quy trình')" data-subtab="Quy trình" class="subtab-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#03152D]/80 text-[#B8C8DC] hover:text-white border border-[#B98A33]/30 flex items-center space-x-1.5 transition cursor-pointer shrink-0">
-                  <span>📁 Quy trình (SOP)</span>
-                  <span id="subtab-count-sop" class="px-1.5 py-0.2 rounded-full bg-[#102E52] text-[#16A8F4] text-[10px] font-mono">0</span>
-                </button>
-                <button type="button" onclick="selectCategorySubTab('Hướng dẫn công việc')" data-subtab="Hướng dẫn công việc" class="subtab-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#03152D]/80 text-[#B8C8DC] hover:text-white border border-[#B98A33]/30 flex items-center space-x-1.5 transition cursor-pointer shrink-0">
-                  <span>📄 Hướng dẫn (WI)</span>
-                  <span id="subtab-count-wi" class="px-1.5 py-0.2 rounded-full bg-[#102E52] text-[#16A8F4] text-[10px] font-mono">0</span>
-                </button>
-                <button type="button" onclick="selectCategorySubTab('Biểu mẫu')" data-subtab="Biểu mẫu" class="subtab-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#03152D]/80 text-[#B8C8DC] hover:text-white border border-[#B98A33]/30 flex items-center space-x-1.5 transition cursor-pointer shrink-0">
-                  <span>📝 Biểu mẫu</span>
-                  <span id="subtab-count-forms" class="px-1.5 py-0.2 rounded-full bg-[#102E52] text-[#22C58B] text-[10px] font-mono">0</span>
-                </button>
+              <!-- Ẩn các tab ngang trùng lặp vì đã hiển thị ở thanh bên trái theo yêu cầu -->
+              <div class="hidden" id="drilldown-type-tabs">
+                <span id="subtab-count-all">0</span>
+                <span id="subtab-count-sop">0</span>
+                <span id="subtab-count-wi">0</span>
+                <span id="subtab-count-forms">0</span>
               </div>
             </div>
 
-            <!-- BỘ LỌC KÉP CHUẨN QMS (ẢNH 2): LỌC TRỰC TIẾP THEO MÃ TÀI LIỆU (DOCUMENT CODE) & TÊN TÀI LIỆU (DOCUMENT NAME) -->
+            <!-- Ô TÌM KIẾM THEO MÃ TÀI LIỆU & TÊN TÀI LIỆU -->
             <div class="card-enterprise rounded-2xl p-3.5 border border-[#B98A33]/30 bg-[#071F3D]/90 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-[11px] font-bold text-[#FFC857] mb-1">Mã tài liệu (Document Code):</label>
-                <input type="text" id="qms-filter-doc-code" oninput="handleQmsDualFilterChange()" placeholder="Gõ mã tài liệu để lọc (VD: 01-QT, IT-SOP...)" class="w-full px-3 py-1.5 rounded-lg bg-[#03152D] border border-[#B98A33]/40 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#FFC857]">
+                <label class="block text-[11px] font-bold text-[#FFC857] mb-1">Mã tài liệu:</label>
+                <input type="text" id="qms-filter-doc-code" oninput="handleQmsDualFilterChange()" placeholder="Gõ mã tài liệu cần tìm..." class="w-full px-3 py-1.5 rounded-lg bg-[#03152D] border border-[#B98A33]/40 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#FFC857]">
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-[#FFC857] mb-1">Tên tài liệu / Quy trình (Document Name):</label>
-                <input type="text" id="qms-filter-doc-name" oninput="handleQmsDualFilterChange()" placeholder="Gõ tên quy trình hoặc biểu mẫu cần tìm..." class="w-full px-3 py-1.5 rounded-lg bg-[#03152D] border border-[#B98A33]/40 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#FFC857]">
+                <label class="block text-[11px] font-bold text-[#FFC857] mb-1">Tên tài liệu / Quy trình:</label>
+                <input type="text" id="qms-filter-doc-name" oninput="handleQmsDualFilterChange()" placeholder="Gõ tên tài liệu, quy trình hoặc biểu mẫu..." class="w-full px-3 py-1.5 rounded-lg bg-[#03152D] border border-[#B98A33]/40 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#FFC857]">
               </div>
             </div>
 
@@ -739,7 +730,7 @@
         <div id="view-sop" class="hidden space-y-4 view-pane">
           <div class="flex items-center justify-between pb-2 border-b border-[#B98A33]/25">
             <div>
-              <h2 class="text-sm sm:text-base font-bold text-white">Quy trình Chuẩn Vận hành (SOP)</h2>
+              <h2 class="text-sm sm:text-base font-bold text-white">Quy trình Chuẩn Vận hành</h2>
               <p class="text-xs text-[#B8C8DC]">Các quy trình liên bộ phận có hiệu lực áp dụng trong toàn trường</p>
             </div>
             <div class="flex items-center space-x-2">
@@ -763,7 +754,7 @@
         <div id="view-wi" class="hidden space-y-4 view-pane">
           <div class="flex items-center justify-between pb-2 border-b border-[#B98A33]/25">
             <div>
-              <h2 class="text-sm sm:text-base font-bold text-white">Hướng dẫn Công việc (Work Instructions)</h2>
+              <h2 class="text-sm sm:text-base font-bold text-white">Hướng dẫn Công việc</h2>
               <p class="text-xs text-[#B8C8DC]">Tài liệu thao tác cụ thể cho từng vị trí và nghiệp vụ văn phòng</p>
             </div>
             <div class="flex items-center space-x-2">
@@ -872,7 +863,7 @@
           <div class="card-enterprise rounded-2xl p-4 space-y-3">
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="font-bold text-white text-xs sm:text-sm">Danh sách Phân quyền Tài khoản Google (RBAC)</h3>
+                <h3 class="font-bold text-white text-xs sm:text-sm">Danh sách Phân quyền Tài khoản Google</h3>
                 <p class="text-[11px] text-[#B8C8DC]">Khi người dùng đăng nhập bằng Google, hệ thống tự động đối chiếu bảng này</p>
               </div>
               <button id="btn-open-create-admin" class="px-3.5 py-2.5 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md">
@@ -886,7 +877,7 @@
                   <tr class="border-b border-[#B98A33]/25 text-[#FFC857]">
                     <th class="py-2">Email Google</th>
                     <th class="py-2">Họ và tên</th>
-                    <th class="py-2">Vai trò (Role)</th>
+                    <th class="py-2">Vai trò</th>
                     <th class="py-2">Thao tác</th>
                   </tr>
                 </thead>
@@ -913,6 +904,7 @@
                   <tr class="border-b border-[#B98A33]/25 text-[#FFC857]">
                     <th class="py-2.5">Mã bộ phận</th>
                     <th class="py-2.5">Tên bộ phận</th>
+                    <th class="py-2.5">Mô tả chức năng</th>
                     <th class="py-2.5">Số lượng tài liệu</th>
                     <th class="py-2.5">Trạng thái</th>
                     <th class="py-2.5 text-right">Thao tác</th>
@@ -928,7 +920,7 @@
 
       <!-- FOOTER CỐ ĐỊNH SÁT ĐÁY MÀN HÌNH (FIXED BOTTOM) -->
       <footer class="fixed bottom-0 right-0 left-0 md:left-64 z-30 bg-[#03152D]/95 backdrop-blur-md border-t border-[#B98A33]/30 px-5 py-2 text-center text-[11px] text-[#B8C8DC] flex flex-col sm:flex-row items-center justify-between gap-1 shadow-[0_-4px_15px_rgba(0,0,0,0.4)]">
-        <div>School Office Portal © 2026 FSC Cần Thơ. Bản quyền thuộc về Văn phòng Trường.</div>
+        <div>School Office Portal © 2026 Văn phòng FSC Cần Thơ.</div>
         <div class="text-[#FFC857] font-semibold">Powered by DatBT13</div>
       </footer>
     </main>
@@ -963,6 +955,11 @@
         </div>
 
         <div>
+          <label class="block font-semibold text-slate-300 mb-1">Mô tả chức năng / nhiệm vụ của Bộ phận</label>
+          <textarea id="inp-cat-desc" rows="3" placeholder="VD: Quản trị hạ tầng CNTT, phần mềm nghiệp vụ, mạng nội bộ và hỗ trợ kỹ thuật số toàn trường..." class="w-full bg-[#102E52] border border-[#B98A33]/40 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#FFC857] leading-relaxed"></textarea>
+        </div>
+
+        <div>
           <label class="block font-semibold text-slate-300 mb-1.5">Chọn Biểu tượng phù hợp chuyên nghiệp:</label>
           <div class="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 bg-[#03152D]/80 border border-[#B98A33]/25 rounded-xl max-h-36 overflow-y-auto" id="palette-icon-selector"></div>
           <div class="mt-2.5 flex items-center space-x-2.5">
@@ -986,7 +983,7 @@
           Hủy bỏ
         </button>
         <button id="btn-save-modal-cat" class="px-5 py-2 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs hover:brightness-110 shadow-md transition">
-          💾 Lưu Lĩnh vực
+          💾 Lưu Bộ phận
         </button>
       </div>
     </div>
@@ -1431,9 +1428,9 @@
           <div>
             <label class="block text-[#B8C8DC] mb-1 font-medium">Định dạng văn bản:</label>
             <select id="inp-doc-type" class="w-full px-3 py-2 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]">
-              <option value="Quy trình">Quy trình (SOP)</option>
-              <option value="Hướng dẫn công việc">Hướng dẫn (WI)</option>
-              <option value="Biểu mẫu">Biểu mẫu (Forms)</option>
+              <option value="Quy trình">Quy trình</option>
+              <option value="Hướng dẫn công việc">Hướng dẫn công việc</option>
+              <option value="Biểu mẫu">Biểu mẫu</option>
             </select>
           </div>
           <div>
@@ -1450,7 +1447,7 @@
           <label class="block text-[#B8C8DC] mb-1 font-medium">Quy định quyền tải xuống:</label>
           <select id="inp-doc-download-perm" class="w-full px-3 py-2 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]">
             <option value="allow_all">Cho phép tải về (Tất cả người có quyền xem)</option>
-            <option value="view_only">Chỉ cho xem trực tuyến (Chặn tải về máy - View Only)</option>
+            <option value="view_only">Chỉ cho xem trực tuyến (Chặn tải về máy)</option>
             <option value="admin_only">Chỉ Quản trị viên mới được tải về</option>
           </select>
         </div>
@@ -1527,9 +1524,9 @@
           <div>
             <label class="block text-[#B8C8DC] mb-1 font-medium">Định dạng văn bản:</label>
             <select id="inp-edit-doc-type" class="w-full px-3 py-2 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]">
-              <option value="Quy trình">Quy trình (SOP)</option>
-              <option value="Hướng dẫn công việc">Hướng dẫn (WI)</option>
-              <option value="Biểu mẫu">Biểu mẫu (Forms)</option>
+              <option value="Quy trình">Quy trình</option>
+              <option value="Hướng dẫn công việc">Hướng dẫn công việc</option>
+              <option value="Biểu mẫu">Biểu mẫu</option>
             </select>
           </div>
           <div>
@@ -1546,7 +1543,7 @@
           <label class="block text-[#B8C8DC] mb-1 font-medium">Quy định quyền tải xuống:</label>
           <select id="inp-edit-doc-download-perm" class="w-full px-3 py-2 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]">
             <option value="allow_all">Cho phép tải về (Tất cả người xem)</option>
-            <option value="view_only">Chỉ xem trực tuyến (Chặn tải về máy - View Only)</option>
+            <option value="view_only">Chỉ xem trực tuyến (Chặn tải về máy)</option>
             <option value="admin_only">Chỉ Quản trị viên được tải về</option>
           </select>
         </div>
@@ -1644,20 +1641,27 @@
   <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
     const DEFAULT_CATEGORIES = [
-      { id: 'IT', name: 'IT', icon: '💻', status: 'Hoạt động' },
-      { id: 'Tài vụ', name: 'Tài vụ', icon: '📊', status: 'Hoạt động' },
-      { id: 'Hành chính', name: 'Hành chính', icon: '🏢', status: 'Hoạt động' },
-      { id: 'Y tế', name: 'Y tế', icon: '🏥', status: 'Hoạt động' },
-      { id: 'Kỹ thuật', name: 'Kỹ thuật', icon: '⚙️', status: 'Hoạt động' },
-      { id: 'ATVSTP', name: 'ATVSTP', icon: '🍽️', status: 'Hoạt động' },
-      { id: 'Mua sắm', name: 'Mua sắm', icon: '📦', status: 'Hoạt động' }
+      { id: 'IT', name: 'IT', icon: '💻', status: 'Hoạt động', desc: 'Quản trị hạ tầng CNTT, phần mềm nghiệp vụ, mạng nội bộ và hỗ trợ kỹ thuật số toàn trường.' },
+      { id: 'Tài vụ', name: 'Tài vụ', icon: '📊', status: 'Hoạt động', desc: 'Quản lý kế toán, ngân sách, học phí, định mức tài chính và hồ sơ thanh quyết toán.' },
+      { id: 'Hành chính', name: 'Hành chính', icon: '🏢', status: 'Hoạt động', desc: 'Quản lý văn thư, lưu trữ, điều phối phòng họp, văn phòng phẩm và công tác hành chính.' },
+      { id: 'Y tế', name: 'Y tế', icon: '🏥', status: 'Hoạt động', desc: 'Chăm sóc sức khỏe ban đầu, hồ sơ y tế học đường và quy trình xử lý cấp cứu - tai nạn.' },
+      { id: 'Kỹ thuật', name: 'Kỹ thuật', icon: '⚙️', status: 'Hoạt động', desc: 'Vận hành, bảo trì hệ thống cơ điện (M&E), âm thanh, điều hòa và cơ sở vật chất.' },
+      { id: 'ATVSTP', name: 'ATVSTP', icon: '🍽️', status: 'Hoạt động', desc: 'Kiểm soát an toàn vệ sinh thực phẩm, lưu mẫu thức ăn và giám sát bếp ăn bán trú.' },
+      { id: 'Mua sắm', name: 'Mua sắm', icon: '📦', status: 'Hoạt động', desc: 'Quy trình khảo sát báo giá, thẩm định nhà cung cấp, đấu thầu và mua sắm tài sản.' }
     ];
 
     let CATEGORIES = [];
     try {
       const storedCats = localStorage.getItem('school_portal_categories_v5');
       if (storedCats) {
-        CATEGORIES = JSON.parse(storedCats);
+        const parsedCats = JSON.parse(storedCats);
+        CATEGORIES = Array.isArray(parsedCats) ? parsedCats.map(c => {
+          const defMatch = DEFAULT_CATEGORIES.find(d => d.id === c.id || d.name === c.name);
+          return {
+            ...c,
+            desc: (c.desc !== undefined && String(c.desc).trim() !== '') ? c.desc : (defMatch ? defMatch.desc : `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${c.name}.`)
+          };
+        }) : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
       } else {
         CATEGORIES = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         localStorage.setItem('school_portal_categories_v5', JSON.stringify(CATEGORIES));
@@ -1692,7 +1696,7 @@
     let selectedType = 'all';
     let currentSearch = '';
     let currentZoom = 100;
-    let docLayoutMode = localStorage.getItem('fsc_doc_layout_mode') || 'grid';
+    let docLayoutMode = localStorage.getItem('fsc_doc_layout_mode_v6') || 'list';
     let currentReaderZoom = 100;
     let currentDoc = null;
     let isReaderFullscreen = false;
@@ -2294,7 +2298,7 @@
 
     function setDocLayoutMode(mode) {
       docLayoutMode = mode === 'list' ? 'list' : 'grid';
-      localStorage.setItem('fsc_doc_layout_mode', docLayoutMode);
+      localStorage.setItem('fsc_doc_layout_mode_v6', docLayoutMode);
       updateLayoutModeButtons();
       renderDirectCards();
       renderOtherViews();
@@ -2319,8 +2323,8 @@
             <th class="py-3 px-4">Tên tài liệu / Quy trình</th>
             <th class="py-3 px-3 text-center">Phiên bản</th>
             <th class="py-3 px-3 text-center">Ngày hiệu lực</th>
-            <th class="py-3 px-3 text-center">Loại văn bản (Doc Type)</th>
-            <th class="py-3 px-3 text-center">Bộ phận (Owner)</th>
+            <th class="py-3 px-3 text-center">Loại văn bản</th>
+            <th class="py-3 px-3 text-center">Bộ phận</th>
             <th class="py-3 px-2 text-center w-14">Lưu</th>
             ${isAdmin ? '<th class="py-3 px-3 text-center w-24">Thao tác</th>' : ''}
           </tr>
@@ -2362,7 +2366,7 @@
           <td class="py-3 px-4 font-semibold text-[#38BDF8] group-hover:text-[#FFC857] group-hover:underline transition leading-snug">${doc.title}</td>
           <td class="py-3 px-3 text-center font-mono"><span class="px-2 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-500/30 font-bold text-xs">v${verDisplay}</span>${(isAdmin && Array.isArray(doc.versionHistory) && doc.versionHistory.length > 0) ? `<div class="text-[10px] text-amber-300 mt-0.5">🕓 +${doc.versionHistory.length} bản cũ</div>` : ''}</td>
           <td class="py-3 px-3 text-center font-mono text-slate-300 whitespace-nowrap">${dateDisplay}</td>
-          <td class="py-3 px-3 text-center text-slate-300 whitespace-nowrap">${typeDisplay === 'Quy trình' ? 'Mô tả quá trình (SOP)' : typeDisplay}</td>
+          <td class="py-3 px-3 text-center text-slate-300 whitespace-nowrap">${typeDisplay}</td>
           <td class="py-3 px-3 text-center font-bold text-[#FFC857] whitespace-nowrap">${catDisplay}</td>
           <td class="py-3 px-2 text-center">
             <button type="button" class="btn-fav-toggle p-1 rounded hover:bg-[#14345B] transition cursor-pointer text-sm" data-code="${doc.code}" title="Đánh dấu Tài liệu yêu thích">
@@ -2493,6 +2497,54 @@
     }
     window.openSpecialDocFilter = openSpecialDocFilter;
 
+    // BỘ BIỂU TƯỢNG VECTOR SVG CHUYÊN NGHIỆP DÀNH CHO CÁC BỘ PHẬN
+    const PROFESSIONAL_DEPT_SVG_CONFIG = {
+      'IT': {
+        bg: 'from-sky-500/25 to-blue-900/60 border-sky-400/50 text-sky-300',
+        svg: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',
+        miniSvg: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>'
+      },
+      'Tài vụ': {
+        bg: 'from-emerald-500/25 to-teal-900/60 border-emerald-400/50 text-emerald-300',
+        svg: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        miniSvg: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+      },
+      'Hành chính': {
+        bg: 'from-amber-500/25 to-yellow-900/60 border-amber-400/50 text-amber-300',
+        svg: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>',
+        miniSvg: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"></path></svg>'
+      },
+      'Y tế': {
+        bg: 'from-rose-500/25 to-red-900/60 border-rose-400/50 text-rose-300',
+        svg: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z M12 9v4m-2-2h4"></path></svg>',
+        miniSvg: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>'
+      },
+      'Kỹ thuật': {
+        bg: 'from-indigo-500/25 to-blue-950/70 border-indigo-400/50 text-indigo-300',
+        svg: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>',
+        miniSvg: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>'
+      },
+      'ATVSTP': {
+        bg: 'from-lime-500/25 to-emerald-950/70 border-lime-400/50 text-lime-300',
+        svg: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>',
+        miniSvg: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>'
+      },
+      'Mua sắm': {
+        bg: 'from-orange-500/25 to-amber-950/70 border-orange-400/50 text-orange-300',
+        svg: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>',
+        miniSvg: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>'
+      },
+      'default': {
+        bg: 'from-[#163B68] to-[#071F3D] border-[#FFC857]/50 text-[#FFC857]',
+        svg: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>',
+        miniSvg: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>'
+      }
+    };
+
+    function getDeptSvgSpec(catName) {
+      return PROFESSIONAL_DEPT_SVG_CONFIG[catName] || PROFESSIONAL_DEPT_SVG_CONFIG['default'];
+    }
+
     function renderCategoryHub() {
       const hubGrid = document.getElementById('category-hub-grid');
       if (!hubGrid) return;
@@ -2509,27 +2561,31 @@
         const sopCount = catDocs.filter(d => d.type === 'Quy trình').length;
         const wiCount = catDocs.filter(d => d.type === 'Hướng dẫn công việc').length;
         const formCount = catDocs.filter(d => d.type === 'Biểu mẫu').length;
-        const descText = CATEGORY_QMS_DESCRIPTIONS[c.name] || `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${c.name}.`;
+        const descText = (c.desc && String(c.desc).trim()) ? String(c.desc).trim() : (CATEGORY_QMS_DESCRIPTIONS[c.name] || `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${c.name}.`);
+        const iconSpec = getDeptSvgSpec(c.name);
+        const isAdminUser = Boolean(currentUser && currentUser.role === 'admin');
 
         const card = document.createElement('div');
         card.className = 'card-enterprise rounded-2xl p-4 sm:p-4.5 cursor-pointer group flex flex-col justify-between transition-all hover:border-[#FFC857] bg-[#0B2545]';
         card.innerHTML = `
           <div>
-            <div class="flex items-start space-x-3">
-              <div class="w-12 h-12 rounded-xl bg-white text-[#03152D] border-2 border-[#FFC857]/60 flex flex-col items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition">
-                <span class="text-lg leading-none">${c.icon || '📁'}</span>
-                <span class="text-[8px] font-black tracking-tighter text-orange-600 uppercase mt-0.5">FSC QMS</span>
+            <div class="flex items-start space-x-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${iconSpec.bg} border flex items-center justify-center shrink-0 shadow-lg group-hover:scale-105 group-hover:border-[#FFC857] transition">
+                ${iconSpec.svg}
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between gap-1">
                   <h3 class="text-xs sm:text-sm font-black text-[#38BDF8] group-hover:text-[#FFC857] uppercase tracking-wide truncate transition">
                     ${idx + 1}. ${c.name}
                   </h3>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#03152D] text-[#FFC857] border border-[#B98A33]/40 shrink-0">
-                    ${catDocs.length}
-                  </span>
+                  <div class="flex items-center space-x-1 shrink-0">
+                    ${isAdminUser ? `<button type="button" class="btn-quick-edit-cat-desc px-1.5 py-0.5 rounded-md bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-[10px] font-bold transition" data-id="${c.id}" title="Chỉnh sửa thông tin & mô tả chức năng bộ phận">✏️</button>` : ''}
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#03152D] text-[#FFC857] border border-[#B98A33]/40 shrink-0">
+                      ${catDocs.length} tài liệu
+                    </span>
+                  </div>
                 </div>
-                <p class="text-[11px] text-[#B8C8DC] mt-1 line-clamp-2 leading-relaxed">${descText}</p>
+                <p class="text-[11px] text-[#B8C8DC] mt-1 line-clamp-2 leading-relaxed" title="${descText.replace(/"/g, '&quot;')}">${descText}</p>
               </div>
             </div>
           </div>
@@ -2537,7 +2593,7 @@
           <div class="mt-3.5 pt-2.5 border-t border-[#B98A33]/25 grid grid-cols-3 gap-1.5 text-center">
             <div class="bg-[#03152D]/80 rounded-lg py-1 px-1 border border-[#16A8F4]/20">
               <div class="text-xs font-mono font-bold text-[#16A8F4]">${sopCount}</div>
-              <div class="text-[9.5px] text-[#B8C8DC]">Quá trình</div>
+              <div class="text-[9.5px] text-[#B8C8DC]">Quy trình</div>
             </div>
             <div class="bg-[#03152D]/80 rounded-lg py-1 px-1 border border-[#22C58B]/20">
               <div class="text-xs font-mono font-bold text-[#22C58B]">${wiCount}</div>
@@ -2549,6 +2605,13 @@
             </div>
           </div>
         `;
+        const quickEditBtn = card.querySelector('.btn-quick-edit-cat-desc');
+        if (quickEditBtn) {
+          quickEditBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            openCategoryModal('edit', c.id);
+          });
+        }
         card.addEventListener('click', () => {
           openCategoryDrilldown(c.name);
         });
@@ -2561,6 +2624,8 @@
       selectedType = defaultSubTab;
       specialFilterMode = null;
       isViewingAllDocsDirect = false;
+      docLayoutMode = 'list';
+      updateLayoutModeButtons();
       renderFilterChips();
       renderDirectCards();
     }
@@ -2675,43 +2740,53 @@
         }
       }
 
+      const homeTopSearchCard = document.getElementById('home-top-search-card');
+      const homeQuickTilesRow = document.getElementById('home-quick-tiles-row');
+
       if (hubSection && drilldownSection) {
         if (shouldShowHubOnly) {
+          if (homeTopSearchCard) homeTopSearchCard.classList.remove('hidden');
+          if (homeQuickTilesRow) homeQuickTilesRow.classList.remove('hidden');
           hubSection.classList.remove('hidden');
           drilldownSection.classList.add('hidden');
           if (topBreadcrumb) topBreadcrumb.textContent = 'Tổng quan';
           return;
         } else {
+          // Khi đã chọn vào một Bộ phận cụ thể: ẩn thanh tìm kiếm tổng, các nút bộ phận và hàng thẻ lớn; chỉ hiện danh mục bên trái + ô tìm Mã/Tên tài liệu và danh sách tài liệu
+          if (homeTopSearchCard) homeTopSearchCard.classList.add('hidden');
+          if (homeQuickTilesRow) homeQuickTilesRow.classList.add('hidden');
           hubSection.classList.add('hidden');
           drilldownSection.classList.remove('hidden');
         }
       }
 
-      // Cập nhật tiêu đề Bộ phận đang chọn ở Cấp 2
+      // Cập nhật tiêu đề Bộ phận đang chọn ở Cấp 2 (100% Tiếng Việt)
       const catTitleEl = document.getElementById('drilldown-cat-title');
       const catIconEl = document.getElementById('drilldown-cat-icon');
       if (selectedCat !== 'all') {
         const catObj = CATEGORIES.find(c => c.name === selectedCat || c.id === selectedCat);
-        const label = `Bộ phận: ${catObj ? catObj.name : selectedCat}`;
+        const deptName = catObj ? catObj.name : selectedCat;
+        const label = `Bộ phận: ${deptName}`;
+        const iconSpec = getDeptSvgSpec(deptName);
         if (catTitleEl) catTitleEl.textContent = label;
-        if (catIconEl) catIconEl.textContent = catObj ? (catObj.icon || '📁') : '📁';
-        if (topBreadcrumb) topBreadcrumb.textContent = catObj ? catObj.name : selectedCat;
+        if (catIconEl) catIconEl.innerHTML = `<div class="w-10 h-10 rounded-xl bg-gradient-to-br ${iconSpec.bg} border flex items-center justify-center shadow-md">${iconSpec.svg}</div>`;
+        if (topBreadcrumb) topBreadcrumb.textContent = deptName;
       } else if (specialFilterMode === 'favourites') {
-        if (catTitleEl) catTitleEl.textContent = '❤️ Tài liệu Yêu thích (Favourite Documents)';
+        if (catTitleEl) catTitleEl.textContent = 'Tài liệu yêu thích đã lưu';
         if (catIconEl) catIconEl.textContent = '❤️';
         if (topBreadcrumb) topBreadcrumb.textContent = 'Tài liệu yêu thích';
       } else if (specialFilterMode === 'recent') {
-        if (catTitleEl) catTitleEl.textContent = '🕒 Tài liệu Vừa xem gần đây (Recent Documents)';
+        if (catTitleEl) catTitleEl.textContent = 'Tài liệu vừa xem gần đây';
         if (catIconEl) catIconEl.textContent = '🕒';
         if (topBreadcrumb) topBreadcrumb.textContent = 'Tài liệu vừa xem';
       } else if (specialFilterMode === 'new') {
-        if (catTitleEl) catTitleEl.textContent = '🆕 Văn bản Mới ban hành / Cập nhật (Newly Issued Documents)';
+        if (catTitleEl) catTitleEl.textContent = 'Văn bản mới ban hành / cập nhật';
         if (catIconEl) catIconEl.textContent = '🆕';
         if (topBreadcrumb) topBreadcrumb.textContent = 'Văn bản mới ban hành';
       } else {
-        if (catTitleEl) catTitleEl.textContent = normSearch ? `Kết quả tìm kiếm: "${currentSearch}"` : 'Master List — Tất cả Tài liệu & Quy trình';
+        if (catTitleEl) catTitleEl.textContent = normSearch ? `Kết quả tìm kiếm: "${currentSearch}"` : 'Tất cả Tài liệu & Quy trình đang lưu hành';
         if (catIconEl) catIconEl.textContent = normSearch ? '🔍' : '📚';
-        if (topBreadcrumb) topBreadcrumb.textContent = 'Master List';
+        if (topBreadcrumb) topBreadcrumb.textContent = 'Tất cả tài liệu';
       }
 
       // Tính danh sách tài liệu của Bộ phận hiện tại (trước khi lọc theo Tab loại văn bản)
@@ -2834,17 +2909,19 @@
             const isInactive = c.status === 'Tạm ẩn';
             const tr = document.createElement('tr');
             tr.className = 'text-slate-300 hover:bg-[#102E52]/40 transition';
+            const catDesc = (c.desc && String(c.desc).trim()) ? String(c.desc).trim() : (CATEGORY_QMS_DESCRIPTIONS[c.name] || `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${c.name}.`);
             tr.innerHTML = `
-              <td class="py-2.5 font-bold"><span class="text-base mr-1.5">${c.icon}</span><span class="font-mono text-[#FFC857]">${c.id}</span></td>
-              <td class="py-2.5 font-medium">${c.name}</td>
-              <td class="py-2.5 font-mono text-[#FFC857]">${count} tài liệu</td>
-              <td class="py-2.5">
+              <td class="py-2.5 font-bold whitespace-nowrap"><span class="text-base mr-1.5">${c.icon}</span><span class="font-mono text-[#FFC857]">${c.id}</span></td>
+              <td class="py-2.5 font-medium whitespace-nowrap">${c.name}</td>
+              <td class="py-2.5 text-slate-300 max-w-[260px] sm:max-w-xs truncate pr-3" title="${catDesc.replace(/"/g, '&quot;')}">${catDesc}</td>
+              <td class="py-2.5 font-mono text-[#FFC857] whitespace-nowrap">${count} tài liệu</td>
+              <td class="py-2.5 whitespace-nowrap">
                 <span class="px-2 py-0.5 rounded-full text-[10px] ${isInactive ? 'bg-slate-500/20 text-slate-400 border border-slate-500/30' : 'bg-[#22C58B]/15 text-[#22C58B] border border-[#22C58B]/30'} font-semibold">
                   ${c.status || 'Hoạt động'}
                 </span>
               </td>
               <td class="py-2.5 text-right space-x-1 whitespace-nowrap">
-                <button class="btn-edit-cat px-2.5 py-2 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-xs font-semibold transition" data-id="${c.id}" title="Chỉnh sửa lĩnh vực này">
+                <button class="btn-edit-cat px-2.5 py-2 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-xs font-semibold transition" data-id="${c.id}" title="Chỉnh sửa thông tin và mô tả chức năng bộ phận">
                   ✏️ Sửa
                 </button>
                 <button class="btn-toggle-cat px-2 py-2 rounded bg-[#102E52] hover:bg-[#16A8F4] text-[#16A8F4] hover:text-[#03152D] border border-[#16A8F4]/40 text-xs font-semibold transition" data-id="${c.id}" title="Đổi trạng thái">
@@ -2926,8 +3003,9 @@
       CATEGORIES.filter(c => c.status !== 'Tạm ẩn').forEach(c => {
         const btn = document.createElement('button');
         const isActive = (selectedCat === c.name || selectedCat === c.id);
+        const iconSpec = getDeptSvgSpec(c.name);
         btn.className = `px-3 py-2 rounded-full font-medium whitespace-nowrap transition flex items-center space-x-1.5 cursor-pointer ${isActive ? 'bg-[#FFC857] text-[#03152D] font-bold shadow-md' : 'bg-[#071F3D] text-[#B8C8DC] hover:text-white border border-[#B98A33]/30'}`;
-        btn.innerHTML = `<span>${c.icon}</span><span>${c.name}</span>`;
+        btn.innerHTML = `<span class="inline-flex items-center">${iconSpec.miniSvg}</span><span>${c.name}</span>`;
         btn.addEventListener('click', () => {
           openCategoryDrilldown(c.name, 'all');
         });
@@ -4569,9 +4647,11 @@
       }
     }
 
-        function saveCategories() {
+    function saveCategories() {
       localStorage.setItem('school_portal_categories_v5', JSON.stringify(CATEGORIES));
       renderFilterChips();
+      renderCategoryHub();
+      renderDirectCards();
       renderOtherViews();
       updateCatDropdowns();
     }
@@ -4620,6 +4700,7 @@
       const origIdInp = document.getElementById('inp-cat-original-id');
       const idInp = document.getElementById('inp-cat-id');
       const nameInp = document.getElementById('inp-cat-name');
+      const descInp = document.getElementById('inp-cat-desc');
       const statusInp = document.getElementById('inp-cat-status');
       const customIconInp = document.getElementById('inp-cat-custom-icon');
       const previewIcon = document.getElementById('preview-selected-icon');
@@ -4630,19 +4711,23 @@
       if (mode === 'edit' && catId) {
         const cat = CATEGORIES.find(c => c.id === catId);
         if (!cat) return;
-        title.textContent = `Chỉnh sửa Lĩnh vực: ${cat.name}`;
+        title.textContent = `Chỉnh sửa Bộ phận: ${cat.name}`;
         headerIcon.textContent = '✏️';
         idInp.value = cat.id;
         nameInp.value = cat.name;
+        if (descInp) {
+          descInp.value = (cat.desc && String(cat.desc).trim()) ? String(cat.desc).trim() : (CATEGORY_QMS_DESCRIPTIONS[cat.name] || `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${cat.name}.`);
+        }
         statusInp.value = cat.status || 'Hoạt động';
         selectedCatIcon = cat.icon || '🏷️';
         previewIcon.textContent = selectedCatIcon;
         customIconInp.value = selectedCatIcon;
       } else {
-        title.textContent = 'Thêm Lĩnh vực / Phòng ban mới';
+        title.textContent = 'Thêm Bộ phận mới';
         headerIcon.textContent = '➕';
         idInp.value = '';
         nameInp.value = '';
+        if (descInp) descInp.value = '';
         statusInp.value = 'Hoạt động';
         selectedCatIcon = '🖥️';
         previewIcon.textContent = selectedCatIcon;
@@ -5711,39 +5796,44 @@
           const origId = document.getElementById('inp-cat-original-id').value;
           const id = document.getElementById('inp-cat-id').value.trim().toUpperCase();
           const name = document.getElementById('inp-cat-name').value.trim();
+          const descInputEl = document.getElementById('inp-cat-desc');
+          const rawDesc = descInputEl ? descInputEl.value.trim() : '';
           const status = document.getElementById('inp-cat-status').value;
           const icon = selectedCatIcon || '🏷️';
 
           if (!id) {
-            showToast('Vui lòng nhập Mã lĩnh vực (viết tắt)!', 'error');
+            showToast('Vui lòng nhập Mã bộ phận (viết tắt)!', 'error');
             return;
           }
           if (!name) {
-            showToast('Vui lòng nhập Tên hiển thị lĩnh vực!', 'error');
+            showToast('Vui lòng nhập Tên hiển thị bộ phận!', 'error');
             return;
           }
 
+          const finalDesc = rawDesc || CATEGORY_QMS_DESCRIPTIONS[name] || `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${name}.`;
+          CATEGORY_QMS_DESCRIPTIONS[name] = finalDesc;
+
           if (mode === 'add') {
             if (CATEGORIES.some(c => c.id.toUpperCase() === id)) {
-              showToast(`Mã lĩnh vực "${id}" đã tồn tại! Vui lòng chọn mã khác.`, 'error');
+              showToast(`Mã bộ phận "${id}" đã tồn tại! Vui lòng chọn mã khác.`, 'error');
               return;
             }
-            CATEGORIES.push({ id, name, icon, status });
-            showToast(`Đã thêm lĩnh vực "${name}" thành công!`, 'success');
+            CATEGORIES.push({ id, name, icon, status, desc: finalDesc });
+            showToast(`Đã thêm bộ phận "${name}" thành công!`, 'success');
           } else {
             const idx = CATEGORIES.findIndex(c => c.id === origId);
             if (idx !== -1) {
               if (id !== origId && CATEGORIES.some(c => c.id.toUpperCase() === id)) {
-                showToast(`Mã lĩnh vực "${id}" đã tồn tại! Vui lòng chọn mã khác.`, 'error');
+                showToast(`Mã bộ phận "${id}" đã tồn tại! Vui lòng chọn mã khác.`, 'error');
                 return;
               }
-              CATEGORIES[idx] = { id, name, icon, status };
-              showToast(`Đã cập nhật lĩnh vực "${name}" thành công!`, 'success');
+              CATEGORIES[idx] = { id, name, icon, status, desc: finalDesc };
+              showToast(`Đã cập nhật thông tin & mô tả chức năng bộ phận "${name}" thành công!`, 'success');
             }
           }
 
           saveCategories();
-          document.getElementById('modal-category').classList.add('hidden');
+          closeCategoryModal();
         });
       }
 
