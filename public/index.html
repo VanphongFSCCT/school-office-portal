@@ -200,8 +200,13 @@
       font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: radial-gradient(circle at top right, #0A2244 0%, #03152D 100%);
       color: #F8FAFC;
-      min-height: 100vh;
+      height: 100vh;
+      height: 100dvh;
       overflow-x: hidden;
+    }
+    #zoom-content-wrapper {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
     }
     ::-webkit-scrollbar {
       width: 6px;
@@ -586,80 +591,58 @@
             </div>
           </div>
 
-          <!-- HÀNG 5 THẺ TRUY CẬP NHANH TRANG TỔNG QUAN (BIỂU TƯỢNG VECTOR CHUYÊN NGHIỆP) -->
-          <div id="home-quick-tiles-row" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div onclick="backToCategoryHub()" class="cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#1E62B5] to-[#134078] border border-sky-400/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
-              <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-sky-200 font-bold">Danh mục đơn vị</div>
-                <div class="text-sm font-extrabold mt-0.5">Các Bộ phận</div>
-                <div class="text-[11px] text-sky-100/90 mt-1 font-mono" id="tile-count-depts">7 bộ phận</div>
+          <!-- HÀNG 4 THẺ TRUY CẬP NHANH TRANG TỔNG QUAN (ĐÃ BỎ THẺ TÀI LIỆU YÊU THÍCH THEO YÊU CẦU) -->
+          <div id="home-quick-tiles-row" class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+            <div onclick="backToCategoryHub()" class="cursor-pointer rounded-2xl p-3 sm:p-3.5 bg-gradient-to-br from-[#1E62B5] to-[#134078] border border-sky-400/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
+              <div class="min-w-0 pr-1">
+                <div class="text-[10px] sm:text-[10.5px] uppercase tracking-wider text-sky-200 font-bold truncate">Danh mục đơn vị</div>
+                <div class="text-xs sm:text-sm font-extrabold mt-0.5 leading-snug">Các Bộ phận</div>
+                <div class="text-[10.5px] sm:text-[11px] text-sky-100/90 mt-1 font-mono" id="tile-count-depts">7 bộ phận</div>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-              </div>
-            </div>
-
-            <div onclick="openGlobalTypeFilter('Quy trình')" class="cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#F27A24] to-[#C85408] border border-orange-300/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
-              <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-orange-100 font-bold">Văn bản vận hành</div>
-                <div class="text-sm font-extrabold mt-0.5">Quy trình</div>
-                <div class="text-[11px] text-orange-100 mt-1 font-mono" id="tile-count-sop">0 quy trình</div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
               </div>
             </div>
 
-            <div onclick="openGlobalTypeFilter('Hướng dẫn công việc')" class="cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#2B68E0] to-[#1B459B] border border-indigo-300/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
-              <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-indigo-100 font-bold">Tài liệu nghiệp vụ</div>
-                <div class="text-sm font-extrabold mt-0.5">Hướng dẫn công việc</div>
-                <div class="text-[11px] text-indigo-100 mt-1 font-mono" id="tile-count-wi">0 hướng dẫn</div>
+            <div onclick="openGlobalTypeFilter('Quy trình')" class="cursor-pointer rounded-2xl p-3 sm:p-3.5 bg-gradient-to-br from-[#F27A24] to-[#C85408] border border-orange-300/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
+              <div class="min-w-0 pr-1">
+                <div class="text-[10px] sm:text-[10.5px] uppercase tracking-wider text-orange-100 font-bold truncate">Văn bản vận hành</div>
+                <div class="text-xs sm:text-sm font-extrabold mt-0.5 leading-snug">Quy trình</div>
+                <div class="text-[10.5px] sm:text-[11px] text-orange-100 mt-1 font-mono" id="tile-count-sop">0 quy trình</div>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-              </div>
-            </div>
-
-            <div onclick="openGlobalTypeFilter('Biểu mẫu')" class="cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#D99B1E] to-[#9E6B06] border border-amber-300/50 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
-              <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-amber-100 font-bold">Biểu mẫu công tác</div>
-                <div class="text-sm font-extrabold mt-0.5">Biểu mẫu điện tử</div>
-                <div class="text-[11px] text-amber-100 mt-1 font-mono" id="tile-count-forms">0 biểu mẫu</div>
-              </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
               </div>
             </div>
 
-            <div onclick="openSpecialDocFilter('favourites')" class="col-span-2 sm:col-span-1 cursor-pointer rounded-2xl p-3.5 bg-gradient-to-br from-[#0F9D84] to-[#086656] border border-emerald-300/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
-              <div>
-                <div class="text-[10.5px] uppercase tracking-wider text-emerald-100 font-bold">Danh mục cá nhân</div>
-                <div class="text-sm font-extrabold mt-0.5">Tài liệu yêu thích</div>
-                <div class="text-[11px] text-emerald-100 mt-1 font-mono" id="tile-count-fav">0 đã lưu</div>
+            <div onclick="openGlobalTypeFilter('Hướng dẫn công việc')" class="cursor-pointer rounded-2xl p-3 sm:p-3.5 bg-gradient-to-br from-[#2B68E0] to-[#1B459B] border border-indigo-300/40 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
+              <div class="min-w-0 pr-1">
+                <div class="text-[10px] sm:text-[10.5px] uppercase tracking-wider text-indigo-100 font-bold truncate">Tài liệu nghiệp vụ</div>
+                <div class="text-xs sm:text-sm font-extrabold mt-0.5 leading-snug">Hướng dẫn công việc</div>
+                <div class="text-[10.5px] sm:text-[11px] text-indigo-100 mt-1 font-mono" id="tile-count-wi">0 hướng dẫn</div>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center group-hover:scale-110 transition">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
               </div>
             </div>
+
+            <div onclick="openGlobalTypeFilter('Biểu mẫu')" class="cursor-pointer rounded-2xl p-3 sm:p-3.5 bg-gradient-to-br from-[#D99B1E] to-[#9E6B06] border border-amber-300/50 shadow-lg hover:scale-[1.02] transition flex items-center justify-between text-white group">
+              <div class="min-w-0 pr-1">
+                <div class="text-[10px] sm:text-[10.5px] uppercase tracking-wider text-amber-100 font-bold truncate">Biểu mẫu công tác</div>
+                <div class="text-xs sm:text-sm font-extrabold mt-0.5 leading-snug">Biểu mẫu điện tử</div>
+                <div class="text-[10.5px] sm:text-[11px] text-amber-100 mt-1 font-mono" id="tile-count-forms">0 biểu mẫu</div>
+              </div>
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              </div>
+            </div>
+            <span id="tile-count-fav" class="hidden">0 đã lưu</span>
           </div>
 
-          <!-- CẤP 1: MÀN HÌNH TỔNG QUAN CÁC BỘ PHẬN -->
-          <div id="category-hub-section" class="space-y-3 card-enterprise rounded-2xl p-4 sm:p-5 border border-[#B98A33]/30">
-            <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-[#B98A33]/20">
-              <div>
-                <h2 class="text-sm sm:text-base font-extrabold text-white flex items-center space-x-2">
-                  <span>📂 Danh mục các Bộ phận</span>
-                  <span class="text-xs font-mono font-bold text-[#FFC857] bg-[#03152D] px-2.5 py-0.5 rounded-full border border-[#B98A33]/40" id="hub-total-cats-badge">7 bộ phận</span>
-                </h2>
-                <p class="text-xs text-[#B8C8DC] mt-0.5">Bấm chọn vào một Bộ phận bên dưới để mở danh mục Quy trình, Hướng dẫn công việc và Biểu mẫu của bộ phận đó</p>
-              </div>
-              <button type="button" onclick="openAllDocsDirectly()" class="px-3.5 py-1.5 rounded-xl bg-[#03152D] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-xs font-bold transition cursor-pointer">
-                Xem tất cả tài liệu →
-              </button>
-            </div>
-
-            <div id="category-hub-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 pt-1"></div>
+          <!-- CẤP 1: MÀN HÌNH TỔNG QUAN CÁC BỘ PHẬN (ĐÃ ẨN THANH TIÊU ĐỀ PHỤ CHO GỌN GÀNG) -->
+          <div id="category-hub-section" class="card-enterprise rounded-2xl p-3.5 sm:p-4 border border-[#B98A33]/30">
+            <span id="hub-total-cats-badge" class="hidden">7 bộ phận</span>
+            <div id="category-hub-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5"></div>
           </div>
 
           <!-- CẤP 2: KHÔNG GIAN KHI ĐÃ CHỌN BỘ PHẬN (CHỈ HIỂN THỊ Ô TÌM MÃ TÀI LIỆU / TÊN TÀI LIỆU & DANH MỤC TÀI LIỆU; CÁC PHÂN LOẠI CON NẰM Ở CỘT TRÁI) -->
@@ -929,8 +912,8 @@
           </div>
         </div>
 
-        <!-- FOOTER CUỐI TRANG (CHỈ HIỂN THỊ KHI KÉO ĐẾN CUỐI TRANG, KHÔNG CỐ ĐỊNH CHE MÀN HÌNH) -->
-        <footer class="mt-8 pt-3 pb-2 border-t border-[#B98A33]/30 px-2 text-center text-[11px] text-[#B8C8DC] flex flex-col sm:flex-row items-center justify-between gap-1 shrink-0">
+        <!-- FOOTER CUỐI TRANG (CHỈ HIỂN THỊ KHI KÉO ĐẾN CUỐI TRANG, CÓ ĐỆM ĐÁY AN TOÀN TRÊN ĐIỆN THOẠI SAFARI/ZALO) -->
+        <footer class="mt-6 pt-3.5 pb-16 sm:pb-3 border-t border-[#B98A33]/30 px-2 text-center text-[11px] text-[#B8C8DC] flex flex-col sm:flex-row items-center justify-between gap-1 shrink-0" style="padding-bottom: max(3.5rem, calc(env(safe-area-inset-bottom, 0px) + 2.5rem));">
           <div>School Office Portal © 2026 Văn phòng FSC Cần Thơ.</div>
           <div class="text-[#FFC857] font-semibold">Powered by DatBT13</div>
         </footer>
@@ -1100,64 +1083,79 @@
   <div id="modal-reader" onclick="if(event.target === this) closeDocReader()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4">
     <div id="reader-dialog" class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-6xl h-[92vh] flex flex-col shadow-2xl overflow-hidden transition-all duration-200">
       
-      <!-- TOP TOOLBAR: TIÊU ĐỀ, BỘ PHẬN, TẢI VỀ, ZOOM, TOÀN MÀN HÌNH, SỬA, XÓA, ĐÓNG -->
-      <div class="px-2.5 sm:px-5 py-2 border-b border-[#B98A33]/25 flex flex-wrap items-center justify-between gap-2 bg-[#03152D] shrink-0">
-        <div class="flex items-center space-x-2 min-w-0 flex-1">
-          <span id="modal-code-badge" class="px-2 py-0.5 rounded-lg bg-[#102E52] text-[#16A8F4] border border-[#16A8F4]/35 text-[11px] sm:text-xs font-mono font-bold shrink-0"></span>
-          <h3 id="modal-title" class="text-xs sm:text-base font-bold text-white truncate leading-tight"></h3>
-          <span id="modal-ver-pill" class="hidden sm:inline-block px-2 py-0.5 rounded-full bg-[#FFC857]/20 text-[#FFC857] border border-[#FFC857]/40 text-[10.5px] font-mono font-bold shrink-0">v1.0</span>
-          <!-- Chọn xem lại phiên bản cũ (CHỈ HIỂN THỊ CHO ADMIN KHI TÀI LIỆU CÓ BẢN CŨ) -->
-          <div id="admin-version-history-box" class="hidden items-center space-x-1.5 bg-[#102E52] px-2 py-0.5 rounded-lg border border-amber-400/50 shrink-0">
-            <span class="text-[10px] text-amber-300 font-semibold">🕒 Bản lưu (Admin):</span>
-            <select id="admin-version-select" onchange="switchReaderVersionView(this.value)" class="bg-[#03152D] text-[#FFC857] font-mono text-[11px] font-bold px-1.5 py-0.5 rounded border border-[#B98A33]/40 focus:outline-none cursor-pointer">
-            </select>
+      <!-- TOP TOOLBAR: TIÊU ĐỀ, BỘ PHẬN, TẢI VỀ, IN, SỬA, ĐÓNG (LUÔN HIỂN THỊ RÕ NÚT ĐÓNG TRÊN ĐIỆN THOẠI & MÁY TÍNH) -->
+      <div class="px-2.5 sm:px-5 py-2 border-b border-[#B98A33]/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#03152D] shrink-0">
+        <!-- Hàng 1 trên điện thoại (Cột trái trên máy tính): Mã tài liệu + Tiêu đề + Nút Đóng nổi bật ở góc phải trên điện thoại -->
+        <div class="flex items-center justify-between gap-2 min-w-0 flex-1">
+          <div class="flex items-center space-x-2 min-w-0 flex-1">
+            <span id="modal-code-badge" class="px-2 py-0.5 rounded-lg bg-[#102E52] text-[#16A8F4] border border-[#16A8F4]/35 text-[11px] sm:text-xs font-mono font-bold shrink-0"></span>
+            <h3 id="modal-title" class="text-xs sm:text-base font-bold text-white truncate leading-tight"></h3>
+            <span id="modal-ver-pill" class="hidden sm:inline-block px-2 py-0.5 rounded-full bg-[#FFC857]/20 text-[#FFC857] border border-[#FFC857]/40 text-[10.5px] font-mono font-bold shrink-0">v1.0</span>
+            <!-- Chọn xem lại phiên bản cũ (CHỈ HIỂN THỊ CHO ADMIN KHI TÀI LIỆU CÓ BẢN CŨ) -->
+            <div id="admin-version-history-box" class="hidden items-center space-x-1.5 bg-[#102E52] px-2 py-0.5 rounded-lg border border-amber-400/50 shrink-0">
+              <span class="text-[10px] text-amber-300 font-semibold">🕒 Bản lưu:</span>
+              <select id="admin-version-select" onchange="switchReaderVersionView(this.value)" class="bg-[#03152D] text-[#FFC857] font-mono text-[11px] font-bold px-1.5 py-0.5 rounded border border-[#B98A33]/40 focus:outline-none cursor-pointer">
+              </select>
+            </div>
+            <span id="modal-cat" class="hidden"></span>
+            <span id="modal-type" class="hidden"></span>
+            <span id="modal-dept-badge" class="hidden"></span>
           </div>
-          <span id="modal-cat" class="hidden"></span>
-          <span id="modal-type" class="hidden"></span>
-          <span id="modal-dept-badge" class="hidden"></span>
+
+          <!-- Nút Đóng hiển thị cố định ngay góc phải hàng đầu tiên trên Điện thoại -->
+          <button type="button" onclick="closeDocReader()" class="sm:hidden px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center space-x-1 shrink-0 shadow-md cursor-pointer" title="Đóng tài liệu">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <span>Đóng</span>
+          </button>
         </div>
 
-        <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0 flex-wrap justify-end">
-          <!-- NHÓM CÔNG CỤ ĐIỀN & CHỈNH SỬA TRỰC TIẾP TRÊN BIỂU MẪU (KHÔNG LƯU ĐÈ BẢN GỐC HỆ THỐNG) -->
-          <button id="btn-toggle-live-fill" type="button" onclick="toggleLiveFormEditMode()" class="px-3 py-1.5 rounded-lg bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/50 font-bold text-xs transition flex items-center space-x-1.5 cursor-pointer shadow-sm" title="Điền hoặc chỉnh sửa trực tiếp trên tài liệu/biểu mẫu này để in hoặc tải về (Không làm thay đổi file gốc của hệ thống)">
-            <span>✍️</span>
-            <span id="lbl-toggle-live-fill">Điền / Chỉnh sửa trực tiếp</span>
-          </button>
+        <!-- Hàng 2 trên điện thoại (Cột phải trên máy tính): Các nút chức năng gọn gàng -->
+        <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0 flex-wrap justify-between sm:justify-end">
+          <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+            <!-- NHÓM CÔNG CỤ ĐIỀN & CHỈNH SỬA TRỰC TIẾP TRÊN BIỂU MẪU (KHÔNG LƯU ĐÈ BẢN GỐC HỆ THỐNG) -->
+            <button id="btn-toggle-live-fill" type="button" onclick="toggleLiveFormEditMode()" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/50 font-bold text-[11px] sm:text-xs transition flex items-center space-x-1 cursor-pointer shadow-sm" title="Điền hoặc chỉnh sửa trực tiếp trên tài liệu/biểu mẫu này để in hoặc tải về">
+              <span>✍️</span>
+              <span id="lbl-toggle-live-fill">Chỉnh sửa / Điền biểu mẫu</span>
+            </button>
 
-          <button id="btn-reset-live-fill" type="button" onclick="resetLiveFormToDefault()" class="hidden px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs font-medium transition flex items-center space-x-1 cursor-pointer" title="Khôi phục về bản mặc định ban đầu của hệ thống">
-            <span>↺</span>
-            <span class="hidden md:inline">Bản gốc</span>
-          </button>
+            <button id="btn-reset-live-fill" type="button" onclick="resetLiveFormToDefault()" class="hidden px-2 py-1 sm:py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 text-[11px] sm:text-xs font-medium transition flex items-center space-x-1 cursor-pointer" title="Khôi phục về bản mặc định ban đầu của hệ thống">
+              <span>↺</span>
+              <span class="hidden md:inline">Bản gốc</span>
+            </button>
 
-          <button id="btn-print-live-doc" type="button" onclick="printCurrentDocument()" class="px-3 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center space-x-1.5 cursor-pointer shadow-sm" title="In trực tiếp tài liệu / biểu mẫu (bao gồm nội dung vừa điền)">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-            <span>In tài liệu</span>
-          </button>
+            <button id="btn-print-live-doc" type="button" onclick="printCurrentDocument()" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-[11px] sm:text-xs transition flex items-center space-x-1 cursor-pointer shadow-sm" title="In trực tiếp tài liệu / biểu mẫu">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+              <span>In</span>
+            </button>
 
-          <!-- Nút Tải về: Tải bản đã điền/chỉnh sửa hoặc bản gốc -->
-          <button id="btn-modal-download-file" type="button" onclick="triggerDocumentDownload()" class="hidden px-3.5 py-1.5 bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] hover:brightness-110 text-[#03152D] font-bold rounded-lg text-xs transition flex items-center space-x-1.5 shadow-sm cursor-pointer" title="Tải tài liệu (Nếu đã chỉnh sửa sẽ tải bản vừa chỉnh sửa)">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            <span id="lbl-modal-download-btn">Tải về</span>
-          </button>
+            <!-- Nút Tải về: Tải bản đã điền/chỉnh sửa hoặc bản gốc -->
+            <button id="btn-modal-download-file" type="button" onclick="triggerDocumentDownload()" class="hidden px-2.5 sm:px-3.5 py-1 sm:py-1.5 bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] hover:brightness-110 text-[#03152D] font-bold rounded-lg text-[11px] sm:text-xs transition flex items-center space-x-1 shadow-sm cursor-pointer" title="Tải tài liệu">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              <span id="lbl-modal-download-btn">Tải về</span>
+            </button>
+          </div>
 
-          <!-- Đã bỏ cụm điều chỉnh tỷ lệ thừa trong cửa sổ đọc theo yêu cầu -->
-          <span id="reader-zoom-val" class="hidden">100%</span>
+          <div class="flex items-center space-x-1.5">
+            <span id="reader-zoom-val" class="hidden">100%</span>
 
-          <!-- Nút Toàn màn hình -->
-          <button id="btn-toggle-reader-fullscreen" title="Toàn màn hình" class="p-1.5 text-slate-300 hover:text-[#FFC857] bg-[#102E52] hover:bg-[#14345B] rounded-lg border border-[#B98A33]/30 transition cursor-pointer">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-          </button>
+            <!-- Nút Toàn màn hình -->
+            <button id="btn-toggle-reader-fullscreen" title="Toàn màn hình" class="p-1.5 text-slate-300 hover:text-[#FFC857] bg-[#102E52] hover:bg-[#14345B] rounded-lg border border-[#B98A33]/30 transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+            </button>
 
-          <!-- Nút Chỉnh sửa & Xóa cho Admin -->
-          <button id="btn-reader-edit-doc" class="hidden px-2.5 py-1.5 bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] rounded-lg text-xs font-semibold transition border border-[#B98A33]/30" title="Chỉnh sửa">
-            Sửa
-          </button>
-          <button id="btn-reader-delete-doc" class="hidden px-2.5 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/30 rounded-lg text-xs font-semibold transition" title="Xóa">
-            Xóa
-          </button>
-          <button id="btn-close-reader-modal" onclick="closeDocReader()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-[#102E52] transition ml-1 cursor-pointer" title="Đóng (ESC)">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
+            <!-- Nút Chỉnh sửa & Xóa cho Admin -->
+            <button id="btn-reader-edit-doc" class="hidden px-2 py-1 sm:px-2.5 sm:py-1.5 bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] rounded-lg text-[11px] sm:text-xs font-semibold transition border border-[#B98A33]/30" title="Chỉnh sửa">
+              Sửa
+            </button>
+            <button id="btn-reader-delete-doc" class="hidden px-2 py-1 sm:px-2.5 sm:py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/30 rounded-lg text-[11px] sm:text-xs font-semibold transition" title="Xóa">
+              Xóa
+            </button>
+            <!-- Nút Đóng nổi bật trên Máy tính -->
+            <button id="btn-close-reader-modal" onclick="closeDocReader()" class="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 bg-rose-600/90 hover:bg-rose-500 text-white font-bold text-xs rounded-lg transition ml-1 cursor-pointer shadow-sm" title="Đóng (ESC)">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+              <span>Đóng</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2648,9 +2646,6 @@
                   </h3>
                   <div class="flex items-center space-x-1 shrink-0">
                     ${isAdminUser ? `<button type="button" class="btn-quick-edit-cat-desc px-1.5 py-0.5 rounded-md bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-[10px] font-bold transition" data-id="${c.id}" title="Chỉnh sửa thông tin & mô tả chức năng bộ phận">✏️</button>` : ''}
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#03152D] text-[#FFC857] border border-[#B98A33]/40 shrink-0">
-                      ${catDocs.length} tài liệu
-                    </span>
                   </div>
                 </div>
                 <p class="text-[11px] text-[#B8C8DC] mt-1 line-clamp-2 leading-relaxed" title="${descText.replace(/"/g, '&quot;')}">${descText}</p>
