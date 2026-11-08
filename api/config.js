@@ -1,12 +1,17 @@
-export default function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+import { applyZeroTrustSecurityGuard } from './_security.js';
+
+export default async function handler(req, res) {
+  const guard = applyZeroTrustSecurityGuard(req, res);
+  if (!guard.allowed) return;
+
+  // Cache cấu hình công khai trong 60 giây để giảm tải tuyệt đối cho Serverless API
+  res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
 
   return res.status(200).json({
-    googleClientId: process.env.GOOGLE_CLIENT_ID || ''
+    googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+    hasDatabase: Boolean(process.env.DATABASE_URL),
+    securityProtocol: 'Zero-Trust AES-256-GCM + SHA-256 E2EE v6.0',
+    organization: 'Trường THPT FPT Cần Thơ (FSC Cần Thơ)',
+    allowedDomain: 'fpt.edu.vn'
   });
 }

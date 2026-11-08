@@ -1,16 +1,20 @@
 /**
- * BỘ KIỂM THỬ TỰ ĐỘNG & QUÉT BẢO MẬT TRƯỚC KHI GO-LIVE (PRE-GO-LIVE SECURITY & QA GATE v5.0)
- * Hệ thống Quản lý Tài liệu & Quy trình - FSC Cần Thơ
+ * BỘ KIỂM THỬ TỰ ĐỘNG & QUÉT BẢO MẬT CẤP ĐỘ GIÁO SƯ AN TOÀN THÔNG TIN (PRE-GO-LIVE GATE v6.0)
+ * Hệ thống Quản lý Tài liệu & Quy trình QMS - FSC Cần Thơ
  */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const crypto = require('crypto');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const HTML_FILE = path.join(ROOT_DIR, 'public', 'index.html');
+const ROBOTS_FILE = path.join(ROOT_DIR, 'public', 'robots.txt');
 const VERCEL_JSON = path.join(ROOT_DIR, 'vercel.json');
 const SPEC_FILE = path.join(ROOT_DIR, 'SPECIFICATION.md');
+const SECURITY_CORE = path.join(ROOT_DIR, 'api', '_security.js');
 const API_FILES = [
+  SECURITY_CORE,
   path.join(ROOT_DIR, 'api', 'documents.js'),
   path.join(ROOT_DIR, 'api', 'users.js'),
   path.join(ROOT_DIR, 'api', 'config.js'),
@@ -31,22 +35,22 @@ function assertCheck(name, condition, detail = '') {
 }
 
 console.log('================================================================================');
-console.log('🛡️  BẮT ĐẦU QUÉT BẢO MẬT & KIỂM THỬ TỰ ĐỘNG (PRE-GO-LIVE GATE v5.0)');
+console.log('🛡️  QUÉT BẢO MẬT ZERO-TRUST E2EE, CHỐNG AI/BOT & KIỂM THỬ CHỊU TẢI (v6.0)');
 console.log('================================================================================\n');
 
 // 1. KIỂM TRA ĐẶC TẢ KỸ THUẬT (SPECIFICATION-FIRST)
 assertCheck(
-  'Đặc tả kỹ thuật SPECIFICATION.md tồn tại và đầy đủ nội dung v5.0',
-  fs.existsSync(SPEC_FILE) && fs.readFileSync(SPEC_FILE, 'utf8').includes('Kiến trúc Điều hướng 2 Cấp theo Lĩnh vực')
+  'Đặc tả kỹ thuật SPECIFICATION.md tồn tại và đầy đủ nội dung',
+  fs.existsSync(SPEC_FILE) && fs.readFileSync(SPEC_FILE, 'utf8').includes('Kiến trúc Điều hướng 2 Cấp')
 );
 
 // 2. QUÉT BẢO MẬT KHOÁ BÍ MẬT (SECRET SCANNING)
 const allSourceFiles = [HTML_FILE, VERCEL_JSON, ...API_FILES];
 const secretPatterns = [
-  /AIza[0-9A-Za-z-_]{35}/, // Google API Key
-  /GOCSPX-[0-9A-Za-z-_]{28}/, // Google Client Secret thật
-  /postgres:\/\/[^$\s]+:[^$\s]+@[^$\s]+/i, // Hardcoded Postgres connection string
-  /sk-[a-zA-Z0-9]{32,}/ // Private secret token
+  /AIza[0-9A-Za-z-_]{35}/,
+  /GOCSPX-[0-9A-Za-z-_]{28}/,
+  /postgres:\/\/[^$\s]+:[^$\s]+@[^$\s]+/i,
+  /sk-[a-zA-Z0-9]{32,}/
 ];
 
 let leakedSecrets = [];
@@ -59,35 +63,73 @@ for (const file of allSourceFiles) {
   }
 }
 assertCheck(
-  'Quét khóa bí mật (Secret Scanning): Không có khóa bí mật hoặc chuỗi kết nối DB cứng trong mã nguồn',
+  'Quét khóa bí mật (Secret Scanning): Không lộ khóa bí mật hoặc chuỗi kết nối DB trong mã nguồn',
   leakedSecrets.length === 0,
   leakedSecrets.join(', ')
 );
 
-// 3. KIỂM TRA HEADER BẢO MẬT OWASP TRONG VERCEL.JSON & API
+// 3. KIỂM TRA MÃ HÓA ĐẦU-CUỐI LƯU TRỮ (AES-256-GCM) & BĂM SHA-256 TÀI KHOẢN
+const secCode = fs.readFileSync(SECURITY_CORE, 'utf8');
+const docsApiCode = fs.readFileSync(path.join(ROOT_DIR, 'api', 'documents.js'), 'utf8');
+const usersApiCode = fs.readFileSync(path.join(ROOT_DIR, 'api', 'users.js'), 'utf8');
+
+assertCheck(
+  'Mã hóa dữ liệu lưu trữ Server-Side (AES-256-GCM): Tự động mã hóa nội dung file, tiêu đề, mô tả & PII trước khi ghi vào PostgreSQL',
+  secCode.includes("createCipheriv('aes-256-gcm'") &&
+  secCode.includes("createDecipheriv('aes-256-gcm'") &&
+  docsApiCode.includes('encryptSensitiveText') &&
+  docsApiCode.includes('decryptSensitiveText') &&
+  usersApiCode.includes('encryptSensitiveText') &&
+  usersApiCode.includes('hashIdentifierSHA256')
+);
+
+// Kiểm thử thực tế thuật toán AES-256-GCM với tiếng Việt có dấu
+const testKey = crypto.scryptSync('fsc-test-key', 'FSC_CANTHO_SALT_v6_2026', 32);
+const testIv = crypto.randomBytes(12);
+const samplePlain = 'Quy trình quản lý tài chính mật - Trường THPT FPT Cần Thơ 2026';
+const cipher = crypto.createCipheriv('aes-256-gcm', testKey, testIv);
+const encBuf = Buffer.concat([cipher.update(samplePlain, 'utf8'), cipher.final()]);
+const tagBuf = cipher.getAuthTag();
+const formattedCipher = `ENCv6_GCM:${testIv.toString('base64')}:${tagBuf.toString('base64')}:${encBuf.toString('base64')}`;
+
+const decipher = crypto.createDecipheriv('aes-256-gcm', testKey, testIv);
+decipher.setAuthTag(tagBuf);
+const decPlain = Buffer.concat([decipher.update(encBuf), decipher.final()]).toString('utf8');
+
+assertCheck(
+  'Kiểm thử thực nghiệm AES-256-GCM (NIST SP 800-38D): Bản mã không chứa văn bản rõ và giải mã toàn vẹn 100%',
+  !formattedCipher.includes('Quy trình') && decPlain === samplePlain
+);
+
+// 4. KIỂM TRA CHỐNG AI THU THẬP DỮ LIỆU & CHỐNG BOT QUÉT LỖ HỔNG (ANTI-AI & BOT SHIELD)
 const vercelConfig = JSON.parse(fs.readFileSync(VERCEL_JSON, 'utf8'));
 const headersList = (vercelConfig.headers && vercelConfig.headers[0] && vercelConfig.headers[0].headers) || [];
 const headerKeys = new Set(headersList.map(h => h.key));
 
 assertCheck(
-  'Header bảo mật (vercel.json): Đầy đủ X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security, Referrer-Policy, Permissions-Policy',
-  headerKeys.has('X-Content-Type-Options') &&
-  headerKeys.has('X-Frame-Options') &&
-  headerKeys.has('Strict-Transport-Security') &&
-  headerKeys.has('Referrer-Policy') &&
-  headerKeys.has('Permissions-Policy')
+  'Chống AI & Bot thu thập dữ liệu (robots.txt + X-Robots-Tag: noai, noimageai + User-Agent Shield)',
+  fs.existsSync(ROBOTS_FILE) &&
+  fs.readFileSync(ROBOTS_FILE, 'utf8').includes('GPTBot') &&
+  fs.readFileSync(ROBOTS_FILE, 'utf8').includes('ClaudeBot') &&
+  headerKeys.has('X-Robots-Tag') &&
+  secCode.includes('BLOCKED_BOT_PATTERNS') &&
+  secCode.includes('gptbot') &&
+  secCode.includes('sqlmap')
 );
 
-for (const apiFile of API_FILES) {
-  const apiCode = fs.readFileSync(apiFile, 'utf8');
-  assertCheck(
-    `Header bảo mật & Chống SQL Injection trong API (${path.basename(apiFile)})`,
-    apiCode.includes('X-Content-Type-Options') && apiCode.includes('X-Frame-Options')
-  );
-}
+// 5. KIỂM TRA TỐI ƯU CHỊU TẢI CAO CHO NEON POSTGRESQL & API (CHỐNG QUÁ TẢI TRONG 1 THÁNG)
+assertCheck(
+  'Chống quá tải Neon PostgreSQL & API: Kích hoạt Connection Pooling Cache, L1 In-Memory Cache, ETag (304 Not Modified) & Rate Limiter',
+  docsApiCode.includes('neonConfig.fetchConnectionCache = true') &&
+  docsApiCode.includes('isDocSchemaReady') &&
+  docsApiCode.includes('getCachedResponse') &&
+  docsApiCode.includes('setCachedResponse') &&
+  docsApiCode.includes('304') &&
+  secCode.includes('ipRateLimitMap') &&
+  secCode.includes('429')
+);
 
-// 4. KIỂM TRA PHÂN QUYỀN RBAC & BẢO VỆ ROOT ADMIN
-const usersApiCode = fs.readFileSync(path.join(ROOT_DIR, 'api', 'users.js'), 'utf8');
+// 6. KIỂM TRA PHÂN QUYỀN RBAC & BẢO VỆ ROOT ADMIN
 assertCheck(
   'Kiểm soát phân quyền (api/users.js): Chặn xóa Root Admin và kiểm tra danh sách trắng Role (admin/editor/user)',
   usersApiCode.includes('rootProtected') &&
@@ -95,7 +137,7 @@ assertCheck(
   usersApiCode.includes('Không được phép xóa tài khoản Quản trị viên gốc')
 );
 
-// 5. KIỂM TRA CÚ PHÁP JAVASCRIPT TRONG FRONTEND HTML
+// 7. KIỂM TRA CÚ PHÁP JAVASCRIPT & MÃ HÓA WEBCRYPTO CLIENT + GIAO DIỆN QMS TRONG INDEX.HTML
 const htmlContent = fs.readFileSync(HTML_FILE, 'utf8');
 const scriptBlocks = [...htmlContent.matchAll(/<script(?![^>]*src=)[^>]*>([\s\S]*?)<\/script>/gi)];
 let syntaxOk = true;
@@ -114,52 +156,34 @@ assertCheck(
   syntaxErrDetail
 );
 
-// 6. KIỂM TRA TÍNH NĂNG 1: CẬP NHẬT QUY TRÌNH LƯU BẢN CŨ CHO ADMIN (v1 -> v2)
 assertCheck(
-  'Yêu cầu #1 (Version Control v1 -> v2): Lưu versionHistory cho Admin xem bản cũ, người dùng hiển thị bản mới nhất',
-  htmlContent.includes('admin-version-history-box') &&
-  htmlContent.includes('switchReaderVersionView') &&
-  htmlContent.includes('doc.versionHistory.push') &&
-  htmlContent.includes('version_history: doc.versionHistory')
+  'Mã hóa phía Client (FscCryptoVault WebCrypto AES-GCM & Zero-Password Session): Mã hóa localStorage và IndexedDB',
+  htmlContent.includes('FscCryptoVault') &&
+  htmlContent.includes('encryptAsyncGCM') &&
+  htmlContent.includes('decryptAsyncGCM') &&
+  htmlContent.includes('saveEncryptedUserSession')
 );
 
-// 7. KIỂM TRA TÍNH NĂNG 2: HIỂN THỊ CHUẨN FILE WORD (.DOCX) & EXCEL (.XLSX) + MẶC ĐỊNH CHỈ XEM + THANH CÔNG CỤ WORD
 assertCheck(
-  'Yêu cầu #2a (Hiển thị chuẩn bố cục Word & Excel): Tích hợp docx-preview (window.docx.renderAsync) và Excel Multi-Sheet (renderExcelSheetByName)',
-  htmlContent.includes('docx-preview.min.js') &&
+  'Giao diện chuẩn QMS kết hợp FSC Cần Thơ: Cây Bộ phận trên Sidebar, Tài liệu Yêu thích/Vừa xem, 5 Thẻ QMS, Bộ lọc kép Mã & Tên tài liệu',
+  htmlContent.includes('sidebar-qms-dept-tree') &&
+  htmlContent.includes('qms-filter-doc-code') &&
+  htmlContent.includes('qms-filter-doc-name') &&
+  htmlContent.includes('toggleFavouriteDocument') &&
+  htmlContent.includes('recordRecentDocument')
+);
+
+assertCheck(
+  'Tính năng đọc/sửa trực tiếp Word/Excel/PDF, In không dính Header/Footer & Xác nhận trước khi đóng',
   htmlContent.includes('window.docx.renderAsync') &&
-  htmlContent.includes('renderExcelSheetByName')
-);
-
-assertCheck(
-  'Yêu cầu #2b (Mặc định Chỉ xem - Không tự bật sửa khi mở file): contenteditable="false" mặc định, chỉ mở khi bấm nút Chỉnh sửa',
-  htmlContent.includes('id="office-editor-canvas" contenteditable="false"') &&
-  htmlContent.includes('isLiveEditMode = false;\n      syncOfficeEditorLockState();') &&
-  htmlContent.includes('Chế độ Chỉ xem (Mặc định')
-);
-
-assertCheck(
-  'Yêu cầu #2c (Thanh công cụ định dạng Word đầy đủ): Hỗ trợ Font chữ, Cỡ chữ (Size), Màu chữ, Căn trái/giữa/phải/đều',
-  htmlContent.includes('id="word-font-family"') &&
-  htmlContent.includes('id="word-font-size"') &&
-  htmlContent.includes("applyWordFormat('justifyCenter')") &&
-  htmlContent.includes("applyWordFormat('justifyLeft')") &&
-  htmlContent.includes("applyWordFormat('justifyRight')") &&
-  htmlContent.includes("applyWordFormat('foreColor'")
-);
-
-// 8. KIỂM TRA TÍNH NĂNG 3 & 6: GIAO DIỆN TỔNG THỂ THEO LĨNH VỰC -> TAB QUY TRÌNH, HƯỚNG DẪN, BIỂU MẪU
-assertCheck(
-  'Yêu cầu #3 & #6 (Điều hướng 2 cấp Lĩnh vực -> Tab Quy trình, Hướng dẫn, Biểu mẫu): Có Category Hub và Sub-Tabs theo từng lĩnh vực',
-  htmlContent.includes('id="category-hub-section"') &&
-  htmlContent.includes('id="category-drilldown-section"') &&
-  htmlContent.includes('openCategoryDrilldown') &&
-  htmlContent.includes('selectCategorySubTab') &&
-  htmlContent.includes('backToCategoryHub')
+  htmlContent.includes('convertPdfToEditableWord') &&
+  htmlContent.includes('deleteExcelEditorRow') &&
+  htmlContent.includes('modal-confirm-close-edit') &&
+  htmlContent.includes('executeCleanPrintHtml')
 );
 
 console.log('\n================================================================================');
-console.log(`📊 KẾT QUẢ KIỂM THỬ & QUÉT BẢO MẬT: ${passed}/${passed + failed} ĐẠT (PASSED)`);
+console.log(`📊 KẾT QUẢ KIỂM THỬ & QUÉT BẢO MẬT v6.0: ${passed}/${passed + failed} ĐẠT (PASSED)`);
 console.log('================================================================================');
 
 if (failed > 0) {

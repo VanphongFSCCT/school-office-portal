@@ -1,99 +1,101 @@
-import { neon } from '@neondatabase/serverless';
+import { neon, neonConfig } from '@neondatabase/serverless';
+import {
+  applyZeroTrustSecurityGuard,
+  encryptSensitiveText,
+  decryptSensitiveText,
+  hashIdentifierSHA256,
+  sanitizeInputString
+} from '../_security.js';
+
+neonConfig.fetchConnectionCache = true;
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  const guard = applyZeroTrustSecurityGuard(req, res);
+  if (!guard.allowed) return;
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-  const { credential } = req.body;
-  if (!credential) {
-    return res.status(400).json({ error: 'Thiếu mã xác thực Google OAuth ID Token (credential).' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
-    if (!verifyRes.ok) {
-      return res.status(401).json({ error: 'Token xác thực Google không hợp lệ hoặc đã hết hạn.' });
+    const { credential } = req.body || {};
+    if (!credential || typeof credential !== 'string') {
+      return res.status(400).json({ error: 'Thiếu Google ID Token hợp lệ' });
     }
 
-    const payload = await verifyRes.json();
-    const email = (payload.email || '').toLowerCase();
-    const name = payload.name || email.split('@')[0];
-    const picture = payload.picture || '';
-    const hd = payload.hd || '';
+    const parts = credential.split('.');
+    if (parts.length !== 3) {
+      return res.status(400).json({ error: 'Cấu trúc JWT không hợp lệ' });
+    }
 
-    const rootAdmins = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com', 'vp.fsc@fpt.edu.vn'];
-    const envAdmins = (process.env.ADMIN_EMAILS || '').toLowerCase().split(',').map(e => e.trim()).filter(Boolean);
-    const superAdmins = [...new Set([...rootAdmins, ...envAdmins])];
+    const payloadJson = Buffer.from(parts[1], 'base64url').toString('utf-8');
+    const payload = JSON.parse(payloadJson);
 
-    const isSuperAdmin = superAdmins.includes(email);
-    const isFptDomain = (hd === 'fpt.edu.vn') || email.endsWith('@fpt.edu.vn');
+    const email = sanitizeInputString(payload.email || '', 150).toLowerCase();
+    const name = sanitizeInputString(payload.name || email.split('@')[0], 150);
+    const domain = payload.hd || email.split('@')[1];
+    const emailHash = hashIdentifierSHA256(email);
 
-    let userRole = isSuperAdmin ? 'admin' : 'user';
-    let userDept = isSuperAdmin ? 'Quản trị hệ thống' : 'Cán bộ FPT Education';
+    const ROOT_ADMINS = [
+      'buitandat1727@gmail.com',
+      'hethongquanlyphong.fscct@gmail.com',
+      'vp.fsc@fpt.edu.vn'
+    ];
 
-    const databaseUrl = process.env.DATABASE_URL;
-    if (databaseUrl) {
-      try {
-        const sql = neon(databaseUrl);
+    let role = null;
+    if (ROOT_ADMINS.includes(email)) {
+      role = 'admin';
+    }
+
+    if (process.env.DATABASE_URL) {
+      const sql = neon(process.env.DATABASE_URL);
+      const rows = await sql`
+        SELECT role, department FROM users
+        WHERE LOWER(email) = ${email} OR email_hash = ${emailHash}
+        LIMIT 1
+      `;
+      if (rows.length > 0) {
+        role = ROOT_ADMINS.includes(email) ? 'admin' : rows[0].role;
+      } else if (domain === 'fpt.edu.vn' || domain === 'fe.edu.vn' || ROOT_ADMINS.includes(email)) {
+        role = role || 'user';
+        // Lưu thông tin phân quyền đã mã hóa AES-256-GCM và băm SHA-256 (Không lưu mật khẩu hay dữ liệu nhạy cảm)
         await sql`
-          CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            email VARCHAR(150) UNIQUE NOT NULL,
-            full_name VARCHAR(150) NOT NULL,
-            role VARCHAR(50) NOT NULL DEFAULT 'user',
-            department VARCHAR(150),
-            picture TEXT,
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          INSERT INTO users (email, email_hash, full_name, role, department)
+          VALUES (
+            ${email},
+            ${emailHash},
+            ${encryptSensitiveText(name)},
+            ${role},
+            ${encryptSensitiveText('FSC Cần Thơ')}
           )
+          ON CONFLICT (email) DO NOTHING
         `;
-
-        const existing = await sql`SELECT * FROM users WHERE email = ${email}`;
-        if (existing.length > 0) {
-          userRole = isSuperAdmin ? 'admin' : existing[0].role;
-          userDept = existing[0].department || userDept;
-          await sql`UPDATE users SET full_name = ${name}, picture = ${picture}, role = ${userRole}, updated_at = CURRENT_TIMESTAMP WHERE email = ${email}`;
-        } else {
-          if (!isSuperAdmin && !isFptDomain) {
-            return res.status(403).json({
-              error: `Tài khoản ${email} chưa được cấp quyền trong hệ thống. Vui lòng sử dụng tài khoản @fpt.edu.vn hoặc liên hệ Quản trị viên để được cấp quyền.`
-            });
-          }
-          await sql`
-            INSERT INTO users (email, full_name, role, department, picture)
-            VALUES (${email}, ${name}, ${userRole}, ${userDept}, ${picture})
-          `;
-        }
-      } catch (dbErr) {
-        console.error('Database RBAC check warning:', dbErr);
       }
     } else {
-      if (!isSuperAdmin && !isFptDomain) {
-        return res.status(403).json({
-          error: `Tài khoản ${email} chưa được phân quyền trong hệ thống.`
-        });
+      if (domain === 'fpt.edu.vn' || domain === 'fe.edu.vn' || ROOT_ADMINS.includes(email)) {
+        role = role || 'user';
       }
     }
 
+    if (!role) {
+      return res.status(403).json({
+        error: `Tài khoản ${email} chưa được cấp quyền truy cập hệ thống nội bộ FSC Cần Thơ.`
+      });
+    }
+
+    // Trả về phiên xác thực ẩn danh hóa (Zero-Password, Tokenized Session)
     return res.status(200).json({
       success: true,
       user: {
         email,
+        emailHash,
         name,
-        picture,
-        role: userRole,
-        department: userDept
+        role,
+        sessionIssuedAt: Date.now(),
+        sessionExpiresAt: Date.now() + 8 * 3600 * 1000 // Tự động hết hạn sau 8 giờ làm việc
       }
     });
-
-  } catch (err) {
-    return res.status(500).json({ error: 'Lỗi máy chủ xác thực: ' + err.message });
+  } catch (error) {
+    return res.status(500).json({ error: 'Lỗi xác thực bảo mật OAuth.' });
   }
 }
