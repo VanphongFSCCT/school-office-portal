@@ -8,10 +8,12 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
 
   return res.status(200).json({
+    portalName: 'vp-fsc',
+    portalDomain: 'https://vp-fsc.vercel.app',
     googleClientId: process.env.GOOGLE_CLIENT_ID || '',
     hasDatabase: Boolean(process.env.DATABASE_URL),
     securityProtocol: 'Zero-Trust AES-256-GCM + SHA-256 E2EE v6.0',
-    organization: 'Trường THPT FPT Cần Thơ (FSC Cần Thơ)',
+    organization: 'Văn phòng - FSC Cần Thơ',
     allowedDomain: 'fpt.edu.vn'
   });
 }

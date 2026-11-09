@@ -1,18 +1,25 @@
 {
-  "name": "school-office-portal",
+  "name": "vp-fsc",
   "version": "1.0.0",
-  "description": "School Office Portal - Luxury Navy & Gold Enterprise Dashboard",
+  "description": "Văn phòng FSC Cần Thơ - Hệ thống Quản lý Tài liệu, Quy trình & Biểu mẫu (vp-fsc.vercel.app)",
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
     "dev": "vercel dev",
     "db:init": "node db/init.js"
   },
-  "keywords": ["school-portal", "sop", "wi", "office-documents", "enterprise"],
+  "keywords": [
+    "school-portal",
+    "sop",
+    "wi",
+    "office-documents",
+    "enterprise"
+  ],
   "author": "DatBT13",
   "license": "MIT",
   "dependencies": {
     "@neondatabase/serverless": "^0.9.0",
     "dotenv": "^16.4.5"
-  }
+  },
+  "homepage": "https://vp-fsc.vercel.app"
 }

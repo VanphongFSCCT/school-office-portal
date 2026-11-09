@@ -137,7 +137,12 @@ const MAX_WRITE_REQ_PER_MIN = 30;
 
 export function applyZeroTrustSecurityGuard(req, res) {
   // Thiết lập bộ Header Bảo mật Tối đa (OWASP + Anti-AI Scraping)
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const reqOrigin = (req.headers && req.headers.origin) || '';
+  const allowedOrigin = (!reqOrigin || reqOrigin.includes('vp-fsc.vercel.app') || reqOrigin.includes('.vercel.app') || reqOrigin.includes('localhost'))
+    ? (reqOrigin || 'https://vp-fsc.vercel.app')
+    : 'https://vp-fsc.vercel.app';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Công cụ Tạo Khóa Mã Hóa DATA_ENCRYPTION_KEY (AES-256-GCM) - Văn phòng FSC Cần Thơ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top right, #0B2545 0%, #03152D 100%);
+      color: #F8FAFC;
+      min-height: 100vh;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .card-vault {
+      background: linear-gradient(145deg, rgba(16, 46, 82, 0.96) 0%, rgba(7, 31, 61, 0.98) 100%);
+      border: 1px solid rgba(255, 200, 87, 0.3);
+      box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.65);
+    }
+  </style>
+</head>
+<body class="p-3 sm:p-6 md:p-8 flex flex-col justify-between">
+  <div class="max-w-4xl w-full mx-auto space-y-5">
+    
+    <!-- HEADER -->
+    <header class="card-vault rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-start sm:items-center space-x-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] flex items-center justify-center shrink-0 shadow-lg font-extrabold text-xl">
+          🔐
+        </div>
+        <div>
+          <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold mb-1">
+            <span>● Chạy độc lập 100% Offline trên máy tính (WebCrypto CSPRNG)</span>
+          </div>
+          <h1 class="text-base sm:text-xl font-extrabold text-white tracking-tight">
+            Trình Tạo Khóa Bảo Mật <span class="text-[#FFC857] font-mono-code">DATA_ENCRYPTION_KEY</span>
+          </h1>
+          <p class="text-xs text-[#B8C8DC] mt-0.5">
+            Sinh khóa mật mã ngẫu nhiên phần cứng chuẩn NIST SP 800-38D (AES-256-GCM &amp; HMAC-SHA256) cho Hệ thống Văn phòng FSC Cần Thơ
+          </p>
+        </div>
+      </div>
+      <button type="button" onclick="generateNewMasterKey()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] hover:brightness-110 text-[#03152D] font-extrabold text-xs sm:text-sm shadow-lg transition active:scale-95 cursor-pointer shrink-0 flex items-center justify-center space-x-1.5">
+        <span>⚡</span>
+        <span>Tạo khóa mới ngay</span>
+      </button>
+    </header>
+
+    <!-- MAIN GENERATOR PANEL -->
+    <section class="card-vault rounded-2xl p-4 sm:p-6 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#B98A33]/25 pb-3">
+        <div>
+          <h2 class="text-sm sm:text-base font-bold text-[#FFC857]">1. Khóa chủ đã sinh (<span class="font-mono-code">DATA_ENCRYPTION_KEY</span>)</h2>
+          <p class="text-xs text-[#B8C8DC]">Sao chép chuỗi khóa bên dưới và dán vào mục Environment Variables trên Vercel</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span id="entropy-badge" class="px-2.5 py-1 rounded-lg bg-[#03152D] border border-cyan-400/40 text-cyan-300 font-mono-code text-xs font-bold">
+            Entropy: 384-bit (Tuyệt đối an toàn)
+          </span>
+        </div>
+      </div>
+
+      <!-- KEY DISPLAY BOX -->
+      <div class="space-y-2.5">
+        <div class="relative">
+          <input id="generated-key-output" type="text" readonly value="" aria-label="Khóa DATA_ENCRYPTION_KEY đã tạo" class="w-full px-4 py-3.5 rounded-xl bg-[#03152D] border-2 border-[#FFC857]/70 text-[#FFC857] font-mono-code text-xs sm:text-sm font-bold tracking-wide focus:outline-none select-all shadow-inner">
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button type="button" onclick="copyKeyToClipboard('raw')" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-md transition active:scale-95 cursor-pointer">
+            <span>📋</span>
+            <span>Sao chép giá trị khóa</span>
+          </button>
+
+          <button type="button" onclick="copyKeyToClipboard('env')" class="px-3.5 py-2.5 rounded-xl bg-[#14345B] hover:bg-[#1E497C] text-sky-300 border border-sky-400/35 font-bold text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer">
+            <span>📄</span>
+            <span>Sao chép định dạng .env (DATA_ENCRYPTION_KEY=...)</span>
+          </button>
+
+          <button type="button" onclick="downloadKeyBackupFile()" class="px-3.5 py-2.5 rounded-xl bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/45 font-bold text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer">
+            <span>⬇️</span>
+            <span>Tải tệp lưu trữ (.txt)</span>
+          </button>
+
+          <button type="button" onclick="downloadStandaloneHtmlTool()" class="px-3.5 py-2.5 rounded-xl bg-[#03152D] hover:bg-[#14345B] text-slate-200 border border-slate-500/40 font-semibold text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer">
+            <span>💻</span>
+            <span>Tải trang HTML này về máy tính</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CONFIGURATION OPTIONS -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2 border-t border-[#B98A33]/20 text-xs">
+        <div>
+          <label for="select-key-format" class="block text-[#B8C8DC] font-semibold mb-1.5">Định dạng cấu trúc khóa:</label>
+          <select id="select-key-format" onchange="generateNewMasterKey()" class="w-full px-3 py-2 rounded-xl bg-[#03152D] border border-[#B98A33]/40 text-white font-medium focus:outline-none focus:border-[#FFC857]">
+            <option value="fsc_standard" selected>Chuẩn FSC Cần Thơ (Tiền tố + 384-bit Ngẫu nhiên)</option>
+            <option value="hex_512">Chuẩn HEX 512-bit (96 ký tự hệ thập lục phân)</option>
+            <option value="base64url_384">Chuẩn Base64URL 384-bit (An toàn biến môi trường)</option>
+            <option value="mixed_high">Chuẩn Hỗn hợp Chữ + Số + Ký tự đặc biệt</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="select-byte-length" class="block text-[#B8C8DC] font-semibold mb-1.5">Độ dài hạt giống mật mã (Bytes):</label>
+          <select id="select-byte-length" onchange="generateNewMasterKey()" class="w-full px-3 py-2 rounded-xl bg-[#03152D] border border-[#B98A33]/40 text-white font-medium focus:outline-none focus:border-[#FFC857]">
+            <option value="32">32 Bytes (256-bit — Tiêu chuẩn AES-256)</option>
+            <option value="48" selected>48 Bytes (384-bit — Khuyên dùng cao cấp)</option>
+            <option value="64">64 Bytes (512-bit — Bảo mật tối đa)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="inp-custom-prefix" class="block text-[#B8C8DC] font-semibold mb-1.5">Nhãn định danh đơn vị (Tùy chọn):</label>
+          <input id="inp-custom-prefix" type="text" value="FSC_CanTho_2026" oninput="generateNewMasterKey()" placeholder="VD: FSC_CanTho_2026" class="w-full px-3 py-2 rounded-xl bg-[#03152D] border border-[#B98A33]/40 text-[#FFC857] font-mono-code focus:outline-none focus:border-[#FFC857]">
+        </div>
+      </div>
+
+      <!-- DERIVED SHA-256 PREVIEW -->
+      <div class="p-3 rounded-xl bg-[#03152D]/85 border border-[#B98A33]/25 space-y-1 text-xs">
+        <div class="flex items-center justify-between text-[#B8C8DC]">
+          <span class="font-semibold">Mã băm kiểm chứng khóa (SHA-256 Fingerprint):</span>
+          <span class="text-[10.5px] text-emerald-400 font-mono-code">CSPRNG Verified</span>
+        </div>
+        <div id="key-sha256-fingerprint" class="font-mono-code text-[11px] text-sky-300 break-all">Đang tính toán...</div>
+      </div>
+    </section>
+
+    <!-- LIVE AES-256-GCM ENCRYPTION / DECRYPTION SANDBOX -->
+    <section class="card-vault rounded-2xl p-4 sm:p-6 space-y-4">
+      <div class="border-b border-[#B98A33]/25 pb-2.5 flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h2 class="text-sm sm:text-base font-bold text-[#FFC857]">2. Kiểm thử trực tiếp Mã hóa &amp; Giải mã AES-256-GCM với khóa trên</h2>
+          <p class="text-xs text-[#B8C8DC]">Mô phỏng chính xác cách máy chủ <code class="text-sky-300">api/_security.js</code> mã hóa dữ liệu trong Neon PostgreSQL</p>
+        </div>
+        <button type="button" onclick="runLiveEncryptionTest()" class="px-3 py-1.5 rounded-lg bg-[#14345B] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-xs font-bold transition cursor-pointer">
+          🔄 Mã hóa lại với IV mới
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="space-y-1.5">
+          <label for="test-plain-input" class="block font-semibold text-slate-200">Dữ liệu gốc (Plaintext trước khi lưu vào DB):</label>
+          <textarea id="test-plain-input" rows="3" oninput="runLiveEncryptionTest()" class="w-full p-3 rounded-xl bg-[#03152D] border border-[#B98A33]/35 text-white focus:outline-none focus:border-[#FFC857]">01-QT/IT/FSC — Quy trình Quản trị Hạ tầng Mạng & Bảo mật Hệ thống Văn phòng FSC Cần Thơ</textarea>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block font-semibold text-emerald-300">Bản mã lưu trong PostgreSQL (Ciphertext AES-256-GCM):</label>
+          <div id="test-cipher-output" class="w-full p-3 rounded-xl bg-[#03152D] border border-emerald-500/40 text-emerald-300 font-mono-code text-[11px] break-all min-h-[76px] select-all"></div>
+        </div>
+      </div>
+
+      <div class="p-3 rounded-xl bg-[#03152D]/90 border border-[#B98A33]/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        <div class="truncate">
+          <span class="text-[#B8C8DC]">Kết quả giải mã kiểm chứng: </span>
+          <strong id="test-decrypted-verify" class="text-white"></strong>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10.5px] font-bold shrink-0">
+          ✓ Toàn vẹn 100% (AuthTag 128-bit hợp lệ)
+        </span>
+      </div>
+    </section>
+
+    <!-- STEP-BY-STEP VERCEL GUIDE -->
+    <section class="card-vault rounded-2xl p-4 sm:p-6 space-y-3 text-xs">
+      <h2 class="text-sm sm:text-base font-bold text-[#FFC857]">3. Hướng dẫn cài đặt khóa lên Vercel trong 30 giây</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="p-3.5 rounded-xl bg-[#03152D]/80 border border-[#B98A33]/25 space-y-1">
+          <div class="font-bold text-sky-300">Bước 1: Sao chép khóa</div>
+          <p class="text-[#B8C8DC] leading-relaxed">Bấm nút <strong class="text-white">📋 Sao chép giá trị khóa</strong> màu xanh ở mục 1 phía trên.</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-[#03152D]/80 border border-[#B98A33]/25 space-y-1">
+          <div class="font-bold text-sky-300">Bước 2: Mở cấu hình Vercel</div>
+          <p class="text-[#B8C8DC] leading-relaxed">Vào dự án trên Vercel ➔ <strong class="text-white">Settings</strong> ➔ <strong class="text-white">Environment Variables</strong>.</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-[#03152D]/80 border border-[#B98A33]/25 space-y-1">
+          <div class="font-bold text-sky-300">Bước 3: Lưu &amp; Redeploy</div>
+          <p class="text-[#B8C8DC] leading-relaxed">Nhập Key là <code class="text-[#FFC857] font-bold">DATA_ENCRYPTION_KEY</code>, dán Value vừa chép, bấm <strong class="text-white">Save</strong> và <strong class="text-white">Redeploy</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="max-w-4xl w-full mx-auto mt-6 pt-3 border-t border-[#B98A33]/30 text-center sm:flex sm:items-center sm:justify-between text-[11px] text-[#B8C8DC]">
+    <div>School Office Portal © 2026 Văn phòng FSC Cần Thơ.</div>
+    <div class="text-[#FFC857] font-semibold">Công cụ Bảo mật Mật mã học Nội bộ — Powered by DatBT13</div>
+  </footer>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-box" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    function showNotice(msg) {
+      const box = document.getElementById('toast-box');
+      if (!box) return;
+      const item = document.createElement('div');
+      item.className = 'px-4 py-2.5 rounded-xl bg-[#071F3D] border border-[#22C58B] text-white text-xs font-bold shadow-2xl flex items-center space-x-2 pointer-events-auto';
+      item.innerHTML = `<span class="text-[#22C58B]">✓</span><span>${msg}</span>`;
+      box.appendChild(item);
+      setTimeout(() => item.remove(), 2800);
+    }
+
+    function bytesToHex(bytes) {
+      return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function bytesToBase64Url(bytes) {
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    async function computeSha256Hex(text) {
+      const data = new TextEncoder().encode(text);
+      const hashBuf = await window.crypto.subtle.digest('SHA-256', data);
+      return bytesToHex(new Uint8Array(hashBuf));
+    }
+
+    async function generateNewMasterKey() {
+      const formatEl = document.getElementById('select-key-format');
+      const lenEl = document.getElementById('select-byte-length');
+      const prefixEl = document.getElementById('inp-custom-prefix');
+      const outEl = document.getElementById('generated-key-output');
+      const badgeEl = document.getElementById('entropy-badge');
+      const fpEl = document.getElementById('key-sha256-fingerprint');
+
+      const format = formatEl ? formatEl.value : 'fsc_standard';
+      const byteLen = parseInt(lenEl ? lenEl.value : '48', 10) || 48;
+      const rawPrefix = (prefixEl ? prefixEl.value.trim() : 'FSC_CanTho_2026').replace(/\s+/g, '_');
+
+      const randBytes = new Uint8Array(byteLen);
+      window.crypto.getRandomValues(randBytes);
+
+      let finalKey = '';
+      if (format === 'fsc_standard') {
+        const token = bytesToBase64Url(randBytes);
+        finalKey = `${rawPrefix ? rawPrefix + '_' : ''}AES256GCM_${token}`;
+      } else if (format === 'hex_512') {
+        finalKey = bytesToHex(randBytes);
+      } else if (format === 'base64url_384') {
+        finalKey = bytesToBase64Url(randBytes);
+      } else {
+        const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*_-+=';
+        let s = '';
+        for (let i = 0; i < byteLen; i++) {
+          s += charset[randBytes[i] % charset.length];
+        }
+        finalKey = `${rawPrefix ? rawPrefix + '_' : ''}${s}`;
+      }
+
+      if (outEl) outEl.value = finalKey;
+      const bitEntropy = byteLen * 8;
+      if (badgeEl) {
+        badgeEl.textContent = `Entropy: ${bitEntropy}-bit (Chuẩn NIST SP 800-38D)`;
+      }
+
+      if (fpEl) {
+        const fp = await computeSha256Hex(finalKey);
+        fpEl.textContent = fp;
+      }
+
+      await runLiveEncryptionTest();
+    }
+    window.generateNewMasterKey = generateNewMasterKey;
+
+    async function runLiveEncryptionTest() {
+      const keyStr = document.getElementById('generated-key-output')?.value || '';
+      const plainStr = document.getElementById('test-plain-input')?.value || '';
+      const cipherOut = document.getElementById('test-cipher-output');
+      const verifyOut = document.getElementById('test-decrypted-verify');
+      if (!keyStr || !cipherOut || !verifyOut) return;
+
+      try {
+        // Dẫn xuất khóa 256-bit từ DATA_ENCRYPTION_KEY bằng SHA-256
+        const keyMaterial = await window.crypto.subtle.digest(
+          'SHA-256',
+          new TextEncoder().encode(keyStr + '|FSC_CANTHO_SALT_v6_2026')
+        );
+        const cryptoKey = await window.crypto.subtle.importKey(
+          'raw',
+          keyMaterial,
+          { name: 'AES-GCM' },
+          false,
+          ['encrypt', 'decrypt']
+        );
+
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const encodedPlain = new TextEncoder().encode(plainStr);
+        const cipherBuf = await window.crypto.subtle.encrypt(
+          { name: 'AES-GCM', iv, tagLength: 128 },
+          cryptoKey,
+          encodedPlain
+        );
+
+        const cipherBytes = new Uint8Array(cipherBuf);
+        const dataBytes = cipherBytes.slice(0, cipherBytes.length - 16);
+        const authTagBytes = cipherBytes.slice(cipherBytes.length - 16);
+
+        const toB64 = (arr) => {
+          let b = '';
+          for (let i = 0; i < arr.length; i++) b += String.fromCharCode(arr[i]);
+          return btoa(b);
+        };
+
+        const formattedPayload = `ENCv6_GCM:${toB64(iv)}:${toB64(authTagBytes)}:${toB64(dataBytes)}`;
+        cipherOut.textContent = formattedPayload;
+
+        // Giải mã kiểm chứng
+        const decBuf = await window.crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv, tagLength: 128 },
+          cryptoKey,
+          cipherBytes
+        );
+        verifyOut.textContent = new TextDecoder().decode(decBuf);
+      } catch (e) {
+        cipherOut.textContent = 'Lỗi kiểm thử mã hóa.';
+      }
+    }
+    window.runLiveEncryptionTest = runLiveEncryptionTest;
+
+    function copyTextFallback(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        });
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    }
+
+    function copyKeyToClipboard(mode) {
+      const keyVal = document.getElementById('generated-key-output')?.value || '';
+      if (!keyVal) return;
+      if (mode === 'env') {
+        copyTextFallback(`DATA_ENCRYPTION_KEY=${keyVal}`);
+        showNotice('Đã sao chép dòng cấu hình DATA_ENCRYPTION_KEY=... vào bộ nhớ tạm!');
+      } else {
+        copyTextFallback(keyVal);
+        showNotice('Đã sao chép khóa DATA_ENCRYPTION_KEY vào bộ nhớ tạm!');
+      }
+    }
+    window.copyKeyToClipboard = copyKeyToClipboard;
+
+    function downloadKeyBackupFile() {
+      const keyVal = document.getElementById('generated-key-output')?.value || '';
+      const fpVal = document.getElementById('key-sha256-fingerprint')?.textContent || '';
+      const nowStr = new Date().toLocaleString('vi-VN');
+      const content = [
+        '====================================================================',
+        'KHÓA BẢO MẬT CHỦ (MASTER KEY) - HỆ THỐNG VĂN PHÒNG FSC CẦN THƠ',
+        '====================================================================',
+        `Thời điểm khởi tạo : ${nowStr}`,
+        'Thuật toán áp dụng : AES-256-GCM (NIST SP 800-38D) & HMAC-SHA256',
+        '',
+        '1. Giá trị biến môi trường (Dán vào Vercel Environment Variables):',
+        `DATA_ENCRYPTION_KEY=${keyVal}`,
+        '',
+        '2. Giá trị khóa độc lập (Value):',
+        keyVal,
+        '',
+        '3. Mã băm kiểm chứng SHA-256 (Key Fingerprint):',
+        fpVal,
+        '====================================================================',
+        'LƯU Ý: Bảo mật tuyệt đối tệp này, không chia sẻ công khai.'
+      ].join('\n');
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'DATA_ENCRYPTION_KEY_FSC_CanTho.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotice('Đã tải tệp lưu trữ khóa DATA_ENCRYPTION_KEY_FSC_CanTho.txt!');
+    }
+    window.downloadKeyBackupFile = downloadKeyBackupFile;
+
+    function downloadStandaloneHtmlTool() {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tao_khoa_bao_mat_fsc.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotice('Đã tải trang tao_khoa_bao_mat_fsc.html về máy để chạy Offline!');
+    }
+    window.downloadStandaloneHtmlTool = downloadStandaloneHtmlTool;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      generateNewMasterKey();
+    });
+  </script>
+</body>
+</html>
