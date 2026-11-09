@@ -240,3 +240,35 @@ export function invalidateCache(prefix = '') {
     if (k.startsWith(prefix)) memoryCache.delete(k);
   }
 }
+
+
+/**
+ * Ký số HMAC-SHA256 cho phiên đăng nhập (Chống giả mạo quyền Admin/User từ phía Client)
+ */
+export function signUserSessionToken(userObj) {
+  const issuedAt = Date.now();
+  const expiresAt = issuedAt + 8 * 3600 * 1000; // 8 giờ
+  const payload = {
+    emailHash: hashIdentifierSHA256(userObj.email),
+    role: userObj.role || 'user',
+    iat: issuedAt,
+    exp: expiresAt
+  };
+  const payloadB64 = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
+  const sig = crypto.createHmac('sha256', MASTER_KEY).update(payloadB64).digest('base64url');
+  return `${payloadB64}.${sig}`;
+}
+
+export function verifyUserSessionToken(token) {
+  if (!token || typeof token !== 'string' || !token.includes('.')) return null;
+  try {
+    const [payloadB64, sig] = token.split('.');
+    const expectedSig = crypto.createHmac('sha256', MASTER_KEY).update(payloadB64).digest('base64url');
+    if (sig !== expectedSig) return null;
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (!payload.exp || payload.exp < Date.now()) return null;
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}

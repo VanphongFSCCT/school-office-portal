@@ -92,6 +92,8 @@ export default async function handler(req, res) {
         return {
           ...r,
           title: decryptSensitiveText(r.title) || r.title,
+          department: decryptSensitiveText(r.department) || r.department,
+          current_file: decryptSensitiveText(r.current_file) || r.current_file,
           description: decryptSensitiveText(r.description),
           file_data: decryptSensitiveText(r.file_data),
           version_history: verHist
@@ -146,6 +148,8 @@ export default async function handler(req, res) {
       // MÃ HÓA ĐẦU-CUỐI LƯU TRỮ (AES-256-GCM):
       // Mã hóa tên tài liệu, mô tả, nội dung file và lịch sử phiên bản trước khi ghi xuống PostgreSQL
       const encryptedTitle = encryptSensitiveText(cleanTitle);
+      const encryptedDept = encryptSensitiveText(cleanDept);
+      const encryptedFileName = encryptSensitiveText(cleanFileName);
       const encryptedDesc = encryptSensitiveText(sanitizeInputString(description || '', 5000));
       const encryptedFileData = file_data ? encryptSensitiveText(String(file_data)) : '';
 
@@ -168,8 +172,8 @@ export default async function handler(req, res) {
         )
         VALUES (
           ${cleanCode}, ${encryptedTitle}, ${cleanCat}, ${cleanType}, ${cleanVer},
-          ${effDate}, ${cleanDept}, ${encryptedDesc}, ${cleanAccess},
-          ${cleanPerm}, ${cleanFileName}, ${encryptedFileData}, ${historyJson}::jsonb
+          ${effDate}, ${encryptedDept}, ${encryptedDesc}, ${cleanAccess},
+          ${cleanPerm}, ${encryptedFileName}, ${encryptedFileData}, ${historyJson}::jsonb
         )
         ON CONFLICT (code) DO UPDATE SET
           title = EXCLUDED.title,

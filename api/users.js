@@ -81,6 +81,7 @@ export default async function handler(req, res) {
       const safeRole = allowedRoles.includes(role) ? role : 'user';
 
       const emailHash = hashIdentifierSHA256(cleanEmail);
+      const encryptedEmail = encryptSensitiveText(cleanEmail);
       const encryptedName = encryptSensitiveText(
         sanitizeInputString(name || cleanEmail.split('@')[0], 150)
       );
@@ -88,9 +89,10 @@ export default async function handler(req, res) {
         sanitizeInputString(department || 'Văn phòng', 150)
       );
 
+      await sql`DELETE FROM users WHERE email_hash = ${emailHash} OR LOWER(email) = ${cleanEmail}`;
       await sql`
         INSERT INTO users (email, email_hash, full_name, role, department)
-        VALUES (${cleanEmail}, ${emailHash}, ${encryptedName}, ${safeRole}, ${encryptedDept})
+        VALUES (${encryptedEmail}, ${emailHash}, ${encryptedName}, ${safeRole}, ${encryptedDept})
         ON CONFLICT (email) DO UPDATE SET
           email_hash = EXCLUDED.email_hash,
           role = EXCLUDED.role,

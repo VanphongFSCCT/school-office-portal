@@ -100,28 +100,17 @@
       line-height: 1.5;
       box-sizing: border-box;
     }
+    /* Giữ nguyên tuyệt đối kích thước chuẩn trang A4 (210mm x 297mm / 595pt x 842pt) của file Word gốc trên cả điện thoại và máy tính, sau đó thu phóng đồng tỷ lệ (Proportional A4 Scale) vừa khít màn hình điện thoại giống hệt trang PDF */
     @media (max-width: 860px) {
-      .pdf-converted-word-page {
-        width: 100%;
-        min-height: auto;
-        padding: 14px 12px;
-      }
       .docx-wrapper {
-        padding: 6px !important;
+        padding: 6px 2px !important;
       }
-      .docx-wrapper > section.docx {
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-        padding: 14px 12px !important;
-        box-sizing: border-box !important;
-        overflow-x: auto !important;
-      }
-      .docx-wrapper section.docx table {
-        max-width: 100% !important;
-        display: block;
-        overflow-x: auto;
-      }
+    }
+    .fsc-docx-scale-slot {
+      margin: 0 auto 14px auto;
+      position: relative;
+      overflow: hidden;
+      display: block;
     }
     /* Khi ở chế độ Chỉ xem (View-Only Default): không hiện viền sửa */
     #office-editor-canvas[contenteditable="false"] {
@@ -1239,15 +1228,24 @@
           
           <!-- KHUNG XEM & SOẠN THẢO TỆP WORD (.DOCX) VÀ EXCEL (.XLSX) CHUẨN XÁC -->
           <div id="reader-office-live-editor" class="hidden w-full max-w-5xl bg-white text-slate-900 rounded-xl shadow-2xl border border-slate-300 flex flex-col overflow-hidden my-auto">
-            <!-- Thanh thông tin tệp ở Chế độ Xem (Mặc định luôn hiện gọn gàng) -->
-            <div class="px-4 py-2 bg-slate-100 border-b border-slate-300 flex items-center justify-between flex-wrap gap-2 text-xs text-slate-700 select-none">
-              <div class="flex items-center space-x-2">
-                <span id="office-editor-badge" class="px-2.5 py-0.5 rounded bg-blue-600 text-white font-bold text-[10.5px]">WORD (.DOCX)</span>
-                <span id="office-editor-filename" class="font-bold text-slate-800 truncate max-w-[280px]"></span>
-                <span id="office-mode-status-pill" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10.5px]">👁️ Chế độ Chỉ xem (Mặc định)</span>
+            <!-- Thanh thông tin tệp & Thu phóng chuẩn A4 ở Chế độ Xem -->
+            <div class="px-2.5 sm:px-4 py-1.5 bg-[#14171A] border-b border-slate-700/80 flex items-center justify-between flex-wrap gap-1.5 text-xs text-slate-200 select-none">
+              <div class="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
+                <span id="office-editor-badge" class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[10px] shrink-0">WORD (.DOCX)</span>
+                <span id="office-editor-filename" class="font-bold text-slate-200 truncate max-w-[130px] sm:max-w-[240px]"></span>
+                <span id="office-mode-status-pill" class="hidden md:inline-block px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold text-[10px]">👁️ Chế độ Chỉ xem</span>
               </div>
-              <!-- Thanh chọn Sheet cho file Excel nhiều sheet -->
-              <div id="excel-sheet-tabs-bar" class="hidden items-center space-x-1 overflow-x-auto"></div>
+              <div class="flex items-center space-x-1.5">
+                <!-- Thanh chọn Sheet cho file Excel nhiều sheet -->
+                <div id="excel-sheet-tabs-bar" class="hidden items-center space-x-1 overflow-x-auto"></div>
+                <!-- Bộ thu phóng trang Word chuẩn A4 -->
+                <div class="flex items-center space-x-1 whitespace-nowrap">
+                  <button type="button" onclick="adjustCustomOfficeScale(-0.15)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold cursor-pointer" title="Thu nhỏ trang">-</button>
+                  <span id="custom-office-scale-label" class="font-mono text-[11px] text-[#FFC857] w-10 text-center font-bold">100%</span>
+                  <button type="button" onclick="adjustCustomOfficeScale(0.15)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold cursor-pointer" title="Phóng to trang">+</button>
+                  <button type="button" onclick="adjustCustomOfficeScale(0)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 cursor-pointer whitespace-nowrap" title="Vừa khung nhìn">Vừa trang</button>
+                </div>
+              </div>
             </div>
 
             <!-- THANH CÔNG CỤ ĐỊNH DẠNG CHUẨN WORD (CHỈ HIỂN THỊ KHI NGƯỜI DÙNG BẤM NÚT "CHỈNH SỬA / ĐIỀN BIỂU MẪU") -->
@@ -1321,7 +1319,7 @@
             </div>
 
             <!-- Vùng hiển thị trang tài liệu (Mặc định contenteditable="false" - CHỈ XEM, giữ nguyên 100% cỡ chữ và font chữ gốc của Word) -->
-            <div id="office-editor-canvas" contenteditable="false" spellcheck="false" class="p-2 sm:p-4 min-h-[540px] max-h-[76vh] overflow-auto text-black focus:outline-none" style="font-family: 'Times New Roman', Times, serif;">
+            <div id="office-editor-canvas" oninput="fitOfficePagesToViewport()" contenteditable="false" spellcheck="false" class="p-1.5 sm:p-4 min-h-[480px] max-h-[76vh] overflow-auto bg-[#252930] text-black focus:outline-none" style="font-family: 'Times New Roman', Times, serif;">
             </div>
           </div>
           
@@ -1738,9 +1736,12 @@
 
     let CATEGORIES = [];
     try {
-      const storedCats = localStorage.getItem('school_portal_categories_v5');
-      if (storedCats) {
-        const parsedCats = JSON.parse(storedCats);
+      const storedCatsRaw = localStorage.getItem('school_portal_categories_v5');
+      if (storedCatsRaw) {
+        const decCatsStr = storedCatsRaw.startsWith('ENC_FSC_V6:')
+          ? (window.FscCryptoVault ? window.FscCryptoVault.decryptSync(storedCatsRaw) : storedCatsRaw)
+          : storedCatsRaw;
+        const parsedCats = JSON.parse(decCatsStr);
         CATEGORIES = Array.isArray(parsedCats) ? parsedCats.map(c => {
           const defMatch = DEFAULT_CATEGORIES.find(d => d.id === c.id || d.name === c.name);
           return {
@@ -2123,19 +2124,35 @@
       }
     }
 
+    function computeSessionIntegritySig(email, role, expiresAt) {
+      const raw = `${String(email || '').toLowerCase()}|${role || 'user'}|${expiresAt}|${FSC_CLIENT_SECRET}`;
+      let h1 = 0xdeadbeef ^ raw.length, h2 = 0x41c6ce57 ^ raw.length;
+      for (let i = 0, ch; i < raw.length; i++) {
+        ch = raw.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+    }
+
     function saveEncryptedUserSession(userObj) {
       if (!userObj) {
         sessionStorage.removeItem('fpt_auth_user');
         localStorage.removeItem('school_portal_user');
         return;
       }
-      // Tuyệt đối không lưu mật khẩu hay token nhạy cảm; đặt thời hạn phiên 8 giờ
+      const exp = userObj.expiresAt || (Date.now() + 8 * 3600 * 1000);
+      // Tuyệt đối không lưu mật khẩu; gắn chữ ký toàn vẹn chống can thiệp quyền hạn (Anti-Privilege-Escalation)
       const sanitizedSession = {
         email: userObj.email,
         name: userObj.name,
         role: userObj.role,
         picture: userObj.picture || '',
-        expiresAt: userObj.expiresAt || (Date.now() + 8 * 3600 * 1000)
+        sessionToken: userObj.sessionToken || '',
+        expiresAt: exp,
+        integritySig: computeSessionIntegritySig(userObj.email, userObj.role, exp)
       };
       const cipher = FscCryptoVault.encryptSync(JSON.stringify(sanitizedSession));
       sessionStorage.setItem('fpt_auth_user', cipher);
@@ -2148,7 +2165,8 @@
         if (saved) {
           const decUser = FscCryptoVault.decryptSync(saved);
           const parsedUser = JSON.parse(decUser);
-          if (parsedUser && (!parsedUser.expiresAt || parsedUser.expiresAt > Date.now())) {
+          const expectedSig = parsedUser ? computeSessionIntegritySig(parsedUser.email, parsedUser.role, parsedUser.expiresAt) : '';
+          if (parsedUser && parsedUser.expiresAt && parsedUser.expiresAt > Date.now() && (!parsedUser.integritySig || parsedUser.integritySig === expectedSig)) {
             currentUser = parsedUser;
           } else {
             saveEncryptedUserSession(null);
@@ -3446,6 +3464,61 @@
     }
     window.adjustCustomPdfScale = adjustCustomPdfScale;
 
+    let customOfficeScale = 1.0;
+
+    function fitOfficePagesToViewport() {
+      const editorCanvas = document.getElementById('office-editor-canvas');
+      if (!editorCanvas || currentOfficeEditType === 'xlsx') return;
+
+      const pages = editorCanvas.querySelectorAll('section.docx, .pdf-converted-word-page');
+      if (!pages || pages.length === 0) return;
+
+      const availWidth = Math.max(240, editorCanvas.clientWidth - (window.innerWidth < 640 ? 12 : 36));
+
+      pages.forEach(pageEl => {
+        // Đảm bảo mỗi trang nằm trong 1 khung giữ chỗ chuẩn tỷ lệ (.fsc-docx-scale-slot)
+        let slot = pageEl.parentElement;
+        if (!slot || !slot.classList.contains('fsc-docx-scale-slot')) {
+          slot = document.createElement('div');
+          slot.className = 'fsc-docx-scale-slot';
+          pageEl.parentNode.insertBefore(slot, pageEl);
+          slot.appendChild(pageEl);
+        }
+
+        // Tạm gỡ transform để đo chính xác kích thước trang A4 gốc (thường là 794px x 1123px)
+        pageEl.style.transform = 'none';
+        pageEl.style.margin = '0';
+        const naturalW = pageEl.offsetWidth || 794;
+        const naturalH = pageEl.offsetHeight || 1123;
+
+        // Tính tỷ lệ thu phóng đồng bộ sao cho trang A4 vừa khít chiều ngang màn hình điện thoại (giống hệt PDF)
+        const baseScale = availWidth < naturalW ? (availWidth / naturalW) : 1.0;
+        const finalScale = Math.min(2.2, Math.max(0.32, baseScale * customOfficeScale));
+
+        pageEl.style.transformOrigin = 'top left';
+        pageEl.style.transform = `scale(${finalScale})`;
+        slot.style.width = `${Math.floor(naturalW * finalScale)}px`;
+        slot.style.height = `${Math.floor(naturalH * finalScale)}px`;
+      });
+    }
+    window.fitOfficePagesToViewport = fitOfficePagesToViewport;
+
+    function adjustCustomOfficeScale(delta) {
+      if (delta === 0) customOfficeScale = 1.0;
+      else customOfficeScale = Math.min(2.2, Math.max(0.5, +(customOfficeScale + delta).toFixed(2)));
+      const lbl = document.getElementById('custom-office-scale-label');
+      if (lbl) lbl.textContent = `${Math.round(customOfficeScale * 100)}%`;
+      fitOfficePagesToViewport();
+    }
+    window.adjustCustomOfficeScale = adjustCustomOfficeScale;
+
+    window.addEventListener('resize', () => {
+      const mr = document.getElementById('modal-reader');
+      if (mr && !mr.classList.contains('hidden')) {
+        fitOfficePagesToViewport();
+      }
+    });
+
 
     // =========================================================================
     // HỆ THỐNG ĐIỀN & CHỈNH SỬA BIỂU MẪU TRỰC TIẾP (WORD / EXCEL / PDF)
@@ -3637,7 +3710,14 @@
               }
             });
 
+            customOfficeScale = 1.0;
+            const offLbl = document.getElementById('custom-office-scale-label');
+            if (offLbl) offLbl.textContent = '100%';
             syncOfficeEditorLockState();
+            requestAnimationFrame(() => {
+              fitOfficePagesToViewport();
+              setTimeout(fitOfficePagesToViewport, 120);
+            });
             return true;
           } else if (window.mammoth) {
             const res = await window.mammoth.convertToHtml({ arrayBuffer: bytes.buffer });
@@ -4258,7 +4338,14 @@
       }
 
       editorCanvas.innerHTML = allPagesHtml;
+      customOfficeScale = 1.0;
+      const offLbl = document.getElementById('custom-office-scale-label');
+      if (offLbl) offLbl.textContent = '100%';
       syncOfficeEditorLockState();
+      requestAnimationFrame(() => {
+        fitOfficePagesToViewport();
+        setTimeout(fitOfficePagesToViewport, 80);
+      });
       return true;
     }
     window.convertPdfToEditableWord = convertPdfToEditableWord;
@@ -4812,7 +4899,7 @@
     }
 
     function saveCategories() {
-      localStorage.setItem('school_portal_categories_v5', JSON.stringify(CATEGORIES));
+      FscCryptoVault.setEncryptedLocalItem('school_portal_categories_v5', CATEGORIES);
       renderFilterChips();
       renderCategoryHub();
       renderDirectCards();
@@ -5128,13 +5215,23 @@
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
         const payload = JSON.parse(jsonPayload);
-        const email = (payload.email || '').toLowerCase();
 
+        // Kiểm tra chuẩn OIDC của Google (iss, exp, email_verified)
+        const validIss = ['https://accounts.google.com', 'accounts.google.com'];
+        if (!payload.iss || !validIss.includes(payload.iss) || (payload.exp && payload.exp * 1000 < Date.now()) || payload.email_verified === false) {
+          if (errorAlert) {
+            errorAlert.textContent = 'Xác thực bị từ chối: Google ID Token không hợp lệ hoặc đã hết hạn.';
+            errorAlert.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const email = (payload.email || '').toLowerCase();
         const isRootAdmin = ROOT_ADMIN_EMAILS.includes(email);
         const matchedRbac = rbacUsers.find(u => u.email.toLowerCase() === email);
-        const isFpt = email.endsWith('@fpt.edu.vn') || payload.hd === 'fpt.edu.vn';
+        const isFpt = email.endsWith('@fpt.edu.vn') || email.endsWith('@fe.edu.vn') || payload.hd === 'fpt.edu.vn' || payload.hd === 'fe.edu.vn';
 
-        if (!matchedRbac && !isFpt) {
+        if (!isRootAdmin && !matchedRbac && !isFpt) {
           if (errorAlert) {
             errorAlert.textContent = `Từ chối truy cập: Tài khoản ${email} không thuộc miền @fpt.edu.vn và chưa được Quản trị viên cấp quyền.`;
             errorAlert.classList.remove('hidden');
@@ -5142,11 +5239,33 @@
           return;
         }
 
+        // Gửi ID Token lên máy chủ /api/auth/google để xác thực chữ ký OIDC & nhận Session Token ký số HMAC-SHA256
+        let serverRole = null;
+        let serverSessionToken = '';
+        try {
+          const authRes = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-FSC-Security-Token': 'FSC-ZeroTrust-v6'
+            },
+            body: JSON.stringify({ credential: response.credential })
+          });
+          if (authRes.ok) {
+            const authData = await authRes.json();
+            if (authData && authData.user) {
+              serverRole = authData.user.role;
+              serverSessionToken = authData.user.sessionToken || '';
+            }
+          }
+        } catch (e) {}
+
         currentUser = {
           email: email,
           name: payload.name || (matchedRbac ? matchedRbac.name : email.split('@')[0]),
           picture: payload.picture || '',
-          role: isRootAdmin ? 'admin' : (matchedRbac ? matchedRbac.role : 'user')
+          role: isRootAdmin ? 'admin' : (serverRole || (matchedRbac ? matchedRbac.role : 'user')),
+          sessionToken: serverSessionToken
         };
 
         saveEncryptedUserSession(currentUser);

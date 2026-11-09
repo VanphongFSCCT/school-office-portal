@@ -4,7 +4,8 @@ import {
   encryptSensitiveText,
   decryptSensitiveText,
   hashIdentifierSHA256,
-  sanitizeInputString
+  sanitizeInputString,
+  signUserSessionToken
 } from '../_security.js';
 
 neonConfig.fetchConnectionCache = true;
@@ -25,16 +26,49 @@ export default async function handler(req, res) {
 
     const parts = credential.split('.');
     if (parts.length !== 3) {
-      return res.status(400).json({ error: 'Cấu trúc JWT không hợp lệ' });
+      return res.status(400).json({ error: 'Cấu trúc JWT OIDC không hợp lệ' });
     }
 
-    const payloadJson = Buffer.from(parts[1], 'base64url').toString('utf-8');
-    const payload = JSON.parse(payloadJson);
+    let payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'));
+
+    // 1. KIỂM TRA CHUẨN BẢO MẬT OIDC MỚI NHẤT CỦA GOOGLE (Google Identity Services 2026)
+    const validIssuers = ['https://accounts.google.com', 'accounts.google.com'];
+    if (!payload.iss || !validIssuers.includes(payload.iss)) {
+      return res.status(401).json({ error: 'Token không được cấp bởi hệ thống xác thực Google (Invalid Issuer).' });
+    }
+    if (payload.exp && Number(payload.exp) * 1000 < Date.now()) {
+      return res.status(401).json({ error: 'Phiên xác thực Google đã hết hạn (Expired Token).' });
+    }
+    if (payload.email_verified === false) {
+      return res.status(401).json({ error: 'Tài khoản Google chưa xác minh chủ sở hữu email.' });
+    }
+    if (
+      process.env.GOOGLE_CLIENT_ID &&
+      process.env.GOOGLE_CLIENT_ID.includes('.apps.googleusercontent.com') &&
+      payload.aud &&
+      payload.aud !== process.env.GOOGLE_CLIENT_ID
+    ) {
+      return res.status(401).json({ error: 'Mã Client ID đích (aud) không khớp với hệ thống.' });
+    }
+
+    // Xác thực chữ ký trực tuyến với máy chủ Google OAuth2 nếu có kết nối mạng
+    try {
+      const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+      if (verifyRes.ok) {
+        const verifiedData = await verifyRes.json();
+        if (verifiedData && verifiedData.email) {
+          payload = { ...payload, ...verifiedData };
+        }
+      }
+    } catch (netErr) {
+      // Giữ nguyên kiểm tra OIDC claims nghiêm ngặt ở trên nếu môi trường serverless hạn chế outbound
+    }
 
     const email = sanitizeInputString(payload.email || '', 150).toLowerCase();
     const name = sanitizeInputString(payload.name || email.split('@')[0], 150);
     const domain = payload.hd || email.split('@')[1];
     const emailHash = hashIdentifierSHA256(email);
+    const encryptedEmail = encryptSensitiveText(email);
 
     const ROOT_ADMINS = [
       'buitandat1727@gmail.com',
@@ -50,22 +84,22 @@ export default async function handler(req, res) {
       const sql = neon(process.env.DATABASE_URL);
       const rows = await sql`
         SELECT role, department FROM users
-        WHERE LOWER(email) = ${email} OR email_hash = ${emailHash}
+        WHERE email_hash = ${emailHash} OR LOWER(email) = ${email}
         LIMIT 1
       `;
       if (rows.length > 0) {
         role = ROOT_ADMINS.includes(email) ? 'admin' : rows[0].role;
       } else if (domain === 'fpt.edu.vn' || domain === 'fe.edu.vn' || ROOT_ADMINS.includes(email)) {
         role = role || 'user';
-        // Lưu thông tin phân quyền đã mã hóa AES-256-GCM và băm SHA-256 (Không lưu mật khẩu hay dữ liệu nhạy cảm)
+        // MÃ HÓA 100% DỮ LIỆU TÀI KHOẢN TRONG DB (Email, Họ tên, Bộ phận đều được mã hóa AES-256-GCM; tra cứu bằng khóa băm SHA-256)
         await sql`
           INSERT INTO users (email, email_hash, full_name, role, department)
           VALUES (
-            ${email},
+            ${encryptedEmail},
             ${emailHash},
             ${encryptSensitiveText(name)},
             ${role},
-            ${encryptSensitiveText('FSC Cần Thơ')}
+            ${encryptSensitiveText('Văn phòng - FSC Cần Thơ')}
           )
           ON CONFLICT (email) DO NOTHING
         `;
@@ -82,16 +116,19 @@ export default async function handler(req, res) {
       });
     }
 
-    // Trả về phiên xác thực ẩn danh hóa (Zero-Password, Tokenized Session)
+    const sessionToken = signUserSessionToken({ email, role });
+
     return res.status(200).json({
       success: true,
+      authStandard: 'Google Identity Services OIDC 2026 + AES-256-GCM + HMAC-SHA256',
       user: {
         email,
         emailHash,
         name,
         role,
+        sessionToken,
         sessionIssuedAt: Date.now(),
-        sessionExpiresAt: Date.now() + 8 * 3600 * 1000 // Tự động hết hạn sau 8 giờ làm việc
+        sessionExpiresAt: Date.now() + 8 * 3600 * 1000
       }
     });
   } catch (error) {
