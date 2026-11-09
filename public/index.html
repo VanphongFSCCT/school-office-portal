@@ -75,7 +75,7 @@
       align-items: center;
       font-family: 'Times New Roman', Times, Georgia, serif !important;
     }
-    .docx-wrapper > section.docx {
+    .docx-wrapper section.docx, section.docx {
       background: #ffffff !important;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
       margin-bottom: 16px !important;
@@ -353,7 +353,7 @@
       flex-direction: column;
       align-items: center;
     }
-    .docx-wrapper > section.docx {
+    .docx-wrapper section.docx, section.docx {
       background: #ffffff !important;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
       margin-bottom: 16px !important;
@@ -3476,10 +3476,16 @@
       const pages = editorCanvas.querySelectorAll('section.docx, .pdf-converted-word-page');
       if (!pages || pages.length === 0) return;
 
-      const availWidth = Math.max(240, editorCanvas.clientWidth - (window.innerWidth < 640 ? 12 : 36));
+      const isMobileView = window.innerWidth < 640;
+      const availWidth = Math.max(240, editorCanvas.clientWidth - (isMobileView ? 10 : 32));
 
       pages.forEach(pageEl => {
-        // Đảm bảo mỗi trang nằm trong 1 khung giữ chỗ chuẩn tỷ lệ (.fsc-docx-scale-slot)
+        // Bắt buộc nền giấy trắng tinh (#ffffff) và chữ đen (#000000) chuẩn trang giấy A4
+        pageEl.style.setProperty('background', '#ffffff', 'important');
+        pageEl.style.setProperty('background-color', '#ffffff', 'important');
+        pageEl.style.setProperty('color', '#000000', 'important');
+        pageEl.style.setProperty('box-shadow', '0 8px 28px rgba(0,0,0,0.45)', 'important');
+
         let slot = pageEl.parentElement;
         if (!slot || !slot.classList.contains('fsc-docx-scale-slot')) {
           slot = document.createElement('div');
@@ -3492,16 +3498,24 @@
         pageEl.style.transform = 'none';
         pageEl.style.margin = '0';
         const naturalW = pageEl.offsetWidth || 794;
-        const naturalH = pageEl.offsetHeight || 1123;
+        const naturalH = Math.max(pageEl.scrollHeight || 0, pageEl.offsetHeight || 0, 1123);
 
-        // Tính tỷ lệ thu phóng đồng bộ sao cho trang A4 vừa khít chiều ngang màn hình điện thoại (giống hệt PDF)
         const baseScale = availWidth < naturalW ? (availWidth / naturalW) : 1.0;
         const finalScale = Math.min(2.2, Math.max(0.32, baseScale * customOfficeScale));
 
-        pageEl.style.transformOrigin = 'top left';
-        pageEl.style.transform = `scale(${finalScale})`;
-        slot.style.width = `${Math.floor(naturalW * finalScale)}px`;
-        slot.style.height = `${Math.floor(naturalH * finalScale)}px`;
+        if (Math.abs(finalScale - 1.0) < 0.01) {
+          pageEl.style.transform = 'none';
+          pageEl.style.margin = '0 auto';
+          slot.style.width = `${naturalW}px`;
+          slot.style.height = 'auto';
+          slot.style.overflow = 'visible';
+        } else {
+          pageEl.style.transformOrigin = 'top left';
+          pageEl.style.transform = `scale(${finalScale})`;
+          slot.style.width = `${Math.ceil(naturalW * finalScale)}px`;
+          slot.style.height = `${Math.ceil(naturalH * finalScale) + 6}px`;
+          slot.style.overflow = 'hidden';
+        }
       });
     }
     window.fitOfficePagesToViewport = fitOfficePagesToViewport;
@@ -4524,13 +4538,13 @@
               margin: 0 !important;
               display: block !important;
             }
-            .docx-wrapper > section.docx {
+            .docx-wrapper section.docx, section.docx {
               box-shadow: none !important;
               margin: 0 auto !important;
               border: none !important;
               page-break-after: always;
             }
-            .docx-wrapper > section.docx:last-child {
+            .docx-wrapper section.docx, section.docx:last-child {
               page-break-after: auto;
             }
             .docx-wrapper section.docx p:not([data-custom-font]),
