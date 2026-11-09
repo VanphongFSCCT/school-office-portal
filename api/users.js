@@ -117,8 +117,7 @@ export default async function handler(req, res) {
       const cleanEmail = sanitizeInputString(email || '', 150).toLowerCase();
       const rootProtected = [
         'buitandat1727@gmail.com',
-        'hethongquanlyphong.fscct@gmail.com',
-        'vp.fsc@fpt.edu.vn'
+        'hethongquanlyphong.fscct@gmail.com'
       ];
       if (rootProtected.includes(cleanEmail)) {
         return res.status(403).json({

@@ -38,8 +38,7 @@ export default async function handler(req, res) {
 
     const ROOT_ADMINS = [
       'buitandat1727@gmail.com',
-      'hethongquanlyphong.fscct@gmail.com',
-      'vp.fsc@fpt.edu.vn'
+      'hethongquanlyphong.fscct@gmail.com'
     ];
 
     let role = null;
