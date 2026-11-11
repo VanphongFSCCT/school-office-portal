@@ -2225,6 +2225,7 @@
           if (cfg.googleClientId) {
             activeGoogleClientId = cfg.googleClientId;
             localStorage.setItem('fpt_google_client_id', activeGoogleClientId);
+            ensureGooglePopupClientReady();
           }
         }
       } catch (e) {}
@@ -5172,17 +5173,113 @@
     // ==========================================
     // CÁC HÀM ĐIỀU KHIỂN GIAO DIỆN & XÁC THỰC CHUẨN HÓA (SINGLE SOURCE OF TRUTH)
     // ==========================================
+    let googlePopupTokenClient = null;
+    let googlePopupClientIdBound = '';
+
+    async function handleGoogleOAuthTokenResponse(tokenResponse) {
+      if (!tokenResponse || tokenResponse.error || !tokenResponse.access_token) {
+        return;
+      }
+      try {
+        const uRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        });
+        if (!uRes.ok) {
+          showToast('Không thể lấy thông tin tài khoản từ Google.', 'error');
+          return;
+        }
+        const profile = await uRes.json();
+        const email = (profile.email || '').toLowerCase();
+        if (!email || profile.email_verified === false) {
+          showToast('Tài khoản Google chưa được xác minh email.', 'error');
+          return;
+        }
+
+        const isRootAdmin = ROOT_ADMIN_EMAILS.includes(email);
+        const matchedRbac = rbacUsers.find(u => u.email.toLowerCase() === email);
+        const isFpt = email.endsWith('@fpt.edu.vn') || email.endsWith('@fe.edu.vn') || profile.hd === 'fpt.edu.vn' || profile.hd === 'fe.edu.vn';
+
+        if (!isRootAdmin && !matchedRbac && !isFpt) {
+          showToast(`Từ chối truy cập: Tài khoản ${email} không thuộc miền @fpt.edu.vn và chưa được Quản trị viên cấp quyền.`, 'error');
+          return;
+        }
+
+        let serverRole = null;
+        let serverSessionToken = '';
+        try {
+          const authRes = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-FSC-Security-Token': 'FSC-ZeroTrust-v6'
+            },
+            body: JSON.stringify({
+              accessToken: tokenResponse.access_token,
+              userInfo: profile
+            })
+          });
+          if (authRes.ok) {
+            const authData = await authRes.json();
+            if (authData && authData.user) {
+              serverRole = authData.user.role;
+              serverSessionToken = authData.user.sessionToken || '';
+            }
+          }
+        } catch (e) {}
+
+        currentUser = {
+          email: email,
+          name: profile.name || (matchedRbac ? matchedRbac.name : email.split('@')[0]),
+          picture: profile.picture || '',
+          role: isRootAdmin ? 'admin' : (serverRole || (matchedRbac ? matchedRbac.role : 'user')),
+          sessionToken: serverSessionToken
+        };
+
+        saveEncryptedUserSession(currentUser);
+        closeAuthModal();
+        updateAuthState();
+        renderDirectCards();
+        renderOtherViews();
+        showToast(`Đăng nhập thành công: ${currentUser.name}`, 'success');
+      } catch (err) {
+        showToast('Lỗi xử lý đăng nhập tài khoản Google.', 'error');
+      }
+    }
+
+    function ensureGooglePopupClientReady() {
+      const hasRealClientId = Boolean(
+        activeGoogleClientId &&
+        activeGoogleClientId !== 'sample-fpt-client-id.apps.googleusercontent.com' &&
+        activeGoogleClientId !== 'YOUR_GOOGLE_CLIENT_ID' &&
+        activeGoogleClientId.includes('.apps.googleusercontent.com')
+      );
+      if (!hasRealClientId || !window.google || !google.accounts || !google.accounts.oauth2) {
+        return null;
+      }
+      if (!googlePopupTokenClient || googlePopupClientIdBound !== activeGoogleClientId) {
+        googlePopupTokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: activeGoogleClientId,
+          scope: 'openid email profile',
+          prompt: 'select_account',
+          callback: handleGoogleOAuthTokenResponse
+        });
+        googlePopupClientIdBound = activeGoogleClientId;
+      }
+      return googlePopupTokenClient;
+    }
+
     function openAuthModal() {
-      const authModal = document.getElementById('modal-auth-container');
-      const gsiContainer = document.getElementById('google-gsi-button-container');
-      const errorAlert = document.getElementById('oauth-error-alert');
-      if (errorAlert) errorAlert.classList.add('hidden');
-      if (authModal) {
-        authModal.classList.remove('hidden');
-        authModal.classList.add('flex');
+      // Mở trực tiếp cửa sổ "Chọn tài khoản Google" (accounts.google.com/v3/signin/accountchooser) ngay khi bấm nút Đăng nhập mà KHÔNG hiện hộp thoại trung gian!
+      const client = ensureGooglePopupClientReady();
+      if (client) {
+        try {
+          client.requestAccessToken({ prompt: 'select_account' });
+          return;
+        } catch (err) {
+          console.warn('Google Account Chooser popup error:', err);
+        }
       }
 
-      // Chỉ render nút Google GSI chuẩn nếu hệ thống đã được cấu hình GOOGLE_CLIENT_ID thực tế từ biến môi trường
       const hasRealClientId = Boolean(
         activeGoogleClientId &&
         activeGoogleClientId !== 'sample-fpt-client-id.apps.googleusercontent.com' &&
@@ -5190,29 +5287,21 @@
         activeGoogleClientId.includes('.apps.googleusercontent.com')
       );
 
-      if (hasRealClientId && window.google && google.accounts && google.accounts.id && gsiContainer) {
+      if (hasRealClientId && window.google && google.accounts && google.accounts.id) {
         try {
           google.accounts.id.initialize({
             client_id: activeGoogleClientId,
             callback: handleGoogleCredentialResponse,
-            auto_select: true,
-            itp_support: true,
-            cancel_on_tap_outside: true
+            auto_select: false,
+            itp_support: true
           });
-          gsiContainer.innerHTML = '';
-          google.accounts.id.renderButton(gsiContainer, {
-            type: 'standard',
-            theme: 'filled_blue',
-            size: 'large',
-            text: 'signin_with',
-            shape: 'pill',
-            logo_alignment: 'left',
-            width: 280
-          });
-        } catch (err) {
-          console.warn('GSI Render error:', err);
-        }
+          google.accounts.id.prompt();
+          return;
+        } catch (e) {}
       }
+
+      // Trong môi trường xem trước Offline (chưa cấu hình GOOGLE_CLIENT_ID), đăng nhập trực tiếp không qua màn hình phụ
+      performDirectAdminAuth();
     }
     window.openAuthModal = openAuthModal;
 

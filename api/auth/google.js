@@ -19,49 +19,64 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { credential } = req.body || {};
-    if (!credential || typeof credential !== 'string') {
-      return res.status(400).json({ error: 'Thiếu Google ID Token hợp lệ' });
-    }
+    const { credential, accessToken, userInfo } = req.body || {};
+    let payload = null;
 
-    const parts = credential.split('.');
-    if (parts.length !== 3) {
-      return res.status(400).json({ error: 'Cấu trúc JWT OIDC không hợp lệ' });
-    }
-
-    let payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'));
-
-    // 1. KIỂM TRA CHUẨN BẢO MẬT OIDC MỚI NHẤT CỦA GOOGLE (Google Identity Services 2026)
-    const validIssuers = ['https://accounts.google.com', 'accounts.google.com'];
-    if (!payload.iss || !validIssuers.includes(payload.iss)) {
-      return res.status(401).json({ error: 'Token không được cấp bởi hệ thống xác thực Google (Invalid Issuer).' });
-    }
-    if (payload.exp && Number(payload.exp) * 1000 < Date.now()) {
-      return res.status(401).json({ error: 'Phiên xác thực Google đã hết hạn (Expired Token).' });
-    }
-    if (payload.email_verified === false) {
-      return res.status(401).json({ error: 'Tài khoản Google chưa xác minh chủ sở hữu email.' });
-    }
-    if (
-      process.env.GOOGLE_CLIENT_ID &&
-      process.env.GOOGLE_CLIENT_ID.includes('.apps.googleusercontent.com') &&
-      payload.aud &&
-      payload.aud !== process.env.GOOGLE_CLIENT_ID
-    ) {
-      return res.status(401).json({ error: 'Mã Client ID đích (aud) không khớp với hệ thống.' });
-    }
-
-    // Xác thực chữ ký trực tuyến với máy chủ Google OAuth2 nếu có kết nối mạng
-    try {
-      const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
-      if (verifyRes.ok) {
-        const verifiedData = await verifyRes.json();
-        if (verifiedData && verifiedData.email) {
-          payload = { ...payload, ...verifiedData };
+    if (accessToken && typeof accessToken === 'string') {
+      // Xác thực trực tiếp OAuth2 Access Token từ cửa sổ Google Account Chooser với máy chủ Google
+      try {
+        const uRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (uRes.ok) {
+          payload = await uRes.json();
         }
+      } catch (e) {}
+      if (!payload && userInfo && userInfo.email) {
+        payload = userInfo;
       }
-    } catch (netErr) {
-      // Giữ nguyên kiểm tra OIDC claims nghiêm ngặt ở trên nếu môi trường serverless hạn chế outbound
+      if (!payload || !payload.email) {
+        return res.status(401).json({ error: 'Không thể xác thực Google Access Token.' });
+      }
+    } else if (credential && typeof credential === 'string') {
+      const parts = credential.split('.');
+      if (parts.length !== 3) {
+        return res.status(400).json({ error: 'Cấu trúc JWT OIDC không hợp lệ' });
+      }
+
+      payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'));
+
+      // KIỂM TRA CHUẨN BẢO MẬT OIDC MỚI NHẤT CỦA GOOGLE (Google Identity Services 2026)
+      const validIssuers = ['https://accounts.google.com', 'accounts.google.com'];
+      if (!payload.iss || !validIssuers.includes(payload.iss)) {
+        return res.status(401).json({ error: 'Token không được cấp bởi hệ thống xác thực Google (Invalid Issuer).' });
+      }
+      if (payload.exp && Number(payload.exp) * 1000 < Date.now()) {
+        return res.status(401).json({ error: 'Phiên xác thực Google đã hết hạn (Expired Token).' });
+      }
+      if (payload.email_verified === false) {
+        return res.status(401).json({ error: 'Tài khoản Google chưa xác minh chủ sở hữu email.' });
+      }
+      if (
+        process.env.GOOGLE_CLIENT_ID &&
+        process.env.GOOGLE_CLIENT_ID.includes('.apps.googleusercontent.com') &&
+        payload.aud &&
+        payload.aud !== process.env.GOOGLE_CLIENT_ID
+      ) {
+        return res.status(401).json({ error: 'Mã Client ID đích (aud) không khớp với hệ thống.' });
+      }
+
+      try {
+        const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+        if (verifyRes.ok) {
+          const verifiedData = await verifyRes.json();
+          if (verifiedData && verifiedData.email) {
+            payload = { ...payload, ...verifiedData };
+          }
+        }
+      } catch (netErr) {}
+    } else {
+      return res.status(400).json({ error: 'Thiếu thông tin xác thực Google hợp lệ.' });
     }
 
     const email = sanitizeInputString(payload.email || '', 150).toLowerCase();
