@@ -1802,7 +1802,7 @@
     let editUploadedFileName = '';
 
     const INITIAL_PORTAL_DOCS = [];
-    const DEMO_SEED_CODES = new Set(['it-sop-01','it-wi-02','it-bm-01','tv-sop-01','tv-bm-01','hc-sop-01','hc-bm-01','yt-sop-01','kt-sop-01','at-sop-01','ms-bm-01']);
+    const DEMO_SEED_CODES = new Set();
 
 
     // =========================================================================
@@ -2219,6 +2219,84 @@
       }
     }
 
+    async function pushDocumentToBackend(docObj, oldCode = '') {
+      if (!docObj || !docObj.code) return false;
+      let fileBlob = docObj.fileData || '';
+      if (!fileBlob) {
+        try {
+          const idbRec = await getFileFromIDB(docObj.code);
+          if (idbRec && idbRec.fileData) {
+            fileBlob = idbRec.fileData;
+            docObj.fileData = fileBlob;
+          }
+        } catch (e) {}
+      }
+
+      const CHUNK_SIZE = 1000000; // 1MB mỗi phân đoạn (An toàn tuyệt đối dưới giới hạn 4.5MB của Vercel Serverless)
+      const isLargeFile = Boolean(fileBlob && fileBlob.length > CHUNK_SIZE);
+
+      const buildMetaBody = (inlineFileStr) => JSON.stringify({
+        old_code: oldCode || docObj.code,
+        code: docObj.code,
+        title: docObj.title,
+        category_id: docObj.category,
+        doc_type: docObj.type,
+        version: docObj.version || '1.0',
+        effective_date: docObj.effectiveDate || new Date().toLocaleDateString('vi-VN'),
+        department: docObj.dept || docObj.category,
+        description: docObj.desc || '',
+        access_level: docObj.access || 'Mở',
+        download_perm: docObj.downloadPerm || 'allow_all',
+        current_file: docObj.currentFile || (docObj.code + '.pdf'),
+        file_data: inlineFileStr,
+        version_history: docObj.versionHistory || []
+      });
+
+      try {
+        // Bước 1: Lưu thông tin tài liệu (kèm file_data nếu tệp <= 1MB)
+        const res = await fetch('/api/documents', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-FSC-Security-Token': 'FSC-ZeroTrust-v6'
+          },
+          body: buildMetaBody(isLargeFile ? '' : (fileBlob || ''))
+        });
+        if (!res.ok) return false;
+
+        // Bước 2: Nếu tệp lớn > 1MB, tự động cắt thành các phân đoạn 1MB và tải lên bảng document_file_chunks trên Neon DB
+        if (isLargeFile) {
+          const totalChunks = Math.ceil(fileBlob.length / CHUNK_SIZE);
+          for (let idx = 0; idx < totalChunks; idx++) {
+            const sliceStr = fileBlob.slice(idx * CHUNK_SIZE, (idx + 1) * CHUNK_SIZE);
+            const cRes = await fetch('/api/documents', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-FSC-Security-Token': 'FSC-ZeroTrust-v6'
+              },
+              body: JSON.stringify({
+                action: 'upload_chunk',
+                code: docObj.code,
+                chunk_index: idx,
+                total_chunks: totalChunks,
+                chunk_data: sliceStr
+              })
+            });
+            if (!cRes.ok) break;
+          }
+        }
+
+        docObj.hasRemoteFile = Boolean(fileBlob);
+        lastApiEtag = '';
+        return true;
+      } catch (err) {
+        console.warn('Sync document error:', err);
+      }
+      return false;
+    }
+    window.pushDocumentToBackend = pushDocumentToBackend;
+
     async function syncBackendConfigAndData() {
       try {
         const cfgRes = await fetch('/api/config');
@@ -2273,8 +2351,7 @@
         if (newEtag) lastApiEtag = newEtag;
         if (docRes.ok) {
           const docData = await docRes.json();
-          if (docData.success && Array.isArray(docData.data) && docData.data.length > 0) {
-            // Lưu map các tệp đính kèm đang có trong localStorage để không bao giờ bị mất fileData khi đồng bộ
+          if (docData.success && Array.isArray(docData.data)) {
             const localMap = {};
             documents.forEach(ld => {
               if (ld.code) localMap[ld.code.toLowerCase()] = ld;
@@ -2283,6 +2360,10 @@
             const apiDocs = docData.data.map(d => {
               const key = (d.code || '').toLowerCase();
               const localDoc = localMap[key] || {};
+              const resolvedFileData = d.file_data || d.file_url || d.fileData || localDoc.fileData || '';
+              if (resolvedFileData && d.code) {
+                saveFileToIDB(d.code, d.current_file || d.currentFile || localDoc.currentFile, resolvedFileData);
+              }
               return {
                 id: d.id || localDoc.id || ('DOC-' + d.code),
                 code: d.code,
@@ -2297,19 +2378,30 @@
                 dept: d.department || d.dept || localDoc.dept || 'Văn phòng',
                 desc: d.description || d.desc || localDoc.desc || '',
                 currentFile: d.current_file || d.currentFile || localDoc.currentFile || (d.code + '.pdf'),
-                fileData: d.file_data || d.file_url || d.fileData || localDoc.fileData || '',
+                fileData: resolvedFileData,
+                hasRemoteFile: Boolean(d.has_remote_file || d.file_data),
                 versionHistory: (Array.isArray(d.version_history) && d.version_history.length > 0) ? d.version_history : (localDoc.versionHistory || []),
                 relatedDocs: d.related_codes || d.relatedDocs || localDoc.relatedDocs || []
               };
             });
 
-            // Chỉ lấy tài liệu thật từ DB (bỏ dữ liệu mẫu nếu có) và giữ lại tài liệu người dùng vừa tạo
             const cleanApiDocs = apiDocs.filter(d => d && d.code && !DEMO_SEED_CODES.has(d.code.toLowerCase()));
             const apiCodes = new Set(cleanApiDocs.map(d => d.code.toLowerCase()));
             const mergedDocs = [...cleanApiDocs];
+            const unsyncedLocalDocs = [];
+
             documents.forEach(ld => {
-              if (ld.code && !DEMO_SEED_CODES.has(ld.code.toLowerCase()) && !apiCodes.has(ld.code.toLowerCase())) {
-                mergedDocs.push(ld);
+              if (ld.code && !DEMO_SEED_CODES.has(ld.code.toLowerCase())) {
+                if (!apiCodes.has(ld.code.toLowerCase())) {
+                  mergedDocs.push(ld);
+                  unsyncedLocalDocs.push(ld);
+                } else {
+                  // Nếu bản trên DB chưa có tệp đính kèm nhưng bản ở máy có tệp đính kèm, đẩy bổ sung tệp lên DB
+                  const serverMatch = cleanApiDocs.find(sd => sd.code.toLowerCase() === ld.code.toLowerCase());
+                  if (serverMatch && !serverMatch.hasRemoteFile && !serverMatch.fileData && ld.fileData) {
+                    unsyncedLocalDocs.push(ld);
+                  }
+                }
               }
             });
 
@@ -2318,6 +2410,18 @@
             renderDirectCards();
             renderOtherViews();
             updateBadges();
+
+            // TỰ ĐỘNG ĐỒNG BỘ CÁC TÀI LIỆU ĐANG LƯU TRÊN TRÌNH DUYỆT LÊN NEON POSTGRESQL ĐỂ MỌI THIẾT BỊ & CỬA SỔ ẨN DANH ĐỀU NHÌN THẤY!
+            if (unsyncedLocalDocs.length > 0) {
+              let syncedCount = 0;
+              for (const localDoc of unsyncedLocalDocs) {
+                const ok = await pushDocumentToBackend(localDoc);
+                if (ok) syncedCount++;
+              }
+              if (syncedCount > 0) {
+                showToast(`☁️ Đã đồng bộ ${syncedCount} tài liệu lên cơ sở dữ liệu đám mây!`, 'success');
+              }
+            }
           }
         }
       } catch (e) {}
@@ -4618,6 +4722,24 @@
         if (cachedFile && cachedFile.fileData) {
           doc.fileData = cachedFile.fileData;
           if (cachedFile.fileName) doc.currentFile = cachedFile.fileName;
+        } else {
+          // Tải trực tiếp tệp đính kèm đã mã hóa từ cơ sở dữ liệu Neon PostgreSQL khi mở xem trên Điện thoại hoặc Cửa sổ Ẩn danh
+          try {
+            showToast('⏳ Đang tải tệp tài liệu từ máy chủ...', 'info');
+            const fRes = await fetch(`/api/documents?code=${encodeURIComponent(doc.code)}`, {
+              headers: { 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' }
+            });
+            if (fRes.ok) {
+              const fJson = await fRes.json();
+              if (fJson && fJson.file_data) {
+                doc.fileData = fJson.file_data;
+                if (fJson.current_file) doc.currentFile = fJson.current_file;
+                await saveFileToIDB(doc.code, doc.currentFile, doc.fileData);
+              }
+            }
+          } catch (e) {
+            console.warn('Remote file fetch error:', e);
+          }
         }
       }
       currentDoc = doc;
@@ -6471,26 +6593,8 @@
           renderDirectCards();
           renderOtherViews();
 
-          // Đồng bộ ngầm lên server với giới hạn kích thước an toàn cho Vercel (4MB)
-          const payloadFileData = (newDoc.fileData && newDoc.fileData.length < 3800000) ? newDoc.fileData : '';
-          fetch('/api/documents', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              code: newDoc.code,
-              title: newDoc.title,
-              category_id: newDoc.category,
-              doc_type: newDoc.type,
-              version: newDoc.version,
-              department: newDoc.dept,
-              description: newDoc.desc,
-              access_level: newDoc.access,
-              download_perm: newDoc.downloadPerm,
-              current_file: newDoc.currentFile,
-              file_data: payloadFileData,
-              version_history: newDoc.versionHistory || []
-            })
-          }).catch(() => {});
+          // Đồng bộ trực tiếp lên cơ sở dữ liệu Neon PostgreSQL để mọi thiết bị và cửa sổ ẩn danh đều hiển thị ngay
+          pushDocumentToBackend(newDoc);
         } catch (err) {
           console.error('Submit error:', err);
           showToast('Đã lưu tài liệu vào hệ thống!', 'success');
@@ -6510,9 +6614,12 @@
       formEditDoc.addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
-          const code = document.getElementById('inp-edit-doc-code').value;
-          const doc = documents.find(d => d.code === code);
+          const editIdVal = document.getElementById('inp-edit-doc-id').value;
+          const newCodeVal = document.getElementById('inp-edit-doc-code').value.trim();
+          const doc = documents.find(d => d.id === editIdVal || d.code === editIdVal || d.code === newCodeVal);
           if (!doc) return;
+          const oldDocCode = doc.code;
+          if (newCodeVal) doc.code = newCodeVal;
 
           if (editFileInput.files && editFileInput.files[0] && !editUploadedFileData) {
             await new Promise((resolve) => {
@@ -6573,27 +6680,8 @@
           updateBadges();
           renderDirectCards();
           renderOtherViews();
-          showToast(`Đã lưu thay đổi cho tài liệu ${code}!`, 'success');
-
-          const payloadFileData = (doc.fileData && doc.fileData.length < 3800000) ? doc.fileData : '';
-          fetch('/api/documents', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              code: doc.code,
-              title: doc.title,
-              category_id: doc.category,
-              doc_type: doc.type,
-              version: doc.version,
-              department: doc.dept,
-              description: doc.desc,
-              access_level: doc.access,
-              download_perm: doc.downloadPerm,
-              current_file: doc.currentFile,
-              file_data: payloadFileData,
-              version_history: doc.versionHistory || []
-            })
-          }).catch(() => {});
+          showToast(`Đã lưu thay đổi cho tài liệu ${doc.code}!`, 'success');
+          pushDocumentToBackend(doc, oldDocCode);
         } catch (err) {
           closeEditDocModal();
         }
