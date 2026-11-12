@@ -288,7 +288,11 @@ export default async function handler(req, res) {
   const guard = applyZeroTrustSecurityGuard(req, res);
   if (!guard.allowed) return;
 
-  const databaseUrl = process.env.DATABASE_URL;
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.NEON_DATABASE_URL;
 
   try {
     if (databaseUrl) {
@@ -322,9 +326,12 @@ export default async function handler(req, res) {
       }
 
       if (req.method === 'GET') {
-        const cached = getCachedResponse('portal_cfg_v6', 15000);
-        if (cached) {
-          return res.status(200).json(cached.data);
+        const bypassCache = Boolean(req.query && req.query._t);
+        if (!bypassCache) {
+          const cached = getCachedResponse('portal_cfg_v6', 30000);
+          if (cached) {
+            return res.status(200).json(cached.data);
+          }
         }
         const rows = await sql`
           SELECT encrypted_value FROM portal_settings WHERE setting_key = 'portal_categories_v6' LIMIT 1
