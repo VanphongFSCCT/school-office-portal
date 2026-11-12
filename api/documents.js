@@ -309,7 +309,7 @@ export default async function handler(req, res) {
       // 2. Kiểm tra L1 Cache & ETag (bỏ qua khi client truyền _t để lấy dữ liệu mới nhất tức thì)
       const bypassCache = Boolean(req.query && req.query._t);
       if (!bypassCache) {
-        const cached = getCachedResponse('docs_list_v6', 1500);
+        const cached = getCachedResponse('docs_list_v6', 30000);
         if (cached) {
           const clientEtag = req.headers['if-none-match'];
           if (clientEtag && clientEtag === cached.etag) {
@@ -392,14 +392,23 @@ export default async function handler(req, res) {
         };
       }).filter(d => d.code);
 
-      // Sắp xếp mới nhất lên đầu
+      // Sắp xếp mới nhất lên đầu và chỉ giữ duy nhất 1 phiên bản mới nhất cho mỗi Mã tài liệu (code)
       decryptedRows.sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')));
+      const latestByCode = new Map();
+      for (const item of decryptedRows) {
+        const k = String(item.code || '').trim().toLowerCase();
+        if (!k) continue;
+        if (!latestByCode.has(k)) {
+          latestByCode.set(k, item);
+        }
+      }
+      const uniqueLatestRows = Array.from(latestByCode.values());
 
       const responsePayload = {
         success: true,
         hasDatabase: true,
         encryption: 'AES-256-GCM',
-        data: decryptedRows,
+        data: uniqueLatestRows,
         deletedCodes: deletedCodesList
       };
       const savedCache = setCachedResponse('docs_list_v6', responsePayload);

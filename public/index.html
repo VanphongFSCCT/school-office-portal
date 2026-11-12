@@ -1729,92 +1729,19 @@
 
   <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
-    const DEFAULT_CATEGORIES = [
-      { id: 'IT', name: 'IT', icon: '💻', status: 'Hoạt động', desc: 'Quản trị hạ tầng CNTT, phần mềm nghiệp vụ, mạng nội bộ và hỗ trợ kỹ thuật số toàn trường.' },
-      { id: 'Tài vụ', name: 'Tài vụ', icon: '📊', status: 'Hoạt động', desc: 'Quản lý kế toán, ngân sách, học phí, định mức tài chính và hồ sơ thanh quyết toán.' },
-      { id: 'Hành chính', name: 'Hành chính', icon: '🏢', status: 'Hoạt động', desc: 'Quản lý văn thư, lưu trữ, điều phối phòng họp, văn phòng phẩm và công tác hành chính.' },
-      { id: 'Y tế', name: 'Y tế', icon: '🏥', status: 'Hoạt động', desc: 'Chăm sóc sức khỏe ban đầu, hồ sơ y tế học đường và quy trình xử lý cấp cứu - tai nạn.' },
-      { id: 'Kỹ thuật', name: 'Kỹ thuật', icon: '⚙️', status: 'Hoạt động', desc: 'Vận hành, bảo trì hệ thống cơ điện (M&E), âm thanh, điều hòa và cơ sở vật chất.' },
-      { id: 'ATVSTP', name: 'ATVSTP', icon: '🍽️', status: 'Hoạt động', desc: 'Kiểm soát an toàn vệ sinh thực phẩm, lưu mẫu thức ăn và giám sát bếp ăn bán trú.' },
-      { id: 'Mua sắm', name: 'Mua sắm', icon: '📦', status: 'Hoạt động', desc: 'Quy trình khảo sát báo giá, thẩm định nhà cung cấp, đấu thầu và mua sắm tài sản.' }
-    ];
-
-    let CATEGORIES = [];
-    try {
-      const storedCatsRaw = localStorage.getItem('school_portal_categories_v5');
-      if (storedCatsRaw) {
-        const decCatsStr = storedCatsRaw.startsWith('ENC_FSC_V6:')
-          ? (window.FscCryptoVault ? window.FscCryptoVault.decryptSync(storedCatsRaw) : storedCatsRaw)
-          : storedCatsRaw;
-        const parsedCats = JSON.parse(decCatsStr);
-        CATEGORIES = Array.isArray(parsedCats) ? parsedCats.map(c => {
-          const defMatch = DEFAULT_CATEGORIES.find(d => d.id === c.id || d.name === c.name);
-          return {
-            ...c,
-            desc: (c.desc !== undefined && String(c.desc).trim() !== '') ? c.desc : (defMatch ? defMatch.desc : `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${c.name}.`)
-          };
-        }) : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-      } else {
-        CATEGORIES = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-        localStorage.setItem('school_portal_categories_v5', JSON.stringify(CATEGORIES));
-      }
-    } catch (e) {
-      CATEGORIES = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-    }
-
-    let selectedCatIcon = '🖥️';
-
-    const PRESET_ICONS = [
-      '💻', '🖥️', '🌐', '⚡', '🖨️',
-      '📊', '🧾', '💰', '🪙', '💳',
-      '🏢', '📁', '📑', '🗂️', '🏛️',
-      '🏥', '⚕️', '🩺', '🛡️', '💊',
-      '⚙️', '🔧', '🛠️', '🏗️', '🔌',
-      '🍽️', '🍲', '🥗', '🥣', '🥢',
-      '📦', '📋', '🏷️', '🛒', '📝',
-      '🎓', '📚', '📢', '🤝', '👥'
-    ];
-
-    const ROOT_ADMIN_EMAILS = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com'];
-    let rbacUsers = [
-      { email: 'buitandat1727@gmail.com', name: 'Bùi Tấn Đạt (Quản trị viên)', role: 'admin' },
-      { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Hệ thống Quản lý Phòng', role: 'admin' }
-    ];
-
-    let documents = [];
-    let currentUser = null;
-    let selectedCat = 'all';
-    let selectedType = 'all';
-    let currentSearch = '';
-    let currentZoom = 100;
-    let docLayoutMode = localStorage.getItem('fsc_doc_layout_mode_v6') || 'list';
-    let currentReaderZoom = 100;
-    let currentDoc = null;
-    let isReaderFullscreen = false;
-    let activeGoogleClientId = localStorage.getItem('fpt_google_client_id') || 'sample-fpt-client-id.apps.googleusercontent.com';
-
-    // File đính kèm khi thêm mới
-    let uploadedFileData = null;
-    let uploadedFileName = '';
-
-    // File đính kèm thay thế khi chỉnh sửa
-    let editUploadedFileData = null;
-    let editUploadedFileName = '';
-
-    const INITIAL_PORTAL_DOCS = [];
-    const DEMO_SEED_CODES = new Set();
-
+    // Khởi chạy song song truy vấn cấu hình & tài liệu ngay từ mili-giây 0 (Pre-fetch Parallel Pipeline)
+    window._earlyConfigFetchPromise = fetch('/api/config').catch(() => null);
+    window._earlyDocsFetchPromise = fetch('/api/documents', {
+      headers: { 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' }
+    }).catch(() => null);
 
     // =========================================================================
-    // LÕI MÃ HÓA ĐẦU-CUỐI PHÍA CLIENT (FSC WEBCRYPTO AES-256-GCM & ZERO-PII VAULT v6.0)
-    // - Mã hóa toàn bộ dữ liệu lưu trữ trong localStorage, sessionStorage và IndexedDB
-    // - Không lưu mật khẩu; tự động băm SHA-256 định danh và kiểm soát thời hạn phiên (TTL)
+    // 1. LÕI MÃ HÓA ĐẦU-CUỐI PHÍA CLIENT (KHỞI TẠO ĐẦU TIÊN ĐỂ GIẢI MÃ TỨC THÌ 0ms)
     // =========================================================================
     const FSC_VAULT_PREFIX = 'ENC_FSC_V6:';
     const FSC_CLIENT_SECRET = 'FSC_CanTho_ZeroTrust_ClientKey_2026_v6';
 
     const FscCryptoVault = {
-      // Mã hóa đồng bộ tốc độ cao (Stream XOR + Salted Base64) cho localStorage/sessionStorage
       encryptSync(plainStr) {
         if (!plainStr) return '';
         const str = String(plainStr);
@@ -1856,7 +1783,6 @@
         }
       },
 
-      // Mã hóa bất đồng bộ chuẩn quân sự AES-256-GCM qua WebCrypto API cho các tệp trong IndexedDB
       async getWebCryptoKey() {
         if (this._cachedKey) return this._cachedKey;
         if (!window.crypto || !window.crypto.subtle) return null;
@@ -1936,10 +1862,136 @@
     };
     window.FscCryptoVault = FscCryptoVault;
 
-    // Quản lý danh sách Tài liệu Yêu thích và Tài liệu Vừa xem:
-    // - Chỉ lưu tạm thời trong phiên truy cập hiện tại với thời hạn tự xóa sau 15 phút (TEMP_DOC_TTL_MS), áp dụng cho cả khách và tài khoản đã đăng nhập
-    // - Chỉ giữ tối đa 5 tài liệu gần nhất (MAX_TEMP_DOCS = 5), sắp xếp mới nhất lên đầu
-    const TEMP_DOC_TTL_MS = 15 * 60 * 1000; // 15 phút
+    // =========================================================================
+    // 2. KHỞI TẠO DANH MỤC BỘ PHẬN & MÔ TẢ CHỨC NĂNG MỚI NHẤT NGAY LẬP TỨC (0ms)
+    // Không bao giờ hiển thị nội dung cũ rồi mới nhảy sang nội dung mới
+    // =========================================================================
+    const DEFAULT_CATEGORIES = [
+      { id: 'IT', name: 'IT', icon: '💻', status: 'Hoạt động', desc: 'Quản trị hạ tầng CNTT, phần mềm nghiệp vụ, mạng nội bộ và hỗ trợ kỹ thuật số toàn trường.' },
+      { id: 'Tài vụ', name: 'Tài vụ', icon: '📊', status: 'Hoạt động', desc: 'Quản lý kế toán, ngân sách, học phí, định mức tài chính và hồ sơ thanh quyết toán.' },
+      { id: 'Hành chính', name: 'Hành chính', icon: '🏢', status: 'Hoạt động', desc: 'Quản lý văn thư, lưu trữ, điều phối phòng họp, văn phòng phẩm và công tác hành chính.' },
+      { id: 'Y tế', name: 'Y tế', icon: '🏥', status: 'Hoạt động', desc: 'Chăm sóc sức khỏe ban đầu, hồ sơ y tế học đường và quy trình xử lý cấp cứu - tai nạn.' },
+      { id: 'Kỹ thuật', name: 'Kỹ thuật', icon: '⚙️', status: 'Hoạt động', desc: 'Vận hành, bảo trì hệ thống cơ điện (M&E), âm thanh, điều hòa và cơ sở vật chất.' },
+      { id: 'ATVSTP', name: 'ATVSTP', icon: '🍽️', status: 'Hoạt động', desc: 'Kiểm soát an toàn vệ sinh thực phẩm, lưu mẫu thức ăn và giám sát bếp ăn bán trú.' },
+      { id: 'Mua sắm', name: 'Mua sắm', icon: '📦', status: 'Hoạt động', desc: 'Quy trình khảo sát báo giá, thẩm định nhà cung cấp, đấu thầu và mua sắm tài sản.' }
+    ];
+
+    const CATEGORY_QMS_DESCRIPTIONS = {
+      'IT': 'Quản trị hạ tầng CNTT, phần mềm nghiệp vụ, mạng nội bộ và hỗ trợ kỹ thuật số toàn trường.',
+      'Tài vụ': 'Quản lý kế toán, ngân sách, học phí, định mức tài chính và hồ sơ thanh quyết toán.',
+      'Hành chính': 'Quản lý văn thư, lưu trữ, điều phối phòng họp, văn phòng phẩm và công tác hành chính.',
+      'Y tế': 'Chăm sóc sức khỏe ban đầu, hồ sơ y tế học đường và quy trình xử lý cấp cứu - tai nạn.',
+      'Kỹ thuật': 'Vận hành, bảo trì hệ thống cơ điện (M&E), âm thanh, điều hòa và cơ sở vật chất.',
+      'ATVSTP': 'Kiểm soát an toàn vệ sinh thực phẩm, lưu mẫu thức ăn và giám sát bếp ăn bán trú.',
+      'Mua sắm': 'Quy trình khảo sát báo giá, thẩm định nhà cung cấp, đấu thầu và mua sắm tài sản.'
+    };
+
+    let CATEGORIES = [];
+    try {
+      const parsedCats = FscCryptoVault.getDecryptedLocalItem('school_portal_categories_v5');
+      if (Array.isArray(parsedCats) && parsedCats.length > 0) {
+        CATEGORIES = parsedCats.map(c => {
+          const defMatch = DEFAULT_CATEGORIES.find(d => d.id === c.id || d.name === c.name);
+          const latestDesc = (c.desc !== undefined && String(c.desc).trim() !== '')
+            ? String(c.desc).trim()
+            : (defMatch ? defMatch.desc : `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${c.name}.`);
+          CATEGORY_QMS_DESCRIPTIONS[c.name] = latestDesc;
+          if (c.id) CATEGORY_QMS_DESCRIPTIONS[c.id] = latestDesc;
+          return { ...c, desc: latestDesc };
+        });
+      } else {
+        CATEGORIES = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      }
+    } catch (e) {
+      CATEGORIES = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+    }
+
+    let selectedCatIcon = '🖥️';
+
+    const PRESET_ICONS = [
+      '💻', '🖥️', '🌐', '⚡', '🖨️',
+      '📊', '🧾', '💰', '🪙', '💳',
+      '🏢', '📁', '📑', '🗂️', '🏛️',
+      '🏥', '⚕️', '🩺', '🛡️', '💊',
+      '⚙️', '🔧', '🛠️', '🏗️', '🔌',
+      '🍽️', '🍲', '🥗', '🥣', '🥢',
+      '📦', '📋', '🏷️', '🛒', '📝',
+      '🎓', '📚', '📢', '🤝', '👥'
+    ];
+
+    const ROOT_ADMIN_EMAILS = ['buitandat1727@gmail.com', 'hethongquanlyphong.fscct@gmail.com'];
+    let rbacUsers = [
+      { email: 'buitandat1727@gmail.com', name: 'Bùi Tấn Đạt (Quản trị viên)', role: 'admin' },
+      { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Hệ thống Quản lý Phòng', role: 'admin' }
+    ];
+
+    let documents = [];
+    let currentUser = null;
+    let selectedCat = 'all';
+    let selectedType = 'all';
+    let currentSearch = '';
+    let currentZoom = 100;
+    let docLayoutMode = localStorage.getItem('fsc_doc_layout_mode_v6') || 'list';
+    let currentReaderZoom = 100;
+    let currentDoc = null;
+    let isReaderFullscreen = false;
+    let activeGoogleClientId = localStorage.getItem('fpt_google_client_id') || 'sample-fpt-client-id.apps.googleusercontent.com';
+
+    let uploadedFileData = null;
+    let uploadedFileName = '';
+    let editUploadedFileData = null;
+    let editUploadedFileName = '';
+
+    const INITIAL_PORTAL_DOCS = [];
+    const DEMO_SEED_CODES = new Set();
+
+    // Bộ lọc chỉ giữ duy nhất phiên bản mới nhất của mỗi Mã tài liệu (loại bỏ mọi bản trùng hoặc phiên bản cũ)
+    function parseVersionNumber(verStr) {
+      const cleaned = String(verStr || '1.0').replace(/[^0-9.]/g, '');
+      const parts = cleaned.split('.').map(n => parseInt(n, 10) || 0);
+      return (parts[0] || 0) * 10000 + (parts[1] || 0) * 100 + (parts[2] || 0);
+    }
+
+    function deduplicateLatestDocuments(docsList) {
+      if (!Array.isArray(docsList)) return [];
+      const mapByCode = new Map();
+      for (const d of docsList) {
+        if (!d || !d.code) continue;
+        const key = String(d.code).trim().toLowerCase();
+        if (!key || DEMO_SEED_CODES.has(key)) continue;
+        if (!mapByCode.has(key)) {
+          mapByCode.set(key, d);
+        } else {
+          const existing = mapByCode.get(key);
+          const vNew = parseVersionNumber(d.version);
+          const vOld = parseVersionNumber(existing.version);
+          const mergedHist = Array.isArray(d.versionHistory) && d.versionHistory.length > 0
+            ? d.versionHistory
+            : (existing.versionHistory || []);
+          const mergedFile = d.fileData || existing.fileData || '';
+          if (vNew >= vOld) {
+            mapByCode.set(key, {
+              ...existing,
+              ...d,
+              fileData: mergedFile,
+              hasRemoteFile: Boolean(d.hasRemoteFile || existing.hasRemoteFile || mergedFile),
+              versionHistory: mergedHist
+            });
+          } else {
+            mapByCode.set(key, {
+              ...d,
+              ...existing,
+              fileData: mergedFile,
+              hasRemoteFile: Boolean(d.hasRemoteFile || existing.hasRemoteFile || mergedFile),
+              versionHistory: mergedHist
+            });
+          }
+        }
+      }
+      return Array.from(mapByCode.values());
+    }
+
+    const TEMP_DOC_TTL_MS = 15 * 60 * 1000;
     const MAX_TEMP_DOCS = 5;
     try {
       localStorage.removeItem('fsc_qms_fav_codes');
@@ -1997,21 +2049,11 @@
       }
     }
     setInterval(pruneExpiredTempDocs, 15000);
-    let qmsSearchScope = 'all'; // 'all' | 'name' | 'content'
+    let qmsSearchScope = 'all';
     let qmsFilterCode = '';
     let qmsFilterName = '';
-    let specialFilterMode = null; // null | 'favourites' | 'recent' | 'new'
+    let specialFilterMode = null;
     let lastApiEtag = '';
-
-    const CATEGORY_QMS_DESCRIPTIONS = {
-      'IT': 'Quản trị hạ tầng CNTT, phần mềm nghiệp vụ, mạng nội bộ và hỗ trợ kỹ thuật số toàn trường.',
-      'Tài vụ': 'Quản lý kế toán, ngân sách, học phí, định mức tài chính và hồ sơ thanh quyết toán.',
-      'Hành chính': 'Quản lý văn thư, lưu trữ, điều phối phòng họp, văn phòng phẩm và công tác hành chính.',
-      'Y tế': 'Chăm sóc sức khỏe ban đầu, hồ sơ y tế học đường và quy trình xử lý cấp cứu - tai nạn.',
-      'Kỹ thuật': 'Vận hành, bảo trì hệ thống cơ điện (M&E), âm thanh, điều hòa và cơ sở vật chất.',
-      'ATVSTP': 'Kiểm soát an toàn vệ sinh thực phẩm, lưu mẫu thức ăn và giám sát bếp ăn bán trú.',
-      'Mua sắm': 'Quy trình khảo sát báo giá, thẩm định nhà cung cấp, đấu thầu và mua sắm tài sản.'
-    };
 
     // =========================================================================
     // HỆ THỐNG LƯU TRỮ TỆP ĐÍNH KÈM DUNG LƯỢNG LỚN ĐÃ MÃ HÓA AES-256-GCM (INDEXEDDB ENGINE)
@@ -2126,7 +2168,7 @@
       }
     }
 
-    async function loadAllFilesFromIDB() {
+    async function loadAllFilesFromIDB(decryptBlobs = false) {
       try {
         const db = await openFileDB();
         if (!db) return {};
@@ -2147,7 +2189,8 @@
             map[item.code.toLowerCase()] = {
               ...item,
               fileName: FscCryptoVault.decryptSync(item.fileName),
-              fileData: await FscCryptoVault.decryptAsyncGCM(item.fileData),
+              hasLocalBlob: Boolean(item.fileData),
+              fileData: decryptBlobs ? (await FscCryptoVault.decryptAsyncGCM(item.fileData)) : '',
               parsedMeta
             };
           }
@@ -2305,7 +2348,7 @@
             } catch (e) {}
           }
         }
-        documents = parsedDocs;
+        documents = deduplicateLatestDocuments(parsedDocs);
         if (documents.length > 0) {
           safeSaveDocumentsToLocal(documents);
         }
@@ -2393,9 +2436,27 @@
     window.pushDocumentToBackend = pushDocumentToBackend;
 
     async function syncBackendConfigAndData(isManualRefresh = false) {
+      const headers = { 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' };
+
+      // Thực thi SONG SONG cả 3 tác vụ (Config API + Documents API + IndexedDB Metadata) thay vì chờ tuần tự
+      const cfgPromise = (!isManualRefresh && window._earlyConfigFetchPromise)
+        ? window._earlyConfigFetchPromise
+        : fetch('/api/config?_t=' + Date.now()).catch(() => null);
+      window._earlyConfigFetchPromise = null;
+
+      const docsUrl = isManualRefresh ? ('/api/documents?_t=' + Date.now()) : '/api/documents';
+      const docsPromise = (!isManualRefresh && window._earlyDocsFetchPromise)
+        ? window._earlyDocsFetchPromise
+        : fetch(docsUrl, { cache: isManualRefresh ? 'no-store' : 'default', headers }).catch(() => null);
+      window._earlyDocsFetchPromise = null;
+
+      const idbPromise = loadAllFilesFromIDB(false).catch(() => ({}));
+
+      const [cfgRes, docRes, idbMap] = await Promise.all([cfgPromise, docsPromise, idbPromise]);
+
+      // 1. Xử lý cấu hình & mô tả chức năng bộ phận mới nhất (chỉ render lại nếu có thay đổi thực sự)
       try {
-        const cfgRes = await fetch('/api/config');
-        if (cfgRes.ok) {
+        if (cfgRes && cfgRes.ok) {
           const cfg = await cfgRes.json();
           if (cfg.googleClientId) {
             activeGoogleClientId = cfg.googleClientId;
@@ -2403,36 +2464,38 @@
             ensureGooglePopupClientReady();
           }
           if (Array.isArray(cfg.categories) && cfg.categories.length > 0) {
-            CATEGORIES = cfg.categories.map(c => {
+            const newCats = cfg.categories.map(c => {
               const defMatch = DEFAULT_CATEGORIES.find(d => d.id === c.id || d.name === c.name);
-              const dText = (c.desc !== undefined && String(c.desc).trim() !== '') ? c.desc : (defMatch ? defMatch.desc : `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${c.name}.`);
+              const dText = (c.desc !== undefined && String(c.desc).trim() !== '') ? String(c.desc).trim() : (defMatch ? defMatch.desc : `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${c.name}.`);
               CATEGORY_QMS_DESCRIPTIONS[c.name] = dText;
+              if (c.id) CATEGORY_QMS_DESCRIPTIONS[c.id] = dText;
               return { ...c, desc: dText };
             });
+            const prevJson = JSON.stringify(CATEGORIES);
+            const nextJson = JSON.stringify(newCats);
+            CATEGORIES = newCats;
             FscCryptoVault.setEncryptedLocalItem('school_portal_categories_v5', CATEGORIES);
-            renderFilterChips();
-            renderCategoryHub();
-            renderDirectCards();
-            renderOtherViews();
-            updateCatDropdowns();
+            if (prevJson !== nextJson) {
+              renderFilterChips();
+              renderCategoryHub();
+              renderDirectCards();
+              renderOtherViews();
+              updateCatDropdowns();
+            }
           }
         }
       } catch (e) {}
 
-      // 1. Nạp toàn bộ tệp PDF/Word/Excel đang lưu trong IndexedDB của trình duyệt
-      let idbMap = {};
+      // 2. Gắn trạng thái tệp từ IndexedDB & khôi phục nếu danh sách cục bộ đang trống
       try {
-        idbMap = await loadAllFilesFromIDB();
         let hydrated = false;
         documents.forEach(d => {
           const k = (d.code || '').toLowerCase();
-          if (idbMap[k] && idbMap[k].fileData && !d.fileData) {
-            d.fileData = idbMap[k].fileData;
-            if (idbMap[k].fileName) d.currentFile = idbMap[k].fileName;
-            hydrated = true;
+          if (idbMap[k]) {
+            if (idbMap[k].fileName && !d.currentFile) d.currentFile = idbMap[k].fileName;
+            if (idbMap[k].hasLocalBlob) d.hasRemoteFile = true;
           }
         });
-        // KHÔI PHỤC TỰ ĐỘNG TỪ INDEXEDDB: Nếu danh sách documents trong localStorage bị xóa rỗng ngoài ý muốn nhưng IndexedDB vẫn còn các tệp đã tải lên, tự động khôi phục ngay lập tức!
         if (documents.length === 0 && Object.keys(idbMap).length > 0) {
           const recoveredDocs = [];
           for (const [k, item] of Object.entries(idbMap)) {
@@ -2457,13 +2520,13 @@
               dept: meta.dept || inferredCat,
               desc: meta.desc || '',
               currentFile: rawFileName,
-              fileData: item.fileData || '',
-              hasRemoteFile: false,
+              fileData: '',
+              hasRemoteFile: true,
               versionHistory: []
             });
           }
           if (recoveredDocs.length > 0) {
-            documents = recoveredDocs;
+            documents = deduplicateLatestDocuments(recoveredDocs);
             safeSaveDocumentsToLocal(documents);
             hydrated = true;
           }
@@ -2475,16 +2538,11 @@
         }
       } catch (e) {}
 
-      // 2. Đồng bộ hai chiều thông minh với Neon PostgreSQL (/api/documents)
+      // 3. Xử lý dữ liệu tài liệu từ Neon PostgreSQL (chỉ giữ phiên bản mới nhất của mỗi mã tài liệu)
       try {
-        const headers = { 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' };
-        const docRes = await fetch('/api/documents?_t=' + Date.now(), {
-          cache: 'no-store',
-          headers
-        });
-        if (!docRes.ok) {
+        if (!docRes || !docRes.ok) {
           if (isManualRefresh) {
-            showToast(`⚠️ Máy chủ API trả về mã lỗi ${docRes.status}. Đang hiển thị ${documents.length} tài liệu trên máy.`, 'error');
+            showToast(`⚠️ Máy chủ API trả về mã lỗi ${docRes ? docRes.status : 'Mất kết nối'}. Đang hiển thị ${documents.length} tài liệu trên máy.`, 'error');
           }
           return;
         }
@@ -2512,7 +2570,6 @@
             return;
           }
 
-          // Xóa ngay khỏi máy cục bộ bất kỳ tài liệu nào đã bị Admin xóa trên đám mây (deletedSet)
           if (deletedSet.size > 0) {
             for (const delCode of deletedSet) {
               await deleteFileFromIDB(delCode);
@@ -2525,13 +2582,13 @@
             if (ld && ld.code) localMap[ld.code.toLowerCase()] = ld;
           });
 
-          const apiDocs = docData.data
+          const apiDocsRaw = docData.data
             .filter(d => d && d.code && !deletedSet.has(String(d.code).toLowerCase()))
             .map(d => {
               const key = String(d.code).toLowerCase();
               const localDoc = localMap[key] || {};
               const idbEntry = idbMap[key] || {};
-              const resolvedFileData = d.file_data || d.file_url || d.fileData || localDoc.fileData || idbEntry.fileData || '';
+              const resolvedFileData = d.file_data || d.file_url || d.fileData || localDoc.fileData || '';
               const docObj = {
                 id: String(d.id || localDoc.id || ('DOC-' + d.code)),
                 code: d.code,
@@ -2547,7 +2604,7 @@
                 desc: d.description || d.desc || localDoc.desc || '',
                 currentFile: d.current_file || d.currentFile || localDoc.currentFile || idbEntry.fileName || (d.code + '.pdf'),
                 fileData: resolvedFileData,
-                hasRemoteFile: Boolean(d.has_remote_file || d.file_data || resolvedFileData),
+                hasRemoteFile: Boolean(d.has_remote_file || d.file_data || resolvedFileData || idbEntry.hasLocalBlob),
                 versionHistory: (Array.isArray(d.version_history) && d.version_history.length > 0) ? d.version_history : (localDoc.versionHistory || []),
                 relatedDocs: d.related_codes || d.relatedDocs || localDoc.relatedDocs || []
               };
@@ -2557,16 +2614,15 @@
               return docObj;
             });
 
+          const apiDocs = deduplicateLatestDocuments(apiDocsRaw);
           const apiCodeSet = new Set(apiDocs.map(d => String(d.code).toLowerCase()));
 
-          // Tìm các tài liệu đã tải lên ở máy hiện tại nhưng chưa có trên Neon DB (và chưa từng bị xóa) để tự động đẩy lên Neon DB ngay lập tức!
           const unsyncedLocalDocs = documents.filter(
             ld => ld && ld.code && !apiCodeSet.has(ld.code.toLowerCase()) && !deletedSet.has(ld.code.toLowerCase()) && !DEMO_SEED_CODES.has(ld.code.toLowerCase())
           );
 
           if (unsyncedLocalDocs.length > 0) {
-            // Hiển thị ngay danh sách gộp để người dùng không bị mất tài liệu trên màn hình
-            documents = [...apiDocs, ...unsyncedLocalDocs];
+            documents = deduplicateLatestDocuments([...apiDocs, ...unsyncedLocalDocs]);
             safeSaveDocumentsToLocal(documents);
             updateBadges();
             renderDirectCards();
@@ -2587,16 +2643,16 @@
             renderDirectCards();
             renderOtherViews();
 
-            // Nếu tài liệu trên DB chưa có file đính kèm nhưng máy hiện tại có sẵn file trong IndexedDB, tự động đẩy bổ sung file lên DB
             for (const sd of apiDocs) {
-              const localMatch = localMap[sd.code.toLowerCase()];
-              if (!sd.hasRemoteFile && localMatch && localMatch.fileData) {
+              const k = sd.code.toLowerCase();
+              const localMatch = localMap[k];
+              if (!sd.hasRemoteFile && localMatch && (localMatch.fileData || (idbMap[k] && idbMap[k].hasLocalBlob))) {
                 await pushDocumentToBackend(localMatch);
               }
             }
 
             if (isManualRefresh) {
-              showToast(`☁️ Đã làm mới và đồng bộ ${documents.length} tài liệu từ đám mây!`, 'info');
+              showToast(`☁️ Đã làm mới và đồng bộ ${documents.length} tài liệu mới nhất từ đám mây!`, 'info');
             }
           }
         }
@@ -2606,7 +2662,7 @@
         }
       }
     }
-    window.syncBackendConfigAndData = syncBackendConfigAndData;
+        window.syncBackendConfigAndData = syncBackendConfigAndData;
 
     function removeVietnameseTones(str) {
       if (!str) return '';
@@ -2946,7 +3002,13 @@
 
     function setQmsSearchScope(scopeVal) {
       qmsSearchScope = scopeVal || 'all';
-      renderDirectCards();
+      const sInp = document.getElementById('main-search-input');
+      if (sInp && sInp.value.trim().length > 0 && typeof window.triggerHomeSearchSuggestions === 'function') {
+        window.triggerHomeSearchSuggestions(sInp.value);
+      }
+      if (selectedCat !== 'all' || specialFilterMode || isViewingAllDocsDirect) {
+        renderDirectCards();
+      }
     }
     window.setQmsSearchScope = setQmsSearchScope;
 
@@ -3208,7 +3270,6 @@
 
       const shouldShowHubOnly = (
         selectedCat === 'all' &&
-        !normSearch &&
         !normCodeFilter &&
         !normNameFilter &&
         !specialFilterMode &&
@@ -6178,11 +6239,13 @@
       }
 
       restoreSession();
-      syncBackendConfigAndData();
+      updateBadges();
       renderFilterChips();
+      renderCategoryHub();
       renderDirectCards();
       renderOtherViews();
       updateAuthState();
+      syncBackendConfigAndData();
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -6223,20 +6286,23 @@
         const q = (rawQuery || '').trim();
         const normQ = removeVietnameseTones(q);
 
-        const visibleDocs = documents.filter(d => isDocVisible(d));
-        if (visibleDocs.length === 0 || !q) {
+        const visibleDocs = deduplicateLatestDocuments(documents).filter(d => isDocVisible(d));
+        if (!q) {
           suggestionsBox.classList.add('hidden');
           activeSuggestionIdx = -1;
           return;
         }
 
         const matchedDocs = visibleDocs.filter(doc => {
-          const matchTitle = removeVietnameseTones(doc.title).includes(normQ);
-          const matchCode = removeVietnameseTones(doc.code).includes(normQ);
+          const matchTitle = removeVietnameseTones(doc.title || '').includes(normQ);
+          const matchCode = removeVietnameseTones(doc.code || '').includes(normQ);
+          const matchDesc = removeVietnameseTones(doc.desc || '').includes(normQ);
           const matchDept = removeVietnameseTones(doc.dept || '').includes(normQ);
           const matchCat = removeVietnameseTones(doc.category || '').includes(normQ);
-          return matchTitle || matchCode || matchDept || matchCat;
-        }).slice(0, 6);
+          if (qmsSearchScope === 'name') return matchTitle;
+          if (qmsSearchScope === 'content') return matchCode || matchDesc;
+          return matchTitle || matchCode || matchDesc || matchDept || matchCat;
+        }).slice(0, 10);
 
         const matchedCats = CATEGORIES.filter(c =>
           c.status !== 'Tạm ẩn' &&
@@ -6269,6 +6335,7 @@
             <div class="suggestion-item px-4 py-2.5 hover:bg-[#102E52] cursor-pointer transition flex items-center justify-between gap-3 group" data-doc-id="${doc.id}" data-idx="${idx}">
               <div class="flex items-center space-x-2.5 min-w-0">
                 <span class="px-2 py-0.5 rounded bg-[#03152D] text-[#16A8F4] border border-[#16A8F4]/35 font-mono text-xs font-bold shrink-0">${hlCode}</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-500/30 font-mono text-[10px] font-bold shrink-0">v${doc.version || '1.0'}</span>
                 <div class="min-w-0">
                   <div class="text-xs font-bold text-white group-hover:text-[#FFC857] truncate transition">${hlTitle}</div>
                   <div class="text-[10.5px] text-[#B8C8DC] flex items-center space-x-1.5 mt-0.5">
@@ -6324,10 +6391,14 @@
         });
       }
 
+      window.triggerHomeSearchSuggestions = renderSearchSuggestions;
       searchInput.addEventListener('input', (e) => {
         currentSearch = e.target.value.trim();
-        renderDirectCards();
+        // Tại Trang chủ: giữ nguyên ô tìm kiếm để gõ liên tục và hiển thị danh sách gợi ý tài liệu ngay bên dưới, tuyệt đối không nhảy trang!
         renderSearchSuggestions(e.target.value);
+        if (selectedCat !== 'all' || specialFilterMode || isViewingAllDocsDirect) {
+          renderDirectCards();
+        }
       });
 
       searchInput.addEventListener('focus', () => {
