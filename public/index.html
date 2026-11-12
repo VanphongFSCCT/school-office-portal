@@ -2034,22 +2034,64 @@
       });
     }
 
-    async function saveFileToIDB(code, fileName, fileData) {
+    async function saveFileToIDB(code, fileName, fileData, docMeta = null) {
       if (!code || !fileData) return;
       try {
         const db = await openFileDB();
         if (!db) return;
         const encryptedPayload = await FscCryptoVault.encryptAsyncGCM(fileData);
         const encryptedName = FscCryptoVault.encryptSync(fileName || '');
+        const encryptedMeta = docMeta ? FscCryptoVault.encryptSync(JSON.stringify({
+          title: docMeta.title || '',
+          category: docMeta.category || '',
+          type: docMeta.type || 'Quy trình',
+          version: docMeta.version || '1.0',
+          effectiveDate: docMeta.effectiveDate || '',
+          dept: docMeta.dept || '',
+          desc: docMeta.desc || '',
+          access: docMeta.access || 'Mở',
+          downloadPerm: docMeta.downloadPerm || 'allow_all'
+        })) : '';
         return new Promise((resolve) => {
           const tx = db.transaction(FILE_STORE_NAME, 'readwrite');
           const store = tx.objectStore(FILE_STORE_NAME);
           store.put({
             code: code.toLowerCase(),
+            rawCode: String(code),
             fileName: encryptedName,
             fileData: encryptedPayload,
+            docMeta: encryptedMeta,
             updatedAt: Date.now()
           });
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } catch (e) {}
+    }
+
+    async function deleteFileFromIDB(code) {
+      if (!code) return;
+      try {
+        const db = await openFileDB();
+        if (!db) return;
+        return new Promise((resolve) => {
+          const tx = db.transaction(FILE_STORE_NAME, 'readwrite');
+          const store = tx.objectStore(FILE_STORE_NAME);
+          store.delete(String(code).toLowerCase());
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } catch (e) {}
+    }
+
+    async function clearAllFilesFromIDB() {
+      try {
+        const db = await openFileDB();
+        if (!db) return;
+        return new Promise((resolve) => {
+          const tx = db.transaction(FILE_STORE_NAME, 'readwrite');
+          const store = tx.objectStore(FILE_STORE_NAME);
+          store.clear();
           tx.oncomplete = () => resolve(true);
           tx.onerror = () => resolve(false);
         });
@@ -2069,10 +2111,15 @@
           req.onerror = () => resolve(null);
         });
         if (!rawRec) return null;
+        let parsedMeta = null;
+        if (rawRec.docMeta) {
+          try { parsedMeta = JSON.parse(FscCryptoVault.decryptSync(rawRec.docMeta)); } catch (e) {}
+        }
         return {
           ...rawRec,
           fileName: FscCryptoVault.decryptSync(rawRec.fileName),
-          fileData: await FscCryptoVault.decryptAsyncGCM(rawRec.fileData)
+          fileData: await FscCryptoVault.decryptAsyncGCM(rawRec.fileData),
+          parsedMeta
         };
       } catch (e) {
         return null;
@@ -2093,10 +2140,15 @@
         const map = {};
         for (const item of allItems) {
           if (item && item.code) {
+            let parsedMeta = null;
+            if (item.docMeta) {
+              try { parsedMeta = JSON.parse(FscCryptoVault.decryptSync(item.docMeta)); } catch (e) {}
+            }
             map[item.code.toLowerCase()] = {
               ...item,
               fileName: FscCryptoVault.decryptSync(item.fileName),
-              fileData: await FscCryptoVault.decryptAsyncGCM(item.fileData)
+              fileData: await FscCryptoVault.decryptAsyncGCM(item.fileData),
+              parsedMeta
             };
           }
         }
@@ -2106,25 +2158,57 @@
       }
     }
 
-    function safeSaveDocumentsToLocal(docsArray) {
+    function inferCategoryFromCodeOrName(codeStr, nameStr) {
+      const combined = removeVietnameseTones(`${codeStr || ''} ${nameStr || ''}`).toUpperCase();
+      if (combined.includes('Y TE') || combined.startsWith('YT') || combined.includes('TAI NAN') || combined.includes('SO CUU')) return 'Y tế';
+      if (combined.includes('TAI VU') || combined.startsWith('TV') || combined.startsWith('TC') || combined.includes('KE TOAN') || combined.includes('HOC PHI') || combined.includes('NGAN SACH')) return 'Tài vụ';
+      if (combined.includes('HANH CHINH') || combined.startsWith('HC') || combined.startsWith('VP') || combined.includes('HOC SINH') || combined.includes('PHONG HOP')) return 'Hành chính';
+      if (combined.includes('KY THUAT') || combined.startsWith('KT') || combined.includes('BAO TRI') || combined.includes('CO SO VAT CHAT')) return 'Kỹ thuật';
+      if (combined.includes('ATVSTP') || combined.startsWith('AT') || combined.startsWith('VS') || combined.includes('THUC PHAM') || combined.includes('BAN TRU')) return 'ATVSTP';
+      if (combined.includes('MUA SAM') || combined.startsWith('MS') || combined.includes('BAO GIA') || combined.includes('DAU THAU')) return 'Mua sắm';
+      if (combined.startsWith('IT') || combined.includes('CNTT') || combined.includes('MANG') || combined.includes('PHAN MEM')) return 'IT';
+      return 'Hành chính';
+    }
+
+    function inferDocTypeFromCodeOrName(codeStr, nameStr) {
+      const combined = removeVietnameseTones(`${codeStr || ''} ${nameStr || ''}`).toUpperCase();
+      if (combined.includes('BM') || combined.includes('BIEU MAU') || combined.includes('PHIEU') || combined.includes('MAU')) return 'Biểu mẫu';
+      if (combined.includes('HD') || combined.includes('WI') || combined.includes('HUONG DAN')) return 'Hướng dẫn công việc';
+      return 'Quy trình';
+    }
+
+    function safeSaveDocumentsToLocal(docsArray, allowEmptyOverwrite = false) {
       try {
-        // Lưu trữ vào localStorage dưới dạng bản mã ENC_FSC_V6 (nếu bị đánh cắp localStorage cũng không đọc được nội dung)
-        const lightweightDocs = docsArray.map(d => {
+        const cleanArr = Array.isArray(docsArray) ? docsArray : [];
+        const lightweightDocs = cleanArr.map(d => {
           if (d.fileData && d.fileData.length > 180000) {
-            saveFileToIDB(d.code, d.currentFile, d.fileData);
+            saveFileToIDB(d.code, d.currentFile, d.fileData, d);
             return { ...d, fileData: '' };
+          } else if (d.fileData) {
+            saveFileToIDB(d.code, d.currentFile, d.fileData, d);
           }
           return d;
         });
         const encryptedStr = FscCryptoVault.encryptSync(JSON.stringify(lightweightDocs));
-        localStorage.setItem('school_portal_live_docs', encryptedStr);
+        if (cleanArr.length > 0 || allowEmptyOverwrite) {
+          localStorage.setItem('school_portal_live_docs', encryptedStr);
+        }
+        if (cleanArr.length > 0) {
+          localStorage.setItem('school_portal_docs_backup_v6', encryptedStr);
+        } else if (allowEmptyOverwrite) {
+          localStorage.removeItem('school_portal_docs_backup_v6');
+        }
       } catch (quotaErr) {
         try {
-          const minimalDocs = docsArray.map(d => {
-            if (d.fileData) saveFileToIDB(d.code, d.currentFile, d.fileData);
+          const minimalDocs = (docsArray || []).map(d => {
+            if (d.fileData) saveFileToIDB(d.code, d.currentFile, d.fileData, d);
             return { ...d, fileData: '' };
           });
-          localStorage.setItem('school_portal_live_docs', FscCryptoVault.encryptSync(JSON.stringify(minimalDocs)));
+          const encMin = FscCryptoVault.encryptSync(JSON.stringify(minimalDocs));
+          localStorage.setItem('school_portal_live_docs', encMin);
+          if (minimalDocs.length > 0) {
+            localStorage.setItem('school_portal_docs_backup_v6', encMin);
+          }
         } catch (e2) {}
       }
     }
@@ -2149,7 +2233,6 @@
         return;
       }
       const exp = userObj.expiresAt || (Date.now() + 8 * 3600 * 1000);
-      // Tuyệt đối không lưu mật khẩu; gắn chữ ký toàn vẹn chống can thiệp quyền hạn (Anti-Privilege-Escalation)
       const sanitizedSession = {
         email: userObj.email,
         name: userObj.name,
@@ -2200,22 +2283,35 @@
           saveEncryptedUserSession(currentUser);
         }
         
-        const savedDocs = localStorage.getItem('school_portal_live_docs');
+        let savedDocs = localStorage.getItem('school_portal_live_docs');
+        let parsedDocs = [];
         if (savedDocs) {
-          const decDocs = FscCryptoVault.decryptSync(savedDocs);
-          const parsed = JSON.parse(decDocs);
-          if (Array.isArray(parsed)) {
-            documents = parsed.filter(d => d && d.code && !DEMO_SEED_CODES.has(d.code.toLowerCase()));
-            safeSaveDocumentsToLocal(documents);
-          } else {
-            documents = [];
+          try {
+            const decDocs = FscCryptoVault.decryptSync(savedDocs);
+            const p = JSON.parse(decDocs);
+            if (Array.isArray(p)) parsedDocs = p.filter(d => d && d.code && !DEMO_SEED_CODES.has(d.code.toLowerCase()));
+          } catch (e) {}
+        }
+        // Nếu school_portal_live_docs bị rỗng ngoài ý muốn, tự động khôi phục từ bản sao lưu dự phòng school_portal_docs_backup_v6
+        if (parsedDocs.length === 0) {
+          const backupDocs = localStorage.getItem('school_portal_docs_backup_v6');
+          if (backupDocs) {
+            try {
+              const decB = FscCryptoVault.decryptSync(backupDocs);
+              const pb = JSON.parse(decB);
+              if (Array.isArray(pb) && pb.length > 0) {
+                parsedDocs = pb.filter(d => d && d.code && !DEMO_SEED_CODES.has(d.code.toLowerCase()));
+              }
+            } catch (e) {}
           }
-        } else {
-          documents = [];
+        }
+        documents = parsedDocs;
+        if (documents.length > 0) {
+          safeSaveDocumentsToLocal(documents);
         }
       } catch (e) {
         console.warn('Restore error:', e);
-        documents = JSON.parse(JSON.stringify(INITIAL_PORTAL_DOCS));
+        documents = [];
       }
     }
 
@@ -2232,19 +2328,19 @@
         } catch (e) {}
       }
 
-      const CHUNK_SIZE = 1000000; // 1MB mỗi phân đoạn (An toàn tuyệt đối dưới giới hạn 4.5MB của Vercel Serverless)
+      const CHUNK_SIZE = 950000; // 950KB mỗi phân đoạn (An toàn dưới giới hạn 4.5MB của Vercel Serverless)
       const isLargeFile = Boolean(fileBlob && fileBlob.length > CHUNK_SIZE);
 
       const buildMetaBody = (inlineFileStr) => JSON.stringify({
-        id: docObj.id || ('DOC-' + Date.now()),
+        id: docObj.id || ('DOC-' + docObj.code),
         old_code: oldCode || docObj.code,
         code: docObj.code,
-        title: docObj.title,
-        category_id: docObj.category,
-        doc_type: docObj.type,
+        title: docObj.title || docObj.code,
+        category_id: docObj.category || 'IT',
+        doc_type: docObj.type || 'Quy trình',
         version: docObj.version || '1.0',
         effective_date: docObj.effectiveDate || new Date().toLocaleDateString('vi-VN'),
-        department: docObj.dept || docObj.category,
+        department: docObj.dept || docObj.category || 'Văn phòng',
         description: docObj.desc || '',
         access_level: docObj.access || 'Mở',
         download_perm: docObj.downloadPerm || 'allow_all',
@@ -2254,7 +2350,6 @@
       });
 
       try {
-        // Bước 1: Lưu thông tin tài liệu (kèm file_data nếu tệp <= 1MB)
         const res = await fetch('/api/documents', {
           method: 'POST',
           headers: {
@@ -2265,7 +2360,6 @@
         });
         if (!res.ok) return false;
 
-        // Bước 2: Nếu tệp lớn > 1MB, tự động cắt thành các phân đoạn 1MB và tải lên bảng document_file_chunks trên Neon DB
         if (isLargeFile) {
           const totalChunks = Math.ceil(fileBlob.length / CHUNK_SIZE);
           for (let idx = 0; idx < totalChunks; idx++) {
@@ -2298,7 +2392,7 @@
     }
     window.pushDocumentToBackend = pushDocumentToBackend;
 
-    async function syncBackendConfigAndData() {
+    async function syncBackendConfigAndData(isManualRefresh = false) {
       try {
         const cfgRes = await fetch('/api/config');
         if (cfgRes.ok) {
@@ -2325,9 +2419,10 @@
         }
       } catch (e) {}
 
-      // Nạp ngay các tệp PDF/Office dung lượng lớn từ IndexedDB vào bộ nhớ
+      // 1. Nạp toàn bộ tệp PDF/Word/Excel đang lưu trong IndexedDB của trình duyệt
+      let idbMap = {};
       try {
-        const idbMap = await loadAllFilesFromIDB();
+        idbMap = await loadAllFilesFromIDB();
         let hydrated = false;
         documents.forEach(d => {
           const k = (d.code || '').toLowerCase();
@@ -2337,37 +2432,110 @@
             hydrated = true;
           }
         });
+        // KHÔI PHỤC TỰ ĐỘNG TỪ INDEXEDDB: Nếu danh sách documents trong localStorage bị xóa rỗng ngoài ý muốn nhưng IndexedDB vẫn còn các tệp đã tải lên, tự động khôi phục ngay lập tức!
+        if (documents.length === 0 && Object.keys(idbMap).length > 0) {
+          const recoveredDocs = [];
+          for (const [k, item] of Object.entries(idbMap)) {
+            if (!k || k.includes('__v_') || DEMO_SEED_CODES.has(k)) continue;
+            const meta = item.parsedMeta || {};
+            const displayCode = item.rawCode ? String(item.rawCode).toUpperCase() : String(k).toUpperCase();
+            const rawFileName = item.fileName || (displayCode + '.pdf');
+            const cleanNameNoExt = rawFileName.replace(/\.(pdf|docx|doc|xlsx|xls)$/i, '').replace(/_/g, ' ').trim();
+            const inferredCat = meta.category || inferCategoryFromCodeOrName(displayCode, cleanNameNoExt);
+            const inferredType = meta.type || inferDocTypeFromCodeOrName(displayCode, cleanNameNoExt);
+            recoveredDocs.push({
+              id: 'DOC-' + displayCode,
+              code: displayCode,
+              title: meta.title || cleanNameNoExt || displayCode,
+              category: inferredCat,
+              type: inferredType,
+              version: meta.version || '1.0',
+              effectiveDate: meta.effectiveDate || new Date(item.updatedAt || Date.now()).toLocaleDateString('vi-VN'),
+              status: 'Có hiệu lực',
+              access: meta.access || 'Mở',
+              downloadPerm: meta.downloadPerm || 'allow_all',
+              dept: meta.dept || inferredCat,
+              desc: meta.desc || '',
+              currentFile: rawFileName,
+              fileData: item.fileData || '',
+              hasRemoteFile: false,
+              versionHistory: []
+            });
+          }
+          if (recoveredDocs.length > 0) {
+            documents = recoveredDocs;
+            safeSaveDocumentsToLocal(documents);
+            hydrated = true;
+          }
+        }
         if (hydrated) {
+          updateBadges();
           renderDirectCards();
           renderOtherViews();
         }
       } catch (e) {}
 
+      // 2. Đồng bộ hai chiều thông minh với Neon PostgreSQL (/api/documents)
       try {
         const headers = { 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' };
         const docRes = await fetch('/api/documents?_t=' + Date.now(), {
           cache: 'no-store',
           headers
         });
-        if (docRes.ok) {
-          const docData = await docRes.json();
-          if (docData.success && Array.isArray(docData.data) && docData.hasDatabase !== false) {
-            const localMap = {};
-            documents.forEach(ld => {
-              if (ld.code) localMap[ld.code.toLowerCase()] = ld;
-            });
+        if (!docRes.ok) {
+          if (isManualRefresh) {
+            showToast(`⚠️ Máy chủ API trả về mã lỗi ${docRes.status}. Đang hiển thị ${documents.length} tài liệu trên máy.`, 'error');
+          }
+          return;
+        }
 
-            const apiDocs = docData.data.map(d => {
-              const key = (d.code || '').toLowerCase();
+        const docData = await docRes.json();
+        if (docData.hasDatabase === false) {
+          if (isManualRefresh) {
+            showToast('⚠️ Chưa kết nối biến môi trường DATABASE_URL trên Vercel!', 'error');
+          }
+          return;
+        }
+
+        if (docData.success && Array.isArray(docData.data)) {
+          const deletedSet = new Set((docData.deletedCodes || []).map(c => String(c).toLowerCase()));
+          const isPurgedAll = deletedSet.has('__purge_all__') && docData.data.length === 0;
+
+          if (isPurgedAll) {
+            documents = [];
+            safeSaveDocumentsToLocal([], true);
+            await clearAllFilesFromIDB();
+            updateBadges();
+            renderDirectCards();
+            renderOtherViews();
+            if (isManualRefresh) showToast('☁️ Đã đồng bộ làm sạch kho tài liệu từ đám mây.', 'info');
+            return;
+          }
+
+          // Xóa ngay khỏi máy cục bộ bất kỳ tài liệu nào đã bị Admin xóa trên đám mây (deletedSet)
+          if (deletedSet.size > 0) {
+            for (const delCode of deletedSet) {
+              await deleteFileFromIDB(delCode);
+            }
+            documents = documents.filter(d => d && d.code && !deletedSet.has(d.code.toLowerCase()));
+          }
+
+          const localMap = {};
+          documents.forEach(ld => {
+            if (ld && ld.code) localMap[ld.code.toLowerCase()] = ld;
+          });
+
+          const apiDocs = docData.data
+            .filter(d => d && d.code && !deletedSet.has(String(d.code).toLowerCase()))
+            .map(d => {
+              const key = String(d.code).toLowerCase();
               const localDoc = localMap[key] || {};
-              const resolvedFileData = d.file_data || d.file_url || d.fileData || localDoc.fileData || '';
-              if (resolvedFileData && d.code) {
-                saveFileToIDB(d.code, d.current_file || d.currentFile || localDoc.currentFile, resolvedFileData);
-              }
-              return {
+              const idbEntry = idbMap[key] || {};
+              const resolvedFileData = d.file_data || d.file_url || d.fileData || localDoc.fileData || idbEntry.fileData || '';
+              const docObj = {
                 id: String(d.id || localDoc.id || ('DOC-' + d.code)),
                 code: d.code,
-                title: d.title,
+                title: d.title || localDoc.title || d.code,
                 category: d.category_id || d.category || localDoc.category || 'IT',
                 type: d.doc_type || d.type || localDoc.type || 'Quy trình',
                 version: d.version || localDoc.version || '1.0',
@@ -2377,53 +2545,68 @@
                 downloadPerm: d.download_perm || d.downloadPerm || localDoc.downloadPerm || 'allow_all',
                 dept: d.department || d.dept || localDoc.dept || 'Văn phòng',
                 desc: d.description || d.desc || localDoc.desc || '',
-                currentFile: d.current_file || d.currentFile || localDoc.currentFile || (d.code + '.pdf'),
+                currentFile: d.current_file || d.currentFile || localDoc.currentFile || idbEntry.fileName || (d.code + '.pdf'),
                 fileData: resolvedFileData,
-                hasRemoteFile: Boolean(d.has_remote_file || d.file_data),
+                hasRemoteFile: Boolean(d.has_remote_file || d.file_data || resolvedFileData),
                 versionHistory: (Array.isArray(d.version_history) && d.version_history.length > 0) ? d.version_history : (localDoc.versionHistory || []),
                 relatedDocs: d.related_codes || d.relatedDocs || localDoc.relatedDocs || []
               };
+              if (resolvedFileData && d.code) {
+                saveFileToIDB(d.code, docObj.currentFile, resolvedFileData, docObj);
+              }
+              return docObj;
             });
 
-            const cleanApiDocs = apiDocs.filter(d => d && d.code);
+          const apiCodeSet = new Set(apiDocs.map(d => String(d.code).toLowerCase()));
 
-            // Trường hợp 1: Cơ sở dữ liệu Neon đã có dữ liệu (hoặc đã từng đồng bộ) -> Lấy 100% theo cơ sở dữ liệu Neon (Xóa bỏ hoàn toàn các tài liệu cũ còn kẹt trong bộ nhớ đệm của thiết bị khác!)
-            const alreadyMigrated = localStorage.getItem('fsc_initial_db_migrated_v6') === 'true';
-            if (cleanApiDocs.length > 0 || alreadyMigrated || !currentUser || currentUser.role !== 'admin') {
-              if (cleanApiDocs.length > 0) {
-                localStorage.setItem('fsc_initial_db_migrated_v6', 'true');
-              }
-              documents = cleanApiDocs;
-              safeSaveDocumentsToLocal(documents);
-              renderDirectCards();
-              renderOtherViews();
-              updateBadges();
+          // Tìm các tài liệu đã tải lên ở máy hiện tại nhưng chưa có trên Neon DB (và chưa từng bị xóa) để tự động đẩy lên Neon DB ngay lập tức!
+          const unsyncedLocalDocs = documents.filter(
+            ld => ld && ld.code && !apiCodeSet.has(ld.code.toLowerCase()) && !deletedSet.has(ld.code.toLowerCase()) && !DEMO_SEED_CODES.has(ld.code.toLowerCase())
+          );
 
-              // Nếu có tài liệu trên DB chưa có fileData nhưng trên máy Admin đang mở có sẵn fileData, tự động đẩy bổ sung file lên DB
-              if (currentUser && currentUser.role === 'admin') {
-                for (const sd of cleanApiDocs) {
-                  const localMatch = localMap[sd.code.toLowerCase()];
-                  if (!sd.hasRemoteFile && !sd.fileData && localMatch && localMatch.fileData) {
-                    await pushDocumentToBackend(localMatch);
-                  }
-                }
+          if (unsyncedLocalDocs.length > 0) {
+            // Hiển thị ngay danh sách gộp để người dùng không bị mất tài liệu trên màn hình
+            documents = [...apiDocs, ...unsyncedLocalDocs];
+            safeSaveDocumentsToLocal(documents);
+            updateBadges();
+            renderDirectCards();
+            renderOtherViews();
+
+            let pushedCount = 0;
+            for (const uDoc of unsyncedLocalDocs) {
+              const ok = await pushDocumentToBackend(uDoc);
+              if (ok) pushedCount++;
+            }
+            if (pushedCount > 0) {
+              showToast(`☁️ Đã tự động đồng bộ ${pushedCount} tài liệu lên cơ sở dữ liệu đám mây cho mọi thiết bị!`, 'success');
+            }
+          } else {
+            documents = apiDocs;
+            safeSaveDocumentsToLocal(documents, apiDocs.length === 0 && deletedSet.size > 0);
+            updateBadges();
+            renderDirectCards();
+            renderOtherViews();
+
+            // Nếu tài liệu trên DB chưa có file đính kèm nhưng máy hiện tại có sẵn file trong IndexedDB, tự động đẩy bổ sung file lên DB
+            for (const sd of apiDocs) {
+              const localMatch = localMap[sd.code.toLowerCase()];
+              if (!sd.hasRemoteFile && localMatch && localMatch.fileData) {
+                await pushDocumentToBackend(localMatch);
               }
-            } else if (documents.length > 0 && currentUser && currentUser.role === 'admin') {
-              // Trường hợp 2: Bảng documents trên Neon đang trống (0 bản ghi) và Admin đang mở trình duyệt có sẵn tài liệu -> Tự động đẩy toàn bộ lên Neon DB 1 lần duy nhất!
-              let syncedCount = 0;
-              for (const localDoc of documents) {
-                const ok = await pushDocumentToBackend(localDoc);
-                if (ok) syncedCount++;
-              }
-              if (syncedCount > 0) {
-                localStorage.setItem('fsc_initial_db_migrated_v6', 'true');
-                showToast(`☁️ Đã đồng bộ ${syncedCount} tài liệu lên cơ sở dữ liệu đám mây!`, 'success');
-              }
+            }
+
+            if (isManualRefresh) {
+              showToast(`☁️ Đã làm mới và đồng bộ ${documents.length} tài liệu từ đám mây!`, 'info');
             }
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        if (isManualRefresh) {
+          showToast('⚠️ Không thể kết nối máy chủ dữ liệu. Vui lòng kiểm tra kết nối mạng.', 'error');
+        }
+      }
     }
+    window.syncBackendConfigAndData = syncBackendConfigAndData;
 
     function removeVietnameseTones(str) {
       if (!str) return '';
@@ -2718,9 +2901,19 @@
     let isViewingAllDocsDirect = false;
 
     function getDocsForCategory(catObj) {
+      const targetName = removeVietnameseTones(catObj.name || '').trim();
+      const targetId = removeVietnameseTones(catObj.id || '').trim();
       return documents.filter(doc => {
         if (!isDocVisible(doc)) return false;
-        return (doc.category === catObj.name) || (doc.category === catObj.id) || (doc.dept === catObj.name);
+        const docCat = removeVietnameseTones(doc.category || '').trim();
+        const docDept = removeVietnameseTones(doc.dept || '').trim();
+        return (
+          doc.category === catObj.name ||
+          doc.category === catObj.id ||
+          doc.dept === catObj.name ||
+          (targetName && (docCat === targetName || docDept === targetName || docDept.includes(targetName))) ||
+          (targetId && docCat === targetId)
+        );
       });
     }
 
@@ -5037,7 +5230,8 @@
       if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn tài liệu "${doc.code} - ${doc.title}" khỏi hệ thống?`)) return;
 
       documents = documents.filter(d => d.code !== code);
-      safeSaveDocumentsToLocal(documents);
+      safeSaveDocumentsToLocal(documents, true);
+      deleteFileFromIDB(code);
 
       document.getElementById('modal-reader').classList.add('hidden');
       renderDirectCards();
@@ -6187,7 +6381,7 @@
         if (ts) ts.value = 'all';
         renderFilterChips();
         renderDirectCards();
-        showToast('Đã làm mới bộ lọc', 'info');
+        syncBackendConfigAndData(true);
       };
       const btnReset = document.getElementById('btn-reset-filters'); if (btnReset) btnReset.addEventListener('click', resetFilters);
 
@@ -6700,7 +6894,8 @@
         btnPurgeAll.addEventListener('click', async () => {
           if (!confirm('Bạn có chắc chắn muốn xóa sạch toàn bộ tài liệu trong kho và cơ sở dữ liệu?')) return;
           documents = [];
-          localStorage.setItem('school_portal_live_docs', JSON.stringify([]));
+          safeSaveDocumentsToLocal([], true);
+          await clearAllFilesFromIDB();
           try {
             await fetch('/api/documents?purge=all', { method: 'DELETE' });
           } catch (e) {}
