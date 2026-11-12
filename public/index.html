@@ -2236,6 +2236,7 @@
       const isLargeFile = Boolean(fileBlob && fileBlob.length > CHUNK_SIZE);
 
       const buildMetaBody = (inlineFileStr) => JSON.stringify({
+        id: docObj.id || ('DOC-' + Date.now()),
         old_code: oldCode || docObj.code,
         code: docObj.code,
         title: docObj.title,
@@ -2344,14 +2345,13 @@
 
       try {
         const headers = { 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' };
-        if (lastApiEtag) headers['If-None-Match'] = lastApiEtag;
-        const docRes = await fetch('/api/documents', { headers });
-        if (docRes.status === 304) return;
-        const newEtag = docRes.headers.get('ETag');
-        if (newEtag) lastApiEtag = newEtag;
+        const docRes = await fetch('/api/documents?_t=' + Date.now(), {
+          cache: 'no-store',
+          headers
+        });
         if (docRes.ok) {
           const docData = await docRes.json();
-          if (docData.success && Array.isArray(docData.data)) {
+          if (docData.success && Array.isArray(docData.data) && docData.hasDatabase !== false) {
             const localMap = {};
             documents.forEach(ld => {
               if (ld.code) localMap[ld.code.toLowerCase()] = ld;
@@ -2365,7 +2365,7 @@
                 saveFileToIDB(d.code, d.current_file || d.currentFile || localDoc.currentFile, resolvedFileData);
               }
               return {
-                id: d.id || localDoc.id || ('DOC-' + d.code),
+                id: String(d.id || localDoc.id || ('DOC-' + d.code)),
                 code: d.code,
                 title: d.title,
                 category: d.category_id || d.category || localDoc.category || 'IT',
@@ -2385,40 +2385,38 @@
               };
             });
 
-            const cleanApiDocs = apiDocs.filter(d => d && d.code && !DEMO_SEED_CODES.has(d.code.toLowerCase()));
-            const apiCodes = new Set(cleanApiDocs.map(d => d.code.toLowerCase()));
-            const mergedDocs = [...cleanApiDocs];
-            const unsyncedLocalDocs = [];
+            const cleanApiDocs = apiDocs.filter(d => d && d.code);
 
-            documents.forEach(ld => {
-              if (ld.code && !DEMO_SEED_CODES.has(ld.code.toLowerCase())) {
-                if (!apiCodes.has(ld.code.toLowerCase())) {
-                  mergedDocs.push(ld);
-                  unsyncedLocalDocs.push(ld);
-                } else {
-                  // Nếu bản trên DB chưa có tệp đính kèm nhưng bản ở máy có tệp đính kèm, đẩy bổ sung tệp lên DB
-                  const serverMatch = cleanApiDocs.find(sd => sd.code.toLowerCase() === ld.code.toLowerCase());
-                  if (serverMatch && !serverMatch.hasRemoteFile && !serverMatch.fileData && ld.fileData) {
-                    unsyncedLocalDocs.push(ld);
+            // Trường hợp 1: Cơ sở dữ liệu Neon đã có dữ liệu (hoặc đã từng đồng bộ) -> Lấy 100% theo cơ sở dữ liệu Neon (Xóa bỏ hoàn toàn các tài liệu cũ còn kẹt trong bộ nhớ đệm của thiết bị khác!)
+            const alreadyMigrated = localStorage.getItem('fsc_initial_db_migrated_v6') === 'true';
+            if (cleanApiDocs.length > 0 || alreadyMigrated || !currentUser || currentUser.role !== 'admin') {
+              if (cleanApiDocs.length > 0) {
+                localStorage.setItem('fsc_initial_db_migrated_v6', 'true');
+              }
+              documents = cleanApiDocs;
+              safeSaveDocumentsToLocal(documents);
+              renderDirectCards();
+              renderOtherViews();
+              updateBadges();
+
+              // Nếu có tài liệu trên DB chưa có fileData nhưng trên máy Admin đang mở có sẵn fileData, tự động đẩy bổ sung file lên DB
+              if (currentUser && currentUser.role === 'admin') {
+                for (const sd of cleanApiDocs) {
+                  const localMatch = localMap[sd.code.toLowerCase()];
+                  if (!sd.hasRemoteFile && !sd.fileData && localMatch && localMatch.fileData) {
+                    await pushDocumentToBackend(localMatch);
                   }
                 }
               }
-            });
-
-            documents = mergedDocs;
-            safeSaveDocumentsToLocal(documents);
-            renderDirectCards();
-            renderOtherViews();
-            updateBadges();
-
-            // TỰ ĐỘNG ĐỒNG BỘ CÁC TÀI LIỆU ĐANG LƯU TRÊN TRÌNH DUYỆT LÊN NEON POSTGRESQL ĐỂ MỌI THIẾT BỊ & CỬA SỔ ẨN DANH ĐỀU NHÌN THẤY!
-            if (unsyncedLocalDocs.length > 0) {
+            } else if (documents.length > 0 && currentUser && currentUser.role === 'admin') {
+              // Trường hợp 2: Bảng documents trên Neon đang trống (0 bản ghi) và Admin đang mở trình duyệt có sẵn tài liệu -> Tự động đẩy toàn bộ lên Neon DB 1 lần duy nhất!
               let syncedCount = 0;
-              for (const localDoc of unsyncedLocalDocs) {
+              for (const localDoc of documents) {
                 const ok = await pushDocumentToBackend(localDoc);
                 if (ok) syncedCount++;
               }
               if (syncedCount > 0) {
+                localStorage.setItem('fsc_initial_db_migrated_v6', 'true');
                 showToast(`☁️ Đã đồng bộ ${syncedCount} tài liệu lên cơ sở dữ liệu đám mây!`, 'success');
               }
             }
@@ -6594,7 +6592,11 @@
           renderOtherViews();
 
           // Đồng bộ trực tiếp lên cơ sở dữ liệu Neon PostgreSQL để mọi thiết bị và cửa sổ ẩn danh đều hiển thị ngay
-          pushDocumentToBackend(newDoc);
+          localStorage.setItem('fsc_initial_db_migrated_v6', 'true');
+          const syncedOk = await pushDocumentToBackend(newDoc);
+          if (syncedOk) {
+            showToast(`☁️ Đã lưu và đồng bộ "${newDoc.code}" lên đám mây cho mọi thiết bị!`, 'success');
+          }
         } catch (err) {
           console.error('Submit error:', err);
           showToast('Đã lưu tài liệu vào hệ thống!', 'success');
@@ -6680,8 +6682,13 @@
           updateBadges();
           renderDirectCards();
           renderOtherViews();
-          showToast(`Đã lưu thay đổi cho tài liệu ${doc.code}!`, 'success');
-          pushDocumentToBackend(doc, oldDocCode);
+          localStorage.setItem('fsc_initial_db_migrated_v6', 'true');
+          const syncedEditOk = await pushDocumentToBackend(doc, oldDocCode);
+          if (syncedEditOk) {
+            showToast(`☁️ Đã cập nhật và đồng bộ "${doc.code}" lên đám mây cho mọi thiết bị!`, 'success');
+          } else {
+            showToast(`Đã lưu thay đổi cho tài liệu ${doc.code}!`, 'success');
+          }
         } catch (err) {
           closeEditDocModal();
         }

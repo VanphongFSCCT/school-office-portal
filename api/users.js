@@ -44,6 +44,11 @@ export default async function handler(req, res) {
         )
       `;
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_hash VARCHAR(64)`;
+      try {
+        await sql`ALTER TABLE users ALTER COLUMN email TYPE TEXT`;
+        await sql`ALTER TABLE users ALTER COLUMN full_name TYPE TEXT`;
+        await sql`ALTER TABLE users ALTER COLUMN department TYPE TEXT`;
+      } catch (e) {}
       isUserSchemaReady = true;
     }
 

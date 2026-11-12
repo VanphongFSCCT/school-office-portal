@@ -17,12 +17,17 @@ export default async function handler(req, res) {
   const guard = applyZeroTrustSecurityGuard(req, res);
   if (!guard.allowed) return;
 
+  // Bắt buộc trình duyệt và CDN không lưu cache cũ để mọi thiết bị luôn nhận dữ liệu mới nhất tức thì
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     return res.status(200).json({
       success: true,
+      hasDatabase: false,
       data: [],
-      security: 'AES-256-GCM E2EE Active',
       note: 'Chưa cấu hình DATABASE_URL'
     });
   }
@@ -33,7 +38,7 @@ export default async function handler(req, res) {
     if (!isDocSchemaReady) {
       await sql`
         CREATE TABLE IF NOT EXISTS documents (
-          id SERIAL PRIMARY KEY,
+          id TEXT PRIMARY KEY,
           code TEXT NOT NULL,
           title TEXT NOT NULL,
           category_id TEXT NOT NULL DEFAULT 'IT',
@@ -59,7 +64,10 @@ export default async function handler(req, res) {
           PRIMARY KEY (doc_code, chunk_index)
         )
       `;
+      // Gỡ bỏ các ràng buộc khóa ngoại và giới hạn VARCHAR(50)/VARCHAR(255) từ schema cũ (schema.sql)
       const migrations = [
+        () => sql`ALTER TABLE document_history DROP CONSTRAINT IF EXISTS document_history_document_id_fkey`,
+        () => sql`ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_category_id_fkey`,
         () => sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS category_id TEXT DEFAULT 'IT'`,
         () => sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS doc_type TEXT DEFAULT 'Quy trình'`,
         () => sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS version TEXT DEFAULT '1.0'`,
@@ -73,10 +81,15 @@ export default async function handler(req, res) {
         () => sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS file_data TEXT`,
         () => sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS version_history JSONB DEFAULT '[]'::jsonb`,
         () => sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`,
+        () => sql`ALTER TABLE documents ALTER COLUMN id TYPE TEXT`,
         () => sql`ALTER TABLE documents ALTER COLUMN code TYPE TEXT`,
         () => sql`ALTER TABLE documents ALTER COLUMN title TYPE TEXT`,
         () => sql`ALTER TABLE documents ALTER COLUMN category_id TYPE TEXT`,
         () => sql`ALTER TABLE documents ALTER COLUMN doc_type TYPE TEXT`,
+        () => sql`ALTER TABLE documents ALTER COLUMN version TYPE TEXT`,
+        () => sql`ALTER TABLE documents ALTER COLUMN effective_date TYPE TEXT`,
+        () => sql`ALTER TABLE documents ALTER COLUMN status TYPE TEXT`,
+        () => sql`ALTER TABLE documents ALTER COLUMN access_level TYPE TEXT`,
         () => sql`ALTER TABLE documents ALTER COLUMN department TYPE TEXT`,
         () => sql`ALTER TABLE documents ALTER COLUMN current_file TYPE TEXT`
       ];
@@ -89,17 +102,18 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const requestedCode = req.query && req.query.code ? sanitizeInputString(req.query.code, 120) : '';
 
-      // 1. Truy vấn chi tiết 1 tệp đính kèm theo mã tài liệu (Khi người dùng trên điện thoại / ẩn danh bấm mở xem hoặc tải tài liệu)
+      // 1. Truy vấn chi tiết tệp đính kèm theo mã tài liệu
       if (requestedCode) {
         const docRows = await sql`
-          SELECT code, current_file, file_data FROM documents
+          SELECT code, current_file, file_data, file_url FROM documents
           WHERE LOWER(code) = ${requestedCode.toLowerCase()}
-          ORDER BY id DESC LIMIT 1
+          ORDER BY updated_at DESC NULLS LAST, id DESC LIMIT 1
         `;
         if (docRows.length === 0) {
           return res.status(404).json({ error: 'Không tìm thấy tài liệu' });
         }
-        let fullFileData = decryptSensitiveText(docRows[0].file_data) || '';
+        const rawStoredFile = docRows[0].file_data || docRows[0].file_url || '';
+        let fullFileData = decryptSensitiveText(rawStoredFile) || '';
         if (!fullFileData || fullFileData === '__CHUNKED_IN_DB__') {
           const chunkRows = await sql`
             SELECT encrypted_chunk FROM document_file_chunks
@@ -120,18 +134,22 @@ export default async function handler(req, res) {
         });
       }
 
-      // 2. Truy vấn danh sách toàn bộ tài liệu (Không lấy các cột file_data quá nặng cùng lúc để không bao giờ vượt giới hạn 4.5MB của Vercel!)
-      const cached = getCachedResponse('docs_list_v6', 5000);
-      const clientEtag = req.headers && req.headers['if-none-match'];
-      if (cached) {
-        res.setHeader('ETag', cached.etag);
-        res.setHeader('X-Cache', 'HIT-L1');
-        if (clientEtag && clientEtag === cached.etag) {
-          return res.status(304).end();
+      // 2. Kiểm tra L1 Cache & ETag (bỏ qua cache khi client gửi _t để đảm bảo mọi thiết bị luôn nhận dữ liệu mới nhất tức thì)
+      const bypassCache = Boolean(req.query && req.query._t);
+      if (!bypassCache) {
+        const cached = getCachedResponse('docs_list_v6', 1500);
+        if (cached) {
+          const clientEtag = req.headers['if-none-match'];
+          if (clientEtag && clientEtag === cached.etag) {
+            return res.status(304).end();
+          }
+          res.setHeader('ETag', cached.etag);
+          res.setHeader('X-Cache', 'HIT-L1');
+          return res.status(200).json(cached.data);
         }
-        return res.status(200).json(cached.data);
       }
 
+      // Truy vấn danh sách toàn bộ tài liệu trực tiếp từ Neon PostgreSQL
       const rows = await sql`
         SELECT
           id, code, title, category_id, doc_type, version, effective_date,
@@ -140,7 +158,7 @@ export default async function handler(req, res) {
           CASE WHEN LENGTH(COALESCE(file_data, '')) > 0 AND LENGTH(COALESCE(file_data, '')) <= 220000 THEN file_data ELSE '' END AS inline_file_data,
           CASE WHEN LENGTH(COALESCE(file_data, '')) > 0 THEN true ELSE false END AS has_file_data
         FROM documents
-        ORDER BY id DESC
+        ORDER BY updated_at DESC NULLS LAST, id DESC
         LIMIT 500
       `;
 
@@ -162,7 +180,7 @@ export default async function handler(req, res) {
 
         const inlineDec = r.inline_file_data ? decryptSensitiveText(r.inline_file_data) : '';
         return {
-          id: r.id,
+          id: String(r.id),
           code: r.code,
           title: decryptSensitiveText(r.title) || r.title,
           category_id: r.category_id,
@@ -184,20 +202,20 @@ export default async function handler(req, res) {
 
       const responsePayload = {
         success: true,
+        hasDatabase: true,
         encryption: 'AES-256-GCM',
         data: decryptedRows
       };
-
-      const cacheEntry = setCachedResponse('docs_list_v6', responsePayload);
-      res.setHeader('ETag', cacheEntry.etag);
-      res.setHeader('X-Cache', 'MISS');
+      const savedCache = setCachedResponse('docs_list_v6', responsePayload);
+      res.setHeader('ETag', savedCache.etag);
+      res.setHeader('X-Cache', bypassCache ? 'BYPASS-FRESH' : 'MISS');
       return res.status(200).json(responsePayload);
     }
 
     if (req.method === 'POST') {
       const body = req.body || {};
 
-      // Hỗ trợ tải tệp dung lượng lớn theo từng phân đoạn (Chunked Upload AES-256-GCM)
+      // Hỗ trợ tải tệp dung lượng lớn theo từng phân đoạn 1MB (Chunked Upload AES-256-GCM)
       if (body.action === 'upload_chunk') {
         const cleanCode = sanitizeInputString(body.code || '', 120);
         const chunkIdx = parseInt(body.chunk_index, 10);
@@ -221,12 +239,12 @@ export default async function handler(req, res) {
             UPDATE documents SET file_data = ${marker}, updated_at = CURRENT_TIMESTAMP
             WHERE LOWER(code) = ${cleanCode.toLowerCase()}
           `;
-          invalidateCache('docs_');
         }
         return res.status(200).json({ success: true, chunk_index: chunkIdx });
       }
 
       const {
+        id,
         old_code,
         code,
         title,
@@ -250,6 +268,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Thiếu mã tài liệu hoặc tên tài liệu hợp lệ.' });
       }
 
+      const cleanId = sanitizeInputString(id || ('DOC-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6)), 48);
       const cleanCat = sanitizeInputString(category_id || 'IT', 120);
       const cleanType = sanitizeInputString(doc_type || 'Quy trình', 120);
       const cleanVer = sanitizeInputString(version || '1.0', 40);
@@ -284,7 +303,7 @@ export default async function handler(req, res) {
       const existingRows = await sql`
         SELECT id, file_data, version_history FROM documents
         WHERE LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
-        ORDER BY id DESC LIMIT 1
+        ORDER BY updated_at DESC NULLS LAST, id DESC LIMIT 1
       `;
 
       let savedRecord = null;
@@ -313,13 +332,14 @@ export default async function handler(req, res) {
         `;
         savedRecord = updated[0];
       } else {
+        // Luôn truyền đầy đủ cột id (cleanId) để tương thích 100% với bảng documents có id VARCHAR(50) PRIMARY KEY từ schema.sql!
         const inserted = await sql`
           INSERT INTO documents (
-            code, title, category_id, doc_type, version, effective_date,
+            id, code, title, category_id, doc_type, version, effective_date,
             department, description, access_level, download_perm, current_file, file_data, version_history
           )
           VALUES (
-            ${cleanCode}, ${encryptedTitle}, ${cleanCat}, ${cleanType}, ${cleanVer},
+            ${cleanId}, ${cleanCode}, ${encryptedTitle}, ${cleanCat}, ${cleanType}, ${cleanVer},
             ${effDate}, ${encryptedDept}, ${encryptedDesc}, ${cleanAccess},
             ${cleanPerm}, ${encryptedFileName}, ${encryptedFileData}, ${historyJson}::jsonb
           )
@@ -333,7 +353,6 @@ export default async function handler(req, res) {
       }
 
       invalidateCache('docs_');
-
       return res.status(200).json({
         success: true,
         encryptedAtRest: true,
