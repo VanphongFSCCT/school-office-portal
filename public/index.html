@@ -978,13 +978,13 @@
 
   <!-- ==================== MODALS ==================== -->
 
-  <!-- MODAL QUẢN LÝ LĨNH VỰC / PHÒNG BAN (THÊM MỚI & CHỈNH SỬA) -->
-  <div id="modal-category" onclick="if(event.target === this) closeCategoryModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg mx-auto my-auto p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-3">
+  <!-- MODAL QUẢN LÝ BỘ PHẬN (BỐ TRÍ GỌN GÀNG, NÚT LƯU CỐ ĐỊNH RÕ RÀNG) -->
+  <div id="modal-category" onclick="if(event.target === this) closeCategoryModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
+    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-3 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5 sticky top-0 bg-[#071F3D] z-10">
         <div class="flex items-center space-x-2">
-          <span class="text-xl" id="modal-cat-header-icon">🏷️</span>
-          <h3 class="font-bold text-white text-sm sm:text-base" id="modal-cat-title">Thêm Bộ phận mới</h3>
+          <span class="text-lg" id="modal-cat-header-icon">🏷️</span>
+          <h3 class="font-bold text-white text-xs sm:text-sm" id="modal-cat-title">Thêm Bộ phận mới</h3>
         </div>
         <button id="btn-close-modal-cat" type="button" onclick="closeCategoryModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
       </div>
@@ -992,46 +992,48 @@
       <input type="hidden" id="inp-cat-mode" value="add">
       <input type="hidden" id="inp-cat-original-id" value="">
 
-      <div class="space-y-4 text-xs">
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1">Mã Bộ phận <span class="text-rose-400">*</span> (Viết tắt/Mã bộ phận, ví dụ: IT, TAIVU, HANHCHINH, DAOTAO, CTSV)</label>
-          <input type="text" id="inp-cat-id" placeholder="VD: DAOTAO" class="w-full bg-[#102E52] border border-[#B98A33]/40 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#FFC857] uppercase font-mono">
-        </div>
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Mã Bộ phận <span class="text-rose-400">*</span> (VD: IT, TV, HC)</label>
+            <input type="text" id="inp-cat-id" placeholder="VD: DAOTAO" class="w-full bg-[#102E52] border border-[#B98A33]/40 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-[#FFC857] uppercase font-mono">
+          </div>
 
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1">Tên hiển thị Bộ phận <span class="text-rose-400">*</span></label>
-          <input type="text" id="inp-cat-name" placeholder="VD: Đào tạo & Khảo thí" class="w-full bg-[#102E52] border border-[#B98A33]/40 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#FFC857]">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Tên hiển thị Bộ phận <span class="text-rose-400">*</span></label>
+            <input type="text" id="inp-cat-name" placeholder="VD: Đào tạo & Khảo thí" class="w-full bg-[#102E52] border border-[#B98A33]/40 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-[#FFC857]">
+          </div>
         </div>
 
         <div>
           <label class="block font-semibold text-slate-300 mb-1">Mô tả chức năng / nhiệm vụ của Bộ phận</label>
-          <textarea id="inp-cat-desc" rows="3" placeholder="VD: Quản trị hạ tầng CNTT, phần mềm nghiệp vụ, mạng nội bộ và hỗ trợ kỹ thuật số toàn trường..." class="w-full bg-[#102E52] border border-[#B98A33]/40 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#FFC857] leading-relaxed"></textarea>
+          <textarea id="inp-cat-desc" rows="2" placeholder="VD: Quản trị hạ tầng CNTT, phần mềm nghiệp vụ, mạng nội bộ và hỗ trợ kỹ thuật số toàn trường..." class="w-full bg-[#102E52] border border-[#B98A33]/40 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-[#FFC857] leading-relaxed"></textarea>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-300 mb-1.5">Chọn Biểu tượng phù hợp chuyên nghiệp:</label>
-          <div class="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 bg-[#03152D]/80 border border-[#B98A33]/25 rounded-xl max-h-36 overflow-y-auto" id="palette-icon-selector"></div>
-          <div class="mt-2.5 flex items-center space-x-2.5">
-            <span class="text-[#B8C8DC] text-[11px]">Biểu tượng đã chọn:</span>
-            <div id="preview-selected-icon" class="w-8 h-8 rounded-lg bg-[#102E52] border-2 border-[#FFC857] flex items-center justify-center text-lg shadow-sm">🖥️</div>
-            <input type="text" id="inp-cat-custom-icon" placeholder="Hoặc nhập biểu tượng khác" maxlength="4" class="flex-1 bg-[#102E52] border border-[#B98A33]/30 rounded-lg px-2.5 py-2 text-white text-xs focus:outline-none focus:border-[#FFC857]">
+          <label class="block font-semibold text-slate-300 mb-1">Chọn Biểu tượng hiển thị:</label>
+          <div class="grid grid-cols-8 sm:grid-cols-10 gap-1 p-1.5 bg-[#03152D]/80 border border-[#B98A33]/25 rounded-xl max-h-24 overflow-y-auto" id="palette-icon-selector"></div>
+          <div class="mt-2 flex items-center space-x-2">
+            <span class="text-[#B8C8DC] text-[11px] shrink-0">Biểu tượng đã chọn:</span>
+            <div id="preview-selected-icon" class="w-7 h-7 rounded-lg bg-[#102E52] border-2 border-[#FFC857] flex items-center justify-center text-base shadow-sm shrink-0">🖥️</div>
+            <input type="text" id="inp-cat-custom-icon" placeholder="Hoặc nhập biểu tượng khác" maxlength="4" class="flex-1 bg-[#102E52] border border-[#B98A33]/30 rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-[#FFC857]">
           </div>
         </div>
 
         <div>
           <label class="block font-semibold text-slate-300 mb-1">Trạng thái áp dụng</label>
-          <select id="inp-cat-status" class="w-full bg-[#102E52] border border-[#B98A33]/40 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#FFC857]">
+          <select id="inp-cat-status" class="w-full bg-[#102E52] border border-[#B98A33]/40 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-[#FFC857]">
             <option value="Hoạt động">Hoạt động (Hiển thị tra cứu và phân loại tài liệu)</option>
             <option value="Tạm ẩn">Tạm ẩn (Ẩn khỏi bộ lọc tìm kiếm)</option>
           </select>
         </div>
       </div>
 
-      <div class="flex items-center justify-end space-x-2 pt-3 border-t border-[#B98A33]/25">
-        <button id="btn-cancel-modal-cat" class="px-4 py-2 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition">
+      <div class="flex items-center justify-end space-x-2 pt-2.5 border-t border-[#B98A33]/25 sticky bottom-0 bg-[#071F3D] pb-0.5 z-10">
+        <button id="btn-cancel-modal-cat" type="button" onclick="closeCategoryModal()" class="px-4 py-1.5 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">
           Hủy bỏ
         </button>
-        <button id="btn-save-modal-cat" class="px-5 py-2 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs hover:brightness-110 shadow-md transition">
+        <button id="btn-save-modal-cat" type="button" class="px-5 py-1.5 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs hover:brightness-110 shadow-md transition cursor-pointer">
           💾 Lưu Bộ phận
         </button>
       </div>
@@ -2226,6 +2228,20 @@
             activeGoogleClientId = cfg.googleClientId;
             localStorage.setItem('fpt_google_client_id', activeGoogleClientId);
             ensureGooglePopupClientReady();
+          }
+          if (Array.isArray(cfg.categories) && cfg.categories.length > 0) {
+            CATEGORIES = cfg.categories.map(c => {
+              const defMatch = DEFAULT_CATEGORIES.find(d => d.id === c.id || d.name === c.name);
+              const dText = (c.desc !== undefined && String(c.desc).trim() !== '') ? c.desc : (defMatch ? defMatch.desc : `Mô tả chức năng và hệ thống quy trình, hướng dẫn, biểu mẫu của bộ phận ${c.name}.`);
+              CATEGORY_QMS_DESCRIPTIONS[c.name] = dText;
+              return { ...c, desc: dText };
+            });
+            FscCryptoVault.setEncryptedLocalItem('school_portal_categories_v5', CATEGORIES);
+            renderFilterChips();
+            renderCategoryHub();
+            renderDirectCards();
+            renderOtherViews();
+            updateCatDropdowns();
           }
         }
       } catch (e) {}
@@ -4923,6 +4939,16 @@
       renderDirectCards();
       renderOtherViews();
       updateCatDropdowns();
+      try {
+        fetch('/api/config', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-FSC-Security-Token': 'FSC-ZeroTrust-v6'
+          },
+          body: JSON.stringify({ categories: CATEGORIES })
+        }).catch(() => {});
+      } catch (e) {}
     }
 
     function updateCatDropdowns() {
@@ -6303,20 +6329,33 @@
           CATEGORY_QMS_DESCRIPTIONS[name] = finalDesc;
 
           if (mode === 'add') {
-            if (CATEGORIES.some(c => c.id.toUpperCase() === id)) {
-              showToast(`Mã bộ phận "${id}" đã tồn tại! Vui lòng chọn mã khác.`, 'error');
+            if (CATEGORIES.some(c => c.id.trim().toUpperCase() === id || c.name.trim().toUpperCase() === name.toUpperCase())) {
+              showToast(`Mã hoặc tên bộ phận "${id}" đã tồn tại! Vui lòng chọn mã khác.`, 'error');
               return;
             }
             CATEGORIES.push({ id, name, icon, status, desc: finalDesc });
             showToast(`Đã thêm bộ phận "${name}" thành công!`, 'success');
           } else {
-            const idx = CATEGORIES.findIndex(c => c.id === origId);
+            const idx = CATEGORIES.findIndex(c => c.id === origId || c.id.trim().toUpperCase() === origId.trim().toUpperCase());
             if (idx !== -1) {
-              if (id !== origId && CATEGORIES.some(c => c.id.toUpperCase() === id)) {
-                showToast(`Mã bộ phận "${id}" đã tồn tại! Vui lòng chọn mã khác.`, 'error');
+              // Chỉ kiểm tra trùng mã với CÁC BỘ PHẬN KHÁC (i !== idx), tuyệt đối không tự báo trùng với chính bộ phận đang sửa!
+              const isDuplicateWithOther = CATEGORIES.some((c, i) => i !== idx && c.id.trim().toUpperCase() === id);
+              if (isDuplicateWithOther) {
+                showToast(`Mã bộ phận "${id}" đã trùng với một bộ phận khác! Vui lòng chọn mã khác.`, 'error');
                 return;
               }
-              CATEGORIES[idx] = { id, name, icon, status, desc: finalDesc };
+              const oldCat = CATEGORIES[idx];
+              const preservedId = (id === origId.trim().toUpperCase()) ? oldCat.id : id;
+              CATEGORIES[idx] = { id: preservedId, name, icon, status, desc: finalDesc };
+
+              // Nếu đổi tên hiển thị bộ phận, tự động cập nhật liên kết cho các tài liệu thuộc bộ phận đó
+              if (oldCat.name !== name || oldCat.id !== preservedId) {
+                documents.forEach(d => {
+                  if (d.category === oldCat.name || d.category === oldCat.id) d.category = name;
+                  if (d.dept === oldCat.name || d.dept === oldCat.id) d.dept = name;
+                });
+                safeSaveDocumentsToLocal(documents);
+              }
               showToast(`Đã cập nhật thông tin & mô tả chức năng bộ phận "${name}" thành công!`, 'success');
             }
           }
