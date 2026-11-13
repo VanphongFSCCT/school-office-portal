@@ -268,6 +268,19 @@
       transform: translateY(-3px);
       box-shadow: 0 14px 28px -6px rgba(3, 21, 45, 0.85), 0 0 18px rgba(255, 200, 87, 0.18);
     }
+    #home-top-search-card {
+      position: relative !important;
+      z-index: 60 !important;
+      overflow: visible !important;
+    }
+    #home-top-search-card:hover {
+      transform: none !important;
+    }
+    #home-quick-tiles-row,
+    #category-hub-section {
+      position: relative;
+      z-index: 10;
+    }
     .fsc-hero-tile {
       position: relative;
       overflow: hidden;
@@ -592,8 +605,8 @@
         <!-- ==================== VIEW 1: TỔNG QUAN (DASHBOARD - ĐÃ LOẠI BỎ BANNER CỒNG KỀNH THEO YÊU CẦU) ==================== -->
         <div id="view-dashboard" class="space-y-4 view-pane">
           
-          <!-- THANH TÌM KIẾM TRANG TỔNG QUAN (TỰ ĐỘNG ẨN KHI ĐÃ CHỌN VÀO BỘ PHẬN CỤ THỂ) -->
-          <div id="home-top-search-card" class="card-enterprise rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3 border border-[#B98A33]/25">
+          <!-- THANH TÌM KIẾM TRANG TỔNG QUAN (LUÔN NỔI TRÊN CÙNG Z-60 ĐỂ DANH SÁCH GỢI Ý KHÔNG BAO GIỜ BỊ CHE KHUẤT) -->
+          <div id="home-top-search-card" class="card-enterprise relative z-[60] rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3 border border-[#B98A33]/25">
             <div class="relative w-full">
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <svg class="w-5 h-5 text-[#FFC857]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -605,10 +618,6 @@
                 <button id="btn-reset-filters" class="px-3.5 py-1.5 rounded-full bg-[#102E52] hover:bg-[#FFC857] text-[#B8C8DC] hover:text-[#03152D] text-xs font-semibold transition border border-[#B98A33]/30 cursor-pointer">
                   Làm mới
                 </button>
-              </div>
-
-              <!-- DANH SÁCH GỢI Ý TÌM KIẾM THÔNG MINH TRONG LÚC GÕ -->
-              <div id="search-suggestions-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 z-50 bg-[#071F3D]/98 backdrop-blur-xl border border-[#FFC857]/50 rounded-2xl shadow-[0_12px_35px_rgba(0,0,0,0.65)] overflow-hidden max-h-80 overflow-y-auto divide-y divide-[#B98A33]/20">
               </div>
             </div>
 
@@ -629,12 +638,14 @@
                   <span>Mã tài liệu & Nội dung</span>
                 </label>
               </div>
-              
             </div>
 
-            <!-- Đã ẩn phần Chọn nhanh Bộ phận trên khung tìm kiếm theo yêu cầu -->
             <div class="hidden">
               <div id="filter-cat-row"></div>
+            </div>
+
+            <!-- DANH SÁCH GỢI Ý TÌM KIẾM THÔNG MINH NỔI TRÊN TẤT CẢ CÁC THẺ BÊN DƯỚI (Z-100, NỀN ĐẶC TUYỆT ĐỐI KHÔNG XUYÊN THẤU) -->
+            <div id="search-suggestions-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 z-[100] bg-[#04142B] border-2 border-[#FFC857] rounded-2xl shadow-[0_28px_65px_rgba(0,0,0,0.96)] overflow-hidden max-h-80 overflow-y-auto divide-y divide-[#B98A33]/30">
             </div>
           </div>
 
@@ -1467,99 +1478,47 @@
 
   <!-- MODAL ĐĂNG TẢI TÀI LIỆU MỚI (BỐ TRÍ GỌN GÀNG, HỖ TRỢ CUỘN MƯỢT TRÊN MỌI MÀN HÌNH) -->
   <div id="modal-add-document" onclick="if(event.target === this) closeAddDocModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
-    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-lg mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-2.5 max-h-[92vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2 sticky top-0 bg-[#071F3D] z-10">
-        <h3 class="font-bold text-white text-xs sm:text-sm">Đăng tải Tài liệu / Quy trình mới</h3>
+    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-3xl mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-3 max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5 shrink-0 bg-[#071F3D] z-10">
+        <div>
+          <h3 class="font-bold text-white text-xs sm:text-sm flex items-center space-x-2">
+            <span>Đăng tải Tài liệu / Quy trình mới</span>
+            <span id="multi-doc-total-badge" class="px-2 py-0.5 rounded-full bg-[#102E52] border border-[#FFC857]/40 text-[#FFC857] text-[10.5px] font-mono font-bold">1 quy trình</span>
+          </h3>
+          <p class="text-[11px] text-[#B8C8DC] mt-0.5">Bấm <strong class="text-[#FFC857]">"+ Thêm Quy trình / Tài liệu khác"</strong> bên dưới để nhập nhiều quy trình cùng lúc (mỗi quy trình 1 file riêng)</p>
+        </div>
         <button id="btn-close-doc-modal" type="button" onclick="closeAddDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
       </div>
-      <form id="form-create-doc" class="space-y-2.5 text-xs">
-        <div class="grid grid-cols-2 gap-2.5">
-          <div>
-            <label class="block text-[#B8C8DC] mb-1 font-medium">Mã tài liệu <span class="text-[#FFC857]">(Chuẩn hệ thống)</span>:</label>
-            <input type="text" id="inp-doc-code" oninput="this.dataset.autoFilled='false'" required placeholder="VD: 01-QT/IT/FSC" class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-[#FFC857] font-mono font-bold focus:outline-none focus:border-[#FFC857]">
-          </div>
-          <div>
-            <label class="block text-[#B8C8DC] mb-1 font-medium">Phiên bản:</label>
-            <input type="text" id="inp-doc-ver" value="1.0" class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white font-mono focus:outline-none focus:border-[#FFC857]">
-          </div>
+
+      <form id="form-create-doc" class="flex-1 flex flex-col min-h-0 space-y-3 text-xs">
+        <!-- DANH SÁCH CÁC KHỐI NHẬP QUY TRÌNH / TÀI LIỆU RIÊNG BIỆT (CUỘN MƯỢT) -->
+        <div id="multi-doc-entries-list" class="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[64vh]"></div>
+
+        <!-- Các phần tử ẩn giữ tương thích với các hàm chọn danh mục đơn lẻ -->
+        <div id="batch-upload-list-container" class="hidden">
+          <select id="inp-doc-cat" class="hidden"></select>
+          <select id="inp-doc-type" class="hidden"><option value="Quy trình">Quy trình</option></select>
+          <input type="text" id="inp-doc-code" class="hidden">
+          <input type="text" id="inp-doc-title" class="hidden">
+          <input type="text" id="inp-doc-ver" value="1.0" class="hidden">
+          <select id="inp-doc-access" class="hidden"><option value="Mở">Mở</option></select>
+          <select id="inp-doc-download-perm" class="hidden"><option value="allow_all">allow_all</option></select>
+          <textarea id="inp-doc-desc" class="hidden"></textarea>
+          <div id="dropzone-doc-file" class="hidden"><input type="file" id="inp-doc-file" multiple class="hidden"><div id="file-upload-prompt"></div><div id="file-upload-preview"><span id="file-icon-preview"></span><div id="file-name-preview"></div><button type="button" id="btn-remove-file"></button></div></div>
+          <span id="suggested-code-preview" class="hidden"></span>
         </div>
-        <!-- GỢI Ý ĐẶT MÃ TÀI LIỆU CHUẨN THEO BỘ PHẬN & LOẠI VĂN BẢN -->
-        <div class="p-2 rounded-xl bg-[#03152D]/90 border border-[#16A8F4]/35 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-          <div class="flex items-center space-x-1.5 text-[#B8C8DC]">
-            <span class="text-[#16A8F4]">💡</span>
-            <span>Gợi ý mã chuẩn: <strong id="suggested-code-preview" class="font-mono text-[#FFC857]">01-QT/IT/FSC</strong></span>
-            <span class="hidden sm:inline text-[10px] text-slate-400">([STT]-[QT|HD|BM]/[Mã BP]/FSC)</span>
-          </div>
-          <button type="button" onclick="applySuggestedCodeToInput('add')" class="px-2 py-0.5 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 font-bold text-[10.5px] transition cursor-pointer">
-            ⚡ Áp dụng mã gợi ý
+
+        <!-- THANH CÔNG CỤ DƯỚI CÙNG: NÚT THÊM DÒNG QUY TRÌNH MỚI & NÚT ĐĂNG TẢI TẤT CẢ -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[#B98A33]/30 shrink-0 bg-[#071F3D] z-10">
+          <button type="button" id="btn-add-another-doc-row" onclick="addAnotherDocEntryBlock()" class="px-3.5 py-2 rounded-xl bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/50 font-bold text-xs transition flex items-center space-x-1.5 cursor-pointer shadow-md">
+            <span>➕</span>
+            <span>Thêm Quy trình / Tài liệu khác</span>
           </button>
-        </div>
-        <div>
-          <label class="block text-[#B8C8DC] mb-1 font-medium">Tên tài liệu / quy trình:</label>
-          <input type="text" id="inp-doc-title" required placeholder="Nhập tên đầy đủ..." class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]">
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="block text-[#B8C8DC] mb-1 font-medium">Bộ phận:</label>
-            <select id="inp-doc-cat" onchange="refreshSuggestedDocCodeUI('add')" class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]"></select>
-            <input type="hidden" id="inp-doc-dept" value="">
-          </div>
-          <div>
-            <label class="block text-[#B8C8DC] mb-1 font-medium">Định dạng văn bản:</label>
-            <select id="inp-doc-type" onchange="refreshSuggestedDocCodeUI('add')" class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]">
-              <option value="Quy trình">Quy trình</option>
-              <option value="Hướng dẫn công việc">Hướng dẫn công việc</option>
-              <option value="Biểu mẫu">Biểu mẫu</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="block text-[#B8C8DC] mb-1 font-medium">Mức truy cập xem:</label>
-            <select id="inp-doc-access" class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]">
-              <option value="Mở">Mở (Tra cứu tự do)</option>
-              <option value="Nội bộ">Nội bộ (Cần đăng nhập)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-[#B8C8DC] mb-1 font-medium">Quy định quyền tải xuống:</label>
-            <select id="inp-doc-download-perm" class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]">
-              <option value="allow_all">Cho phép tải về (Tất cả)</option>
-              <option value="view_only">Chỉ xem trực tuyến</option>
-              <option value="admin_only">Chỉ Quản trị viên tải</option>
-            </select>
-          </div>
-        </div>
 
-        <!-- KHUNG TẢI TỆP ĐÍNH KÈM THỰC TẾ (DRAG & DROP GỌN GÀNG) -->
-        <div>
-          <label class="block text-[#B8C8DC] mb-1 font-medium">Tệp tài liệu đính kèm (PDF, Word, Excel):</label>
-          <div id="dropzone-doc-file" class="border-2 border-dashed border-[#B98A33]/40 rounded-xl p-2.5 text-center hover:border-[#FFC857] transition cursor-pointer bg-[#03152D]/70 group">
-            <input type="file" id="inp-doc-file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="hidden">
-            <div id="file-upload-prompt" class="space-y-0.5">
-              <p class="text-xs text-white font-medium">📎 Kéo thả tệp tin hoặc <span class="text-[#FFC857] underline font-bold">chọn tệp từ máy tính</span></p>
-              <p class="text-[10px] text-[#B8C8DC]">Hỗ trợ PDF, Word (.docx), Excel (.xlsx) tối đa 25MB</p>
-            </div>
-            <div id="file-upload-preview" class="hidden items-center justify-between bg-[#102E52] p-2 rounded-lg border border-[#22C58B]/40">
-              <div class="flex items-center space-x-2 truncate">
-                <span id="file-icon-preview" class="text-base">📄</span>
-                <div class="text-left truncate">
-                  <div id="file-name-preview" class="font-bold text-xs text-white truncate max-w-[230px]">quytrinh.docx</div>
-                  <div class="text-[10px] text-[#22C58B]">Đã tải lên sẵn sàng</div>
-                </div>
-              </div>
-              <button type="button" id="btn-remove-file" class="text-rose-400 hover:text-rose-200 text-xs px-2 py-1 bg-[#071F3D] rounded border border-rose-500/20 shrink-0">✕ Hủy</button>
-            </div>
+          <div class="flex items-center space-x-2">
+            <button type="button" id="btn-cancel-doc-modal" onclick="closeAddDocModal()" class="px-3.5 py-2 rounded-xl bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">Hủy</button>
+            <button type="submit" id="btn-submit-create-doc" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-extrabold text-xs cursor-pointer shadow-lg">Đăng tải lên hệ thống (1 tài liệu)</button>
           </div>
-        </div>
-
-        <div>
-          <label class="block text-[#B8C8DC] mb-1 font-medium">Trích yếu mô tả nội dung (không bắt buộc):</label>
-          <textarea id="inp-doc-desc" rows="2" placeholder="Nếu không nhập trích yếu, hệ thống sẽ ẩn hoàn toàn mục này..." class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-white focus:outline-none focus:border-[#FFC857]"></textarea>
-        </div>
-        <div class="flex justify-end space-x-2 pt-2 border-t border-[#B98A33]/25 sticky bottom-0 bg-[#071F3D] pb-0.5 z-10">
-          <button type="button" id="btn-cancel-doc-modal" onclick="closeAddDocModal()" class="px-3.5 py-1.5 rounded-lg bg-[#14345B] hover:bg-[#102E52] text-slate-300 font-medium text-xs transition cursor-pointer">Hủy</button>
-          <button type="submit" id="btn-submit-create-doc" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs cursor-pointer">Đăng tải lên hệ thống</button>
         </div>
       </form>
     </div>
@@ -3025,21 +2984,26 @@
     // =========================================================================
     let isViewingAllDocsDirect = false;
 
-    function getDocsForCategory(catObj) {
+    function doesDocMatchCategory(doc, catObjOrName) {
+      if (!doc || !catObjOrName) return false;
+      const catObj = typeof catObjOrName === 'string'
+        ? (CATEGORIES.find(c => c.name === catObjOrName || c.id === catObjOrName) || { id: catObjOrName, name: catObjOrName })
+        : catObjOrName;
       const targetName = removeVietnameseTones(catObj.name || '').trim();
       const targetId = removeVietnameseTones(catObj.id || '').trim();
-      return documents.filter(doc => {
-        if (!isDocVisible(doc)) return false;
-        const docCat = removeVietnameseTones(doc.category || '').trim();
-        const docDept = removeVietnameseTones(doc.dept || '').trim();
-        return (
-          doc.category === catObj.name ||
-          doc.category === catObj.id ||
-          doc.dept === catObj.name ||
-          (targetName && (docCat === targetName || docDept === targetName || docDept.includes(targetName))) ||
-          (targetId && docCat === targetId)
-        );
-      });
+      const docCat = removeVietnameseTones(doc.category || '').trim();
+      const docDept = removeVietnameseTones(doc.dept || '').trim();
+      return (
+        doc.category === catObj.name ||
+        doc.category === catObj.id ||
+        doc.dept === catObj.name ||
+        (targetName && (docCat === targetName || docDept === targetName || docDept.includes(targetName))) ||
+        (targetId && (docCat === targetId || docDept === targetId))
+      );
+    }
+
+    function getDocsForCategory(catObj) {
+      return documents.filter(doc => isDocVisible(doc) && doesDocMatchCategory(doc, catObj));
     }
 
     function toggleFavouriteDocument(code) {
@@ -3091,13 +3055,17 @@
     window.handleQmsDualFilterChange = handleQmsDualFilterChange;
 
     function openGlobalTypeFilter(typeVal) {
+      clearHomeSearchInputBox();
       switchView('dashboard');
       selectedCat = 'all';
       selectedType = typeVal;
       specialFilterMode = null;
       isViewingAllDocsDirect = true;
+      docLayoutMode = 'list';
+      updateLayoutModeButtons();
       renderFilterChips();
       renderDirectCards();
+      triggerSmoothTabTransition(document.getElementById('category-drilldown-section'), 'fsc-tab-anim-enter');
     }
     window.openGlobalTypeFilter = openGlobalTypeFilter;
 
@@ -3231,7 +3199,22 @@
       });
     }
 
+    function clearHomeSearchInputBox() {
+      currentSearch = '';
+      qmsFilterCode = '';
+      qmsFilterName = '';
+      const sInp = document.getElementById('main-search-input');
+      if (sInp) sInp.value = '';
+      const cInp = document.getElementById('qms-filter-doc-code');
+      if (cInp) cInp.value = '';
+      const nInp = document.getElementById('qms-filter-doc-name');
+      if (nInp) nInp.value = '';
+      const sBox = document.getElementById('search-suggestions-dropdown');
+      if (sBox) sBox.classList.add('hidden');
+    }
+
     function openCategoryDrilldown(catName, defaultSubTab = 'all') {
+      clearHomeSearchInputBox();
       selectedCat = catName;
       selectedType = defaultSubTab;
       specialFilterMode = null;
@@ -3265,12 +3248,16 @@
     window.backToCategoryHub = backToCategoryHub;
 
     function openAllDocsDirectly() {
+      clearHomeSearchInputBox();
       selectedCat = 'all';
       selectedType = 'all';
       specialFilterMode = null;
       isViewingAllDocsDirect = true;
+      docLayoutMode = 'list';
+      updateLayoutModeButtons();
       renderFilterChips();
       renderDirectCards();
+      triggerSmoothTabTransition(document.getElementById('category-drilldown-section'), 'fsc-tab-anim-enter');
     }
     window.openAllDocsDirectly = openAllDocsDirectly;
 
@@ -3414,10 +3401,7 @@
         if (specialFilterMode === 'favourites' && !favouriteDocCodes.has(doc.code)) return false;
         if (specialFilterMode === 'recent' && !recentDocCodes.includes(doc.code)) return false;
         if (selectedCat !== 'all') {
-          const catObj = CATEGORIES.find(c => c.name === selectedCat || c.id === selectedCat);
-          const isMatch = (doc.category === selectedCat) || 
-                          (catObj && (doc.category === catObj.name || doc.category === catObj.id || doc.dept === catObj.name));
-          if (!isMatch) return false;
+          if (!doesDocMatchCategory(doc, selectedCat)) return false;
         }
         if (normSearch) {
           const matchTitle = removeVietnameseTones(doc.title).includes(normSearch);
@@ -5942,6 +5926,27 @@
       return `${nextNum}-${typeCode}/${deptCode}/FSC`;
     }
 
+    function generateSequentialDocCode(catName, docType, offsetIndex = 0) {
+      const deptCode = getDeptShortCode(catName);
+      const typeCode = DOC_TYPE_CODE_MAP[docType] || 'QT';
+      const existingCodes = new Set(documents.map(d => String(d.code || '').trim().toUpperCase()));
+      const sameGroupDocs = documents.filter(d => doesDocMatchCategory(d, catName) && d.type === docType);
+      let candidateNum = sameGroupDocs.length + 1;
+      let foundCount = 0;
+      let candidateCode = '';
+      while (foundCount <= offsetIndex) {
+        const numStr = String(candidateNum).padStart(2, '0');
+        candidateCode = (typeCode === 'BM')
+          ? `01.${numStr}-BM/${deptCode}/FSC`
+          : `${numStr}-${typeCode}/${deptCode}/FSC`;
+        if (!existingCodes.has(candidateCode.toUpperCase())) {
+          foundCount++;
+        }
+        candidateNum++;
+      }
+      return candidateCode;
+    }
+
     function refreshSuggestedDocCodeUI(mode = 'add') {
       if (mode === 'add') {
         const catEl = document.getElementById('inp-doc-cat');
@@ -5954,6 +5959,9 @@
         if (codeInp && (!codeInp.value.trim() || codeInp.dataset.autoFilled === 'true')) {
           codeInp.value = suggested;
           codeInp.dataset.autoFilled = 'true';
+        }
+        if (typeof window.recalculateBatchAutoCodes === 'function') {
+          window.recalculateBatchAutoCodes();
         }
       } else {
         const catEl = document.getElementById('inp-edit-doc-cat');
@@ -5989,15 +5997,9 @@
 
     function openAddDocModal() {
       updateCatDropdowns();
-      const catEl = document.getElementById('inp-doc-cat');
-      if (catEl && selectedCat !== 'all') {
-        catEl.value = selectedCat;
+      if (typeof window.initMultiDocEntryBlocks === 'function') {
+        window.initMultiDocEntryBlocks();
       }
-      const codeInp = document.getElementById('inp-doc-code');
-      if (codeInp && !codeInp.value.trim()) {
-        codeInp.dataset.autoFilled = 'true';
-      }
-      refreshSuggestedDocCodeUI('add');
       const dm = document.getElementById('modal-add-document');
       if (dm) { dm.classList.remove('hidden'); dm.classList.add('flex'); }
     }
@@ -6628,73 +6630,366 @@
         showToast(`Đã phân quyền thành công cho email: ${email}`, 'success');
       });
 
-      // Tệp tải lên khi tạo mới (Drag & Drop File Upload)
-      const dropzone = document.getElementById('dropzone-doc-file');
-      const fileInput = document.getElementById('inp-doc-file');
-      const uploadPrompt = document.getElementById('file-upload-prompt');
-      const uploadPreview = document.getElementById('file-upload-preview');
-      const fileNamePreview = document.getElementById('file-name-preview');
-      const fileIconPreview = document.getElementById('file-icon-preview');
-      const btnRemoveFile = document.getElementById('btn-remove-file');
+      // =========================================================================
+      // HỆ THỐNG ĐĂNG TẢI 1 HOẶC NHIỀU QUY TRÌNH / TÀI LIỆU CÙNG LÚC
+      // Mỗi Quy trình là 1 khối nhập độc lập có Mã, Tên, Bộ phận, Định dạng & 1 File riêng biệt
+      // =========================================================================
+      const multiEntriesListEl = document.getElementById('multi-doc-entries-list');
+      const multiTotalBadgeEl = document.getElementById('multi-doc-total-badge');
+      let batchUploadItems = []; // Mảng chứa các quy trình cần đăng tải (mỗi phần tử = 1 quy trình + 1 file riêng)
 
-      dropzone.addEventListener('click', (e) => {
-        if (e.target.closest('#btn-remove-file')) return;
-        fileInput.click();
-      });
-
-      dropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropzone.classList.add('border-[#FFC857]', 'bg-[#102E52]/90');
-      });
-      dropzone.addEventListener('dragleave', () => {
-        dropzone.classList.remove('border-[#FFC857]', 'bg-[#102E52]/90');
-      });
-      dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('border-[#FFC857]', 'bg-[#102E52]/90');
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-          handleSelectedFile(e.dataTransfer.files[0]);
-        }
-      });
-
-      fileInput.addEventListener('change', (e) => {
-        if (e.target.files && e.target.files[0]) {
-          handleSelectedFile(e.target.files[0]);
-        }
-      });
-
-      function handleSelectedFile(file) {
-        uploadedFileName = file.name;
-        let icon = '📄';
-        if (file.name.endsWith('.pdf')) icon = '📕';
-        else if (file.name.endsWith('.doc') || file.name.endsWith('.docx')) icon = '📘';
-        else if (file.name.endsWith('.xls') || file.name.endsWith('.xlsx')) icon = '📗';
-
-        fileIconPreview.textContent = icon;
-        fileNamePreview.textContent = file.name;
-
-        uploadPrompt.classList.add('hidden');
-        uploadPreview.classList.remove('hidden');
-        uploadPreview.classList.add('flex');
-
-        const reader = new FileReader();
-        reader.onload = (re) => {
-          uploadedFileData = re.target.result;
-        };
-        reader.readAsDataURL(file);
+      function getFileIconByExt(fileName) {
+        const lower = String(fileName || '').toLowerCase();
+        if (lower.endsWith('.pdf')) return '📕';
+        if (lower.endsWith('.doc') || lower.endsWith('.docx')) return '📘';
+        if (lower.endsWith('.xls') || lower.endsWith('.xlsx')) return '📗';
+        return '📄';
       }
 
-      btnRemoveFile.addEventListener('click', (e) => {
-        e.stopPropagation();
-        uploadedFileData = null;
-        uploadedFileName = '';
-        fileInput.value = '';
-        uploadPreview.classList.add('hidden');
-        uploadPreview.classList.remove('flex');
-        uploadPrompt.classList.remove('hidden');
-      });
+      function extractCleanTitleFromFileName(fileName) {
+        return String(fileName || '')
+          .replace(/\.(pdf|docx|doc|xlsx|xls|pptx|ppt|txt)$/i, '')
+          .replace(/_/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
 
-      // Tệp tải lên thay thế trong Modal Chỉnh sửa
+      function readFileAsDataURLPromise(fileObj) {
+        return new Promise((resolve) => {
+          const r = new FileReader();
+          r.onload = (ev) => resolve(ev.target.result || '');
+          r.onerror = () => resolve('');
+          r.readAsDataURL(fileObj);
+        });
+      }
+
+      // Tính mã chuẩn tự động tăng dần cho từng khối quy trình dựa trên Bộ phận & Định dạng của khối đó
+      function recalculateAllEntryAutoCodes() {
+        const groupCounter = {};
+        batchUploadItems.forEach((entry) => {
+          const catName = entry.category || 'IT';
+          const docType = entry.type || 'Quy trình';
+          const gKey = `${catName}__${docType}`;
+          if (groupCounter[gKey] === undefined) {
+            groupCounter[gKey] = 0;
+          }
+          const offset = groupCounter[gKey];
+          groupCounter[gKey]++;
+          const suggested = generateSequentialDocCode(catName, docType, offset);
+          entry.suggestedCode = suggested;
+          if (entry.isAutoCode || !String(entry.code || '').trim()) {
+            entry.code = suggested;
+            entry.isAutoCode = true;
+          }
+        });
+      }
+      window.recalculateBatchAutoCodes = recalculateAllEntryAutoCodes;
+
+      function createBlankEntryObject(defaultCat = null, defaultType = 'Quy trình') {
+        const activeCats = CATEGORIES.filter(c => c.status !== 'Tạm ẩn');
+        const chosenCat = defaultCat || (selectedCat !== 'all' ? selectedCat : (activeCats[0] ? activeCats[0].name : 'IT'));
+        return {
+          uid: 'ENTRY-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+          category: chosenCat,
+          type: defaultType || 'Quy trình',
+          code: '',
+          suggestedCode: '',
+          isAutoCode: true,
+          version: '1.0',
+          title: '',
+          isAutoTitle: true,
+          access: 'Mở',
+          downloadPerm: 'allow_all',
+          desc: '',
+          file: null,
+          fileName: '',
+          fileData: ''
+        };
+      }
+
+      function updateMultiModalCountersUI() {
+        const count = batchUploadItems.length;
+        if (multiTotalBadgeEl) {
+          multiTotalBadgeEl.textContent = `${count} quy trình / tài liệu`;
+        }
+        const submitBtn = document.getElementById('btn-submit-create-doc');
+        if (submitBtn) {
+          submitBtn.textContent = count > 1
+            ? `Đăng tải tất cả (${count} quy trình)`
+            : 'Đăng tải lên hệ thống (1 quy trình)';
+        }
+      }
+
+      function renderMultiDocEntriesDOM() {
+        if (!multiEntriesListEl) return;
+        recalculateAllEntryAutoCodes();
+        multiEntriesListEl.innerHTML = '';
+
+        const activeCats = CATEGORIES.filter(c => c.status !== 'Tạm ẩn');
+
+        batchUploadItems.forEach((entry, idx) => {
+          const card = document.createElement('div');
+          card.className = 'p-3.5 rounded-2xl bg-[#03152D]/90 border border-[#B98A33]/40 space-y-2.5 shadow-lg fsc-subtab-anim-enter';
+
+          const catOptionsHtml = activeCats.map(c =>
+            `<option value="${escapeHtmlStr(c.name)}" ${c.name === entry.category ? 'selected' : ''}>${c.icon || '📁'} ${escapeHtmlStr(c.name)}</option>`
+          ).join('');
+
+          const hasFile = Boolean(entry.fileName);
+          const fileSizeKB = entry.file ? Math.max(1, Math.round(entry.file.size / 1024)) : 0;
+          const fileSizeStr = fileSizeKB >= 1024 ? `${(fileSizeKB / 1024).toFixed(1)} MB` : (fileSizeKB > 0 ? `${fileSizeKB} KB` : '');
+
+          card.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#B98A33]/25">
+              <div class="flex items-center space-x-2">
+                <span class="px-2.5 py-0.5 rounded-lg bg-[#102E52] border border-[#FFC857]/50 text-[#FFC857] font-extrabold text-xs">
+                  📄 Quy trình / Tài liệu #${idx + 1}
+                </span>
+                <span class="text-[11px] text-[#B8C8DC]">
+                  💡 Mã chuẩn: <strong class="font-mono text-cyan-300 entry-suggested-label">${escapeHtmlStr(entry.suggestedCode)}</strong>
+                </span>
+                <button type="button" data-idx="${idx}" class="btn-entry-apply-code px-2 py-0.5 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#B98A33]/40 text-[10px] font-bold transition cursor-pointer">
+                  ⚡ Đặt lại mã chuẩn
+                </button>
+              </div>
+              ${batchUploadItems.length > 1 ? `
+                <button type="button" data-idx="${idx}" class="btn-entry-remove px-2.5 py-0.5 rounded-lg bg-rose-950/80 hover:bg-rose-700 text-rose-300 hover:text-white border border-rose-500/30 text-[11px] font-semibold transition cursor-pointer">
+                  ✕ Xóa quy trình #${idx + 1}
+                </button>
+              ` : ''}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+              <div class="sm:col-span-4">
+                <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Bộ phận:</label>
+                <select data-idx="${idx}" data-field="category" class="entry-field-select w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-white text-xs focus:outline-none focus:border-[#FFC857]">
+                  ${catOptionsHtml}
+                </select>
+              </div>
+              <div class="sm:col-span-4">
+                <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Định dạng văn bản:</label>
+                <select data-idx="${idx}" data-field="type" class="entry-field-select w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-white text-xs focus:outline-none focus:border-[#FFC857]">
+                  <option value="Quy trình" ${entry.type === 'Quy trình' ? 'selected' : ''}>Quy trình</option>
+                  <option value="Hướng dẫn công việc" ${entry.type === 'Hướng dẫn công việc' ? 'selected' : ''}>Hướng dẫn công việc</option>
+                  <option value="Biểu mẫu" ${entry.type === 'Biểu mẫu' ? 'selected' : ''}>Biểu mẫu</option>
+                </select>
+              </div>
+              <div class="sm:col-span-3">
+                <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Mã tài liệu <span class="text-[#FFC857]">*</span>:</label>
+                <input type="text" data-idx="${idx}" data-field="code" value="${escapeHtmlStr(entry.code)}" required placeholder="VD: 01-QT/IT/FSC" class="entry-field-input w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-[#FFC857] font-mono font-bold text-xs focus:outline-none focus:border-[#FFC857]">
+              </div>
+              <div class="sm:col-span-1">
+                <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Bản:</label>
+                <input type="text" data-idx="${idx}" data-field="version" value="${escapeHtmlStr(entry.version)}" class="entry-field-input w-full px-1.5 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-white font-mono text-center text-xs focus:outline-none focus:border-[#FFC857]">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+              <div class="sm:col-span-6">
+                <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Tên tài liệu / quy trình <span class="text-[#FFC857]">*</span>:</label>
+                <input type="text" data-idx="${idx}" data-field="title" value="${escapeHtmlStr(entry.title)}" required placeholder="Nhập tên quy trình (hoặc chọn file bên dưới để tự điền)..." class="entry-field-input w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-white text-xs focus:outline-none focus:border-[#FFC857]">
+              </div>
+              <div class="sm:col-span-3">
+                <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Mức truy cập:</label>
+                <select data-idx="${idx}" data-field="access" class="entry-field-select w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-white text-xs focus:outline-none focus:border-[#FFC857]">
+                  <option value="Mở" ${entry.access === 'Mở' ? 'selected' : ''}>Mở (Tra cứu tự do)</option>
+                  <option value="Nội bộ" ${entry.access === 'Nội bộ' ? 'selected' : ''}>Nội bộ (Cần đăng nhập)</option>
+                </select>
+              </div>
+              <div class="sm:col-span-3">
+                <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Quyền tải xuống:</label>
+                <select data-idx="${idx}" data-field="downloadPerm" class="entry-field-select w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-white text-xs focus:outline-none focus:border-[#FFC857]">
+                  <option value="allow_all" ${entry.downloadPerm === 'allow_all' ? 'selected' : ''}>Cho phép tải về</option>
+                  <option value="view_only" ${entry.downloadPerm === 'view_only' ? 'selected' : ''}>Chỉ xem trực tuyến</option>
+                  <option value="admin_only" ${entry.downloadPerm === 'admin_only' ? 'selected' : ''}>Chỉ Admin tải</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center pt-0.5">
+              <div class="sm:col-span-7">
+                <input type="file" id="entry-file-inp-${idx}" data-idx="${idx}" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="entry-file-input hidden">
+                ${!hasFile ? `
+                  <div data-idx="${idx}" class="entry-file-dropzone border border-dashed border-[#FFC857]/50 hover:border-[#FFC857] rounded-xl px-3 py-2 bg-[#071F3D]/80 hover:bg-[#102E52]/70 transition cursor-pointer flex items-center justify-between">
+                    <span class="text-xs text-white font-medium flex items-center space-x-2">
+                      <span>📎</span>
+                      <span>Bấm chọn <strong>1 tệp đính kèm</strong> (PDF, Word, Excel) cho Quy trình #${idx + 1}</span>
+                    </span>
+                    <span class="px-2 py-0.5 rounded bg-[#102E52] text-[#FFC857] text-[10.5px] font-bold shrink-0">Chọn tệp</span>
+                  </div>
+                ` : `
+                  <div class="flex items-center justify-between px-3 py-1.5 rounded-xl bg-[#102E52] border border-[#22C58B]/50">
+                    <div class="flex items-center space-x-2 min-w-0">
+                      <span class="text-base shrink-0">${getFileIconByExt(entry.fileName)}</span>
+                      <div class="min-w-0">
+                        <div class="text-xs font-bold text-white truncate" title="${escapeHtmlStr(entry.fileName)}">${escapeHtmlStr(entry.fileName)}</div>
+                        <div class="text-[10px] text-[#22C58B] font-mono">Đã đính kèm ${fileSizeStr ? `(${fileSizeStr})` : ''}</div>
+                      </div>
+                    </div>
+                    <div class="flex items-center space-x-1.5 shrink-0">
+                      <button type="button" data-idx="${idx}" class="btn-entry-change-file px-2 py-0.5 rounded bg-[#071F3D] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] text-[10.5px] font-bold transition cursor-pointer">Đổi tệp</button>
+                      <button type="button" data-idx="${idx}" class="btn-entry-clear-file px-2 py-0.5 rounded bg-rose-950/80 hover:bg-rose-700 text-rose-300 hover:text-white text-[10.5px] font-bold transition cursor-pointer">✕</button>
+                    </div>
+                  </div>
+                `}
+              </div>
+              <div class="sm:col-span-5">
+                <input type="text" data-idx="${idx}" data-field="desc" value="${escapeHtmlStr(entry.desc)}" placeholder="Trích yếu / ghi chú ngắn (không bắt buộc)..." class="entry-field-input w-full px-2.5 py-2 bg-[#102E52] border border-[#B98A33]/35 rounded-xl text-white text-xs focus:outline-none focus:border-[#FFC857]">
+              </div>
+            </div>
+          `;
+
+          multiEntriesListEl.appendChild(card);
+        });
+
+        // Gắn sự kiện cho các ô input/select trong từng khối quy trình
+        multiEntriesListEl.querySelectorAll('.entry-field-input').forEach(inp => {
+          inp.addEventListener('input', (e) => {
+            const idx = parseInt(inp.getAttribute('data-idx'), 10);
+            const field = inp.getAttribute('data-field');
+            if (!batchUploadItems[idx]) return;
+            batchUploadItems[idx][field] = e.target.value;
+            if (field === 'code') batchUploadItems[idx].isAutoCode = false;
+            if (field === 'title') batchUploadItems[idx].isAutoTitle = false;
+          });
+        });
+
+        multiEntriesListEl.querySelectorAll('.entry-field-select').forEach(sel => {
+          sel.addEventListener('change', (e) => {
+            const idx = parseInt(sel.getAttribute('data-idx'), 10);
+            const field = sel.getAttribute('data-field');
+            if (!batchUploadItems[idx]) return;
+            batchUploadItems[idx][field] = e.target.value;
+            if (field === 'category' || field === 'type') {
+              recalculateAllEntryAutoCodes();
+              renderMultiDocEntriesDOM();
+            }
+          });
+        });
+
+        multiEntriesListEl.querySelectorAll('.btn-entry-apply-code').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-idx'), 10);
+            if (!batchUploadItems[idx]) return;
+            batchUploadItems[idx].isAutoCode = true;
+            recalculateAllEntryAutoCodes();
+            renderMultiDocEntriesDOM();
+          });
+        });
+
+        multiEntriesListEl.querySelectorAll('.btn-entry-remove').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-idx'), 10);
+            if (batchUploadItems.length <= 1) return;
+            batchUploadItems.splice(idx, 1);
+            renderMultiDocEntriesDOM();
+            updateMultiModalCountersUI();
+          });
+        });
+
+        multiEntriesListEl.querySelectorAll('.entry-file-dropzone, .btn-entry-change-file').forEach(el => {
+          el.addEventListener('click', () => {
+            const idx = parseInt(el.getAttribute('data-idx'), 10);
+            const fInp = document.getElementById(`entry-file-inp-${idx}`);
+            if (fInp) fInp.click();
+          });
+        });
+
+        multiEntriesListEl.querySelectorAll('.btn-entry-clear-file').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-idx'), 10);
+            if (!batchUploadItems[idx]) return;
+            batchUploadItems[idx].file = null;
+            batchUploadItems[idx].fileName = '';
+            batchUploadItems[idx].fileData = '';
+            renderMultiDocEntriesDOM();
+          });
+        });
+
+        async function assignFilesToSeparateEntries(startIdx, fileList) {
+          if (!fileList || fileList.length === 0 || !batchUploadItems[startIdx]) return;
+          const filesArr = Array.from(fileList);
+          const baseEntry = batchUploadItems[startIdx];
+
+          for (let fIdx = 0; fIdx < filesArr.length; fIdx++) {
+            const file = filesArr[fIdx];
+            let targetEntry = null;
+            if (fIdx === 0) {
+              targetEntry = baseEntry;
+            } else {
+              // Nếu người dùng chọn/kéo thả nhiều file cùng lúc, tự động tách mỗi file thành 1 Quy trình riêng biệt!
+              targetEntry = createBlankEntryObject(baseEntry.category, baseEntry.type);
+              batchUploadItems.splice(startIdx + fIdx, 0, targetEntry);
+            }
+            targetEntry.file = file;
+            targetEntry.fileName = file.name;
+            if (!targetEntry.title.trim() || targetEntry.isAutoTitle) {
+              targetEntry.title = extractCleanTitleFromFileName(file.name) || file.name;
+              targetEntry.isAutoTitle = true;
+            }
+            readFileAsDataURLPromise(file).then(dUrl => {
+              targetEntry.fileData = dUrl;
+            });
+          }
+          renderMultiDocEntriesDOM();
+        }
+
+        multiEntriesListEl.querySelectorAll('.entry-file-dropzone').forEach(dz => {
+          dz.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dz.classList.add('border-[#FFC857]', 'bg-[#102E52]');
+          });
+          dz.addEventListener('dragleave', () => {
+            dz.classList.remove('border-[#FFC857]', 'bg-[#102E52]');
+          });
+          dz.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dz.classList.remove('border-[#FFC857]', 'bg-[#102E52]');
+            const idx = parseInt(dz.getAttribute('data-idx'), 10);
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              assignFilesToSeparateEntries(idx, e.dataTransfer.files);
+            }
+          });
+        });
+
+        multiEntriesListEl.querySelectorAll('.entry-file-input').forEach(fInp => {
+          fInp.addEventListener('change', (e) => {
+            const idx = parseInt(fInp.getAttribute('data-idx'), 10);
+            if (e.target.files && e.target.files.length > 0) {
+              assignFilesToSeparateEntries(idx, e.target.files);
+            }
+          });
+        });
+
+        updateMultiModalCountersUI();
+      }
+
+      window.initMultiDocEntryBlocks = function() {
+        batchUploadItems = [createBlankEntryObject()];
+        renderMultiDocEntriesDOM();
+      };
+
+      window.addAnotherDocEntryBlock = function() {
+        const lastEntry = batchUploadItems[batchUploadItems.length - 1];
+        const nextEntry = createBlankEntryObject(
+          lastEntry ? lastEntry.category : null,
+          lastEntry ? lastEntry.type : 'Quy trình'
+        );
+        batchUploadItems.push(nextEntry);
+        renderMultiDocEntriesDOM();
+        if (multiEntriesListEl) {
+          setTimeout(() => {
+            multiEntriesListEl.scrollTo({ top: multiEntriesListEl.scrollHeight, behavior: 'smooth' });
+          }, 40);
+        }
+      };
+      window.triggerAddMoreBatchFiles = window.addAnotherDocEntryBlock;
+
+      window.clearAllBatchUploadFiles = function() {
+        window.initMultiDocEntryBlocks();
+      };
+
+            // Tệp tải lên thay thế trong Modal Chỉnh sửa
       const editDropzone = document.getElementById('dropzone-edit-doc-file');
       const editFileInput = document.getElementById('inp-edit-doc-file');
       const editUploadPrompt = document.getElementById('edit-file-upload-prompt');
@@ -6876,92 +7171,101 @@
       formCreateDoc.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (btnSubmitCreateDoc.disabled) return;
+        if (!batchUploadItems || batchUploadItems.length === 0) return;
+
         btnSubmitCreateDoc.disabled = true;
         btnSubmitCreateDoc.innerHTML = '<span class="inline-block animate-spin mr-1.5">⏳</span> Đang lưu trữ...';
 
         try {
-          // Nếu người dùng chọn tệp lớn và FileReader đang đọc dở, chờ tối đa 1.5s cho đọc xong
-          if (fileInput.files && fileInput.files[0] && !uploadedFileData) {
-            await new Promise((resolve) => {
-              const r = new FileReader();
-              r.onload = (ev) => { uploadedFileData = ev.target.result; resolve(); };
-              r.onerror = () => resolve();
-              r.readAsDataURL(fileInput.files[0]);
-            });
-          }
-
-          const codeVal = document.getElementById('inp-doc-code').value.trim();
-          const titleVal = document.getElementById('inp-doc-title').value.trim();
-          const verVal = document.getElementById('inp-doc-ver').value.trim() || '1.0';
-          const catVal = document.getElementById('inp-doc-cat').value;
-          const typeVal = document.getElementById('inp-doc-type').value;
-          const accessVal = document.getElementById('inp-doc-access').value;
-          const downloadPermVal = document.getElementById('inp-doc-download-perm').value;
-          const deptVal = catVal;
-          const descVal = document.getElementById('inp-doc-desc').value.trim();
-
-          const newDoc = {
-            id: 'DOC-' + Date.now().toString().slice(-4),
-            code: codeVal,
-            version: verVal,
-            title: titleVal,
-            category: catVal,
-            type: typeVal,
-            access: accessVal,
-            downloadPerm: downloadPermVal,
-            dept: deptVal,
-            desc: descVal,
-            effectiveDate: new Date().toLocaleDateString('vi-VN'),
-            status: 'Có hiệu lực',
-            currentFile: uploadedFileName || (codeVal + (typeVal === 'Biểu mẫu' ? '.docx' : '.pdf')),
-            fileData: uploadedFileData || ''
-          };
-
-          // Lưu ngay tệp gốc vào IndexedDB (hỗ trợ PDF lớn 25MB+ không bị lỗi đầy bộ nhớ)
-          if (newDoc.fileData) {
-            await saveFileToIDB(newDoc.code, newDoc.currentFile, newDoc.fileData);
-          }
-
-          const existingIdx = documents.findIndex(d => d.code.toLowerCase() === codeVal.toLowerCase());
-          if (existingIdx !== -1) {
-            const oldDoc = documents[existingIdx];
-            const prevHistory = Array.isArray(oldDoc.versionHistory) ? [...oldDoc.versionHistory] : [];
-            const archiveKey = `${oldDoc.code}__v_${oldDoc.version || '1.0'}_${Date.now()}`;
-            if (oldDoc.fileData) {
-              await saveFileToIDB(archiveKey, oldDoc.currentFile, oldDoc.fileData);
+          const docsToSync = [];
+          for (let i = 0; i < batchUploadItems.length; i++) {
+            const item = batchUploadItems[i];
+            if (!item.fileData && item.file) {
+              item.fileData = await readFileAsDataURLPromise(item.file);
             }
-            prevHistory.push({
-              version: oldDoc.version || '1.0',
-              effectiveDate: oldDoc.effectiveDate || new Date().toLocaleDateString('vi-VN'),
-              currentFile: oldDoc.currentFile || '',
-              fileDataKey: archiveKey,
-              desc: oldDoc.desc || '',
-              updatedAt: new Date().toLocaleString('vi-VN')
-            });
-            newDoc.versionHistory = prevHistory;
-            documents[existingIdx] = { ...oldDoc, ...newDoc };
-            showToast(`Đã nâng cấp tài liệu ${codeVal} lên v${newDoc.version} (Bản cũ v${oldDoc.version || '1.0'} đã lưu cho Admin)!`, 'info');
-          } else {
-            newDoc.versionHistory = [];
-            documents.unshift(newDoc);
-            showToast(`Đã đăng tải thành công: ${codeVal} (v${newDoc.version})`, 'success');
+            const catVal = item.category || 'IT';
+            const typeVal = item.type || 'Quy trình';
+            const itemCode = String(item.code || '').trim() || generateSequentialDocCode(catVal, typeVal, i);
+            const itemTitle = String(item.title || '').trim() || extractCleanTitleFromFileName(item.fileName) || itemCode;
+            const itemVer = String(item.version || '1.0').trim() || '1.0';
+            const accessVal = item.access || 'Mở';
+            const downloadPermVal = item.downloadPerm || 'allow_all';
+            const descVal = String(item.desc || '').trim();
+
+            const newDoc = {
+              id: 'DOC-' + Date.now() + '-' + i,
+              code: itemCode,
+              version: itemVer,
+              title: itemTitle,
+              category: catVal,
+              type: typeVal,
+              access: accessVal,
+              downloadPerm: downloadPermVal,
+              dept: catVal,
+              desc: descVal,
+              effectiveDate: new Date().toLocaleDateString('vi-VN'),
+              status: 'Có hiệu lực',
+              currentFile: item.fileName || (itemCode + (typeVal === 'Biểu mẫu' ? '.docx' : '.pdf')),
+              fileData: item.fileData || '',
+              hasRemoteFile: Boolean(item.fileData)
+            };
+
+            if (newDoc.fileData) {
+              await saveFileToIDB(newDoc.code, newDoc.currentFile, newDoc.fileData, newDoc);
+            }
+
+            const existingIdx = documents.findIndex(d => d.code.toLowerCase() === itemCode.toLowerCase());
+            if (existingIdx !== -1) {
+              const oldDoc = documents[existingIdx];
+              const prevHistory = Array.isArray(oldDoc.versionHistory) ? [...oldDoc.versionHistory] : [];
+              const archiveKey = `${oldDoc.code}__v_${oldDoc.version || '1.0'}_${Date.now()}`;
+              if (oldDoc.fileData) {
+                await saveFileToIDB(archiveKey, oldDoc.currentFile, oldDoc.fileData);
+              }
+              prevHistory.push({
+                version: oldDoc.version || '1.0',
+                effectiveDate: oldDoc.effectiveDate || new Date().toLocaleDateString('vi-VN'),
+                currentFile: oldDoc.currentFile || '',
+                fileDataKey: archiveKey,
+                desc: oldDoc.desc || '',
+                updatedAt: new Date().toLocaleString('vi-VN')
+              });
+              newDoc.versionHistory = prevHistory;
+              documents[existingIdx] = { ...oldDoc, ...newDoc };
+            } else {
+              newDoc.versionHistory = [];
+              documents.unshift(newDoc);
+            }
+            docsToSync.push(newDoc);
           }
 
+          documents = deduplicateLatestDocuments(documents);
           safeSaveDocumentsToLocal(documents);
 
-          // Đóng cửa sổ và hiển thị ngay lập tức (< 50ms), không bắt người dùng chờ mạng
+          const totalSaved = docsToSync.length;
           closeAddDocModal();
-          formCreateDoc.reset();
-          btnRemoveFile.click();
+          window.initMultiDocEntryBlocks();
           updateBadges();
           renderDirectCards();
           renderOtherViews();
 
-          // Đồng bộ trực tiếp lên cơ sở dữ liệu Neon PostgreSQL để mọi thiết bị và cửa sổ ẩn danh đều hiển thị ngay
-          localStorage.setItem('fsc_initial_db_migrated_v6', 'true');
-          const syncedOk = await pushDocumentToBackend(newDoc);
-          if (syncedOk) {
-            showToast(`☁️ Đã lưu và đồng bộ "${newDoc.code}" lên đám mây cho mọi thiết bị!`, 'success');
+          if (totalSaved === 1) {
+            showToast(`Đã đăng tải thành công: ${docsToSync[0].code} (v${docsToSync[0].version})`, 'success');
+          } else {
+            showToast(`✅ Đã đăng tải cùng lúc ${totalSaved} quy trình / tài liệu riêng biệt!`, 'success');
+          }
+
+          let syncedCount = 0;
+          for (const bDoc of docsToSync) {
+            const ok = await pushDocumentToBackend(bDoc);
+            if (ok) syncedCount++;
+          }
+          if (syncedCount > 0) {
+            if (totalSaved === 1) {
+              showToast(`☁️ Đã lưu và đồng bộ "${docsToSync[0].code}" lên đám mây cho mọi thiết bị!`, 'success');
+            } else {
+              showToast(`☁️ Đã lưu và đồng bộ toàn bộ ${syncedCount}/${totalSaved} quy trình lên đám mây cho mọi thiết bị!`, 'success');
+            }
           }
         } catch (err) {
           console.error('Submit error:', err);
@@ -6969,11 +7273,11 @@
           closeAddDocModal();
         } finally {
           btnSubmitCreateDoc.disabled = false;
-          btnSubmitCreateDoc.textContent = 'Đăng tải lên hệ thống';
+          updateMultiModalCountersUI();
         }
       });
 
-      // Modal Chỉnh sửa tài liệu
+            // Modal Chỉnh sửa tài liệu
       const editModal = document.getElementById('modal-edit-document');
       const formEditDoc = document.getElementById('form-edit-doc');
       document.getElementById('btn-close-edit-modal').addEventListener('click', () => editModal.classList.add('hidden'));
