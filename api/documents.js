@@ -342,6 +342,15 @@ export function canRequestAccessDocLevel(req, rawAccessLevel, overrideRole = nul
 }
 
 neonConfig.fetchConnectionCache = true;
+let _cachedSqlClient = null;
+let _cachedDbUrl = "";
+function getSqlClient(databaseUrl) {
+  if (!_cachedSqlClient || _cachedDbUrl !== databaseUrl) {
+    _cachedSqlClient = neon(databaseUrl);
+    _cachedDbUrl = databaseUrl;
+  }
+  return _cachedSqlClient;
+}
 
 let isDocSchemaReady = false;
 
@@ -461,7 +470,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const sql = neon(databaseUrl);
+  const sql = getSqlClient(databaseUrl);
 
   try {
     if (req.method === 'GET') {
@@ -470,20 +479,36 @@ export default async function handler(req, res) {
       // 1. Tải chi tiết tệp đính kèm của 1 tài liệu cụ thể (Thực thi song song Promise.all giúp giảm 50% độ trễ truy vấn)
       if (requestedCode) {
         const codeKey = requestedCode.toLowerCase();
-        const [docRows, chunkRows, dbUsers] = await Promise.all([
-          sql`
-            SELECT to_jsonb(d) AS row_json FROM documents d
+        const verifiedSession = getVerifiedSessionFromReq(req);
+        const callerHash = verifiedSession && verifiedSession.emailHash ? String(verifiedSession.emailHash).toLowerCase() : "";
+        const cteDetailRows = await executeWithRetry(() => sql`
+          WITH target_doc AS (
+            SELECT to_jsonb(d) AS row_json
+            FROM documents d
             WHERE LOWER(code) = ${codeKey}
             ORDER BY updated_at DESC NULLS LAST
             LIMIT 1
-          `,
-          sql`
-            SELECT encrypted_chunk FROM document_file_chunks
+          ),
+          target_chunks AS (
+            SELECT COALESCE(jsonb_agg(encrypted_chunk ORDER BY chunk_index ASC), '[]'::jsonb) AS chunks_json
+            FROM document_file_chunks
             WHERE LOWER(doc_code) = ${codeKey}
-            ORDER BY chunk_index ASC
-          `.catch(() => []),
-          sql`SELECT email, email_hash, role FROM users LIMIT 200`.catch(() => [])
-        ]);
+          ),
+          caller_user AS (
+            SELECT COALESCE(jsonb_agg(jsonb_build_object('email', email, 'email_hash', email_hash, 'role', role)), '[]'::jsonb) AS users_json
+            FROM users
+            WHERE ${callerHash} <> '' AND email_hash = ${callerHash}
+            LIMIT 1
+          )
+          SELECT
+            (SELECT row_json FROM target_doc) AS doc_json,
+            (SELECT chunks_json FROM target_chunks) AS chunks_json,
+            (SELECT users_json FROM caller_user) AS users_json
+        `);
+        const cteRow = (cteDetailRows && cteDetailRows[0]) || {};
+        const docRows = cteRow.doc_json ? [{ row_json: cteRow.doc_json }] : [];
+        const chunkRows = Array.isArray(cteRow.chunks_json) ? cteRow.chunks_json.map(c => ({ encrypted_chunk: c })) : [];
+        const dbUsers = Array.isArray(cteRow.users_json) ? cteRow.users_json : [];
         if (!docRows || docRows.length === 0) {
           return res.status(404).json({ error: 'Không tìm thấy tài liệu' });
         }
@@ -544,28 +569,64 @@ export default async function handler(req, res) {
       let deletedCodesList = [];
       let dbUsersList = [];
       try {
-        const queryTasks = [
-          sql`
+        const verifiedSessionForList = getVerifiedSessionFromReq(req);
+        const callerListHash = verifiedSessionForList && verifiedSessionForList.emailHash ? String(verifiedSessionForList.emailHash).toLowerCase() : "";
+        const filterCategory = req.query && req.query.category_id ? sanitizeInputString(req.query.category_id, 60) : "";
+        const singleFlightKey = isCallerAuthed ? `docs_select_auth_v6_${callerListHash}_${filterCategory}` : `docs_select_guest_v6_${filterCategory}`;
+
+        const cteListResult = await coalesceInFlightQuery(
+          singleFlightKey,
+          () => executeWithRetry(() => sql`
+            WITH doc_meta AS (
+              SELECT
+                jsonb_build_object(
+                  'id', d.id,
+                  'code', d.code,
+                  'title', d.title,
+                  'category_id', d.category_id,
+                  'doc_type', d.doc_type,
+                  'version', d.version,
+                  'effective_date', d.effective_date,
+                  'next_review_date', d.next_review_date,
+                  'status', d.status,
+                  'department', d.department,
+                  'description', d.description,
+                  'access_level', d.access_level,
+                  'download_perm', d.download_perm,
+                  'current_file', d.current_file,
+                  'version_history', d.version_history,
+                  'updated_at', d.updated_at
+                ) AS meta,
+                (COALESCE(OCTET_LENGTH(d.file_data), 0) > 10 OR COALESCE(OCTET_LENGTH(d.file_url), 0) > 10) AS has_file
+              FROM documents d
+              WHERE (${filterCategory} = '' OR d.category_id = ${filterCategory})
+              ORDER BY d.updated_at DESC NULLS LAST
+              LIMIT 500
+            ),
+            chunk_codes AS (
+              SELECT COALESCE(jsonb_agg(DISTINCT LOWER(doc_code)), '[]'::jsonb) AS codes FROM document_file_chunks
+            ),
+            del_codes AS (
+              SELECT COALESCE(jsonb_agg(LOWER(doc_code)), '[]'::jsonb) AS codes FROM deleted_documents_log
+            ),
+            caller_usr AS (
+              SELECT COALESCE(jsonb_agg(jsonb_build_object('email', email, 'email_hash', email_hash, 'role', role)), '[]'::jsonb) AS u_list
+              FROM users
+              WHERE ${callerListHash} <> '' AND email_hash = ${callerListHash}
+              LIMIT 1
+            )
             SELECT
-              to_jsonb(d) - 'file_data' - 'file_url' AS meta,
-              (
-                LENGTH(COALESCE(to_jsonb(d)->>'file_data', '')) > 10
-                OR LENGTH(COALESCE(to_jsonb(d)->>'file_url', '')) > 10
-              ) AS has_file
-            FROM documents d
-            LIMIT 500
-          `,
-          sql`SELECT DISTINCT LOWER(doc_code) AS code FROM document_file_chunks`.catch(() => []),
-          sql`SELECT LOWER(doc_code) AS code FROM deleted_documents_log`.catch(() => [])
-        ];
-        // Chỉ truy vấn bảng users khi có người dùng đăng nhập (Trình duyệt mới/ẩn danh không cần tốn truy vấn bảng users!)
-        if (isCallerAuthed) {
-          queryTasks.push(sql`SELECT email, email_hash, role FROM users LIMIT 200`.catch(() => []));
-        }
-        const [metaRows, cRows, delRows, uRows] = await coalesceInFlightQuery(
-          isCallerAuthed ? 'docs_select_auth_v6' : 'docs_select_guest_v6',
-          () => executeWithRetry(() => Promise.all(queryTasks))
+              COALESCE((SELECT jsonb_agg(jsonb_build_object('meta', meta, 'has_file', has_file)) FROM doc_meta), '[]'::jsonb) AS meta_rows,
+              (SELECT codes FROM chunk_codes) AS chunk_codes,
+              (SELECT codes FROM del_codes) AS del_codes,
+              (SELECT u_list FROM caller_usr) AS u_rows
+          `)
         );
+        const firstBundle = (cteListResult && cteListResult[0]) || {};
+        const metaRows = Array.isArray(firstBundle.meta_rows) ? firstBundle.meta_rows : [];
+        const cRows = Array.isArray(firstBundle.chunk_codes) ? firstBundle.chunk_codes.map(c => ({ code: c })) : [];
+        const delRows = Array.isArray(firstBundle.del_codes) ? firstBundle.del_codes.map(c => ({ code: c })) : [];
+        const uRows = Array.isArray(firstBundle.u_rows) ? firstBundle.u_rows : [];
         rows = Array.isArray(metaRows) ? metaRows : [];
         if (Array.isArray(cRows)) cRows.forEach(c => { if (c && c.code) chunkedCodesSet.add(c.code); });
         if (Array.isArray(delRows)) deletedCodesList = delRows.map(d => d && d.code).filter(Boolean);
@@ -633,12 +694,22 @@ export default async function handler(req, res) {
         return perm.allowed;
       });
 
+      const reqPage = req.query && req.query.page ? Math.max(1, parseInt(req.query.page, 10) || 1) : null;
+      const reqLimit = req.query && req.query.limit ? Math.min(500, Math.max(1, parseInt(req.query.limit, 10) || 50)) : null;
+      const paginatedRows = (reqPage && reqLimit)
+        ? authorizedRows.slice((reqPage - 1) * reqLimit, reqPage * reqLimit)
+        : authorizedRows;
+
       const responsePayload = {
         success: true,
         hasDatabase: true,
         callerRole: verifiedCallerRole,
         encryption: 'AES-256-GCM',
-        data: authorizedRows,
+        totalCount: authorizedRows.length,
+        page: reqPage || 1,
+        limit: reqLimit || authorizedRows.length,
+        hasMore: Boolean(reqPage && reqLimit && (reqPage * reqLimit < authorizedRows.length)),
+        data: paginatedRows,
         deletedCodes: deletedCodesList
       };
       const savedCache = setCachedResponse(cacheKey, responsePayload);
@@ -647,8 +718,7 @@ export default async function handler(req, res) {
       return res.status(200).json(responsePayload);
     }
 
-    // Đảm bảo cấu trúc bảng đã được nâng cấp trước khi GHI / XÓA
-    await ensureDocSchema(sql);
+    // Không chạy DDL (ensureDocSchema) trên mỗi lệnh POST/DELETE để tránh khóa bảng; chỉ gọi khi có lỗi thiếu bảng (42P01)
 
     if (req.method === 'POST') {
       const writeAuth = requireDocumentWriteAuth(req, res, ['admin', 'office', 'editor']);
@@ -741,16 +811,27 @@ export default async function handler(req, res) {
 
       const lookupCode = cleanOldCode || cleanCode;
       const existingRows = await sql`
-        SELECT id, to_jsonb(d) AS row_json FROM documents d
+        SELECT id, version_history, updated_at
+        FROM documents d
         WHERE LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
         ORDER BY updated_at DESC NULLS LAST
       `;
+      if (existingRows.length > 0 && body.expected_updated_at) {
+        const dbTime = new Date(existingRows[0].updated_at || 0).getTime();
+        const clientTime = new Date(body.expected_updated_at).getTime();
+        if (dbTime > 0 && clientTime > 0 && Math.abs(dbTime - clientTime) > 1000 && dbTime > clientTime) {
+          return res.status(409).json({
+            error: 'Xung đột phiên bản (Optimistic Concurrency Conflict): Tài liệu vừa được một người dùng khác cập nhật. Vui lòng tải lại trước khi lưu.',
+            conflict: true,
+            serverUpdatedAt: existingRows[0].updated_at
+          });
+        }
+      }
 
       let savedRecord = null;
       if (existingRows.length > 0) {
         const targetId = existingRows[0].id;
-        const prevRow = existingRows[0].row_json || {};
-        const finalFileData = encryptedFileData !== '' ? encryptedFileData : (prevRow.file_data || prevRow.file_url || '');
+        const prevRow = existingRows[0] || {};
         const finalHistory = safeHistoryArray.length > 0 ? historyJson : JSON.stringify(prevRow.version_history || []);
         // Xóa các bản ghi trùng mã cũ (nếu có) để đảm bảo tính nhất quán tuyệt đối của access_level
         if (existingRows.length > 1) {
@@ -763,7 +844,7 @@ export default async function handler(req, res) {
           } catch (e) {}
         }
         try {
-          await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS next_review_date TEXT`.catch(() => {});
+          // Đã bỏ ALTER TABLE trong luồng UPDATE nóng để tránh khóa ACCESS EXCLUSIVE
           const updated = await sql`
             UPDATE documents SET
               code = ${cleanCode},
@@ -778,7 +859,7 @@ export default async function handler(req, res) {
               access_level = ${cleanAccess},
               download_perm = ${cleanPerm},
               current_file = ${encryptedFileName},
-              file_data = ${finalFileData},
+              file_data = CASE WHEN ${encryptedFileData} <> '' THEN ${encryptedFileData} ELSE file_data END,
               version_history = ${finalHistory}::jsonb,
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ${targetId} OR LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
@@ -800,7 +881,7 @@ export default async function handler(req, res) {
               access_level = ${cleanAccess},
               download_perm = ${cleanPerm},
               current_file = ${encryptedFileName},
-              file_data = ${finalFileData},
+              file_data = CASE WHEN ${encryptedFileData} <> '' THEN ${encryptedFileData} ELSE file_data END,
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ${targetId} OR LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
             RETURNING id, code, version, effective_date, access_level
@@ -886,20 +967,21 @@ export default async function handler(req, res) {
       }
       if (!id) return res.status(400).json({ error: 'Thiếu mã tài liệu cần xóa' });
       const cleanId = sanitizeInputString(id, 120);
-      await sql`DELETE FROM documents WHERE LOWER(code) = ${cleanId.toLowerCase()} OR id::text = ${cleanId}`;
-      try { await sql`DELETE FROM document_file_chunks WHERE LOWER(doc_code) = ${cleanId.toLowerCase()}`; } catch (e) {}
-      try {
-        await sql`
-          INSERT INTO deleted_documents_log (doc_code) VALUES (${cleanId.toLowerCase()})
+      await sql`
+        WITH del_doc AS (
+          DELETE FROM documents WHERE LOWER(code) = ${cleanId.toLowerCase()} OR id::text = ${cleanId}
+        ),
+        del_chunks AS (
+          DELETE FROM document_file_chunks WHERE LOWER(doc_code) = ${cleanId.toLowerCase()}
+        ),
+        log_tombstone AS (
+          INSERT INTO deleted_documents_log (doc_code, deleted_at)
+          VALUES (${cleanId.toLowerCase()}, CURRENT_TIMESTAMP)
           ON CONFLICT (doc_code) DO UPDATE SET deleted_at = CURRENT_TIMESTAMP
-        `;
-      } catch (e) {}
-      try {
-        await sql`
-          INSERT INTO audit_logs (action, target_code, actor_hash, actor_role)
-          VALUES ('DELETE_DOC', ${cleanId}, ${deleteAuth.emailHash || ''}, ${deleteAuth.role || 'admin'})
-        `;
-      } catch (e) {}
+        )
+        INSERT INTO audit_logs (action, target_code, actor_hash, actor_role)
+        VALUES ('DELETE_DOC', ${cleanId}, ${deleteAuth.emailHash || ''}, ${deleteAuth.role || 'admin'})
+      `;
       invalidateCache('docs_');
       return res.status(200).json({ success: true });
     }

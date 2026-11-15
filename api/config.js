@@ -268,6 +268,15 @@ function requireSessionAuth(req, res, allowedRoles = ['admin']) {
 }
 
 neonConfig.fetchConnectionCache = true;
+let _cachedCfgSqlClient = null;
+let _cachedCfgDbUrl = "";
+function getCfgSqlClient(databaseUrl) {
+  if (!_cachedCfgSqlClient || _cachedCfgDbUrl !== databaseUrl) {
+    _cachedCfgSqlClient = neon(databaseUrl);
+    _cachedCfgDbUrl = databaseUrl;
+  }
+  return _cachedCfgSqlClient;
+}
 let isSettingsSchemaReady = false;
 
 export default async function handler(req, res) {
@@ -282,7 +291,7 @@ export default async function handler(req, res) {
 
   try {
     if (databaseUrl) {
-      const sql = neon(databaseUrl);
+      const sql = getCfgSqlClient(databaseUrl);
       if (!isSettingsSchemaReady) {
         await executeWithRetry(() => sql`
           CREATE TABLE IF NOT EXISTS portal_settings (

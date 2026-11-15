@@ -268,6 +268,15 @@ function requireSessionAuth(req, res, allowedRoles = ['admin']) {
 }
 
 neonConfig.fetchConnectionCache = true;
+let _cachedUserSqlClient = null;
+let _cachedUserDbUrl = "";
+function getUserSqlClient(databaseUrl) {
+  if (!_cachedUserSqlClient || _cachedUserDbUrl !== databaseUrl) {
+    _cachedUserSqlClient = neon(databaseUrl);
+    _cachedUserDbUrl = databaseUrl;
+  }
+  return _cachedUserSqlClient;
+}
 let isUserSchemaReady = false;
 
 export default async function handler(req, res) {
@@ -285,7 +294,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const sql = neon(databaseUrl);
+  const sql = getUserSqlClient(databaseUrl);
 
   try {
     if (!isUserSchemaReady) {
@@ -364,10 +373,12 @@ export default async function handler(req, res) {
       );
 
       await executeWithRetry(async () => {
-        await sql`DELETE FROM users WHERE email_hash = ${emailHash} OR LOWER(email) = ${cleanEmail}`;
         await sql`
-          INSERT INTO users (email, email_hash, full_name, role, department)
-          VALUES (${encryptedEmail}, ${emailHash}, ${encryptedName}, ${safeRole}, ${encryptedDept})
+          WITH cleaned AS (
+            DELETE FROM users WHERE email_hash = ${emailHash} OR LOWER(email) = ${cleanEmail}
+          )
+          INSERT INTO users (email, email_hash, full_name, role, department, updated_at)
+          VALUES (${encryptedEmail}, ${emailHash}, ${encryptedName}, ${safeRole}, ${encryptedDept}, CURRENT_TIMESTAMP)
           ON CONFLICT (email) DO UPDATE SET
             email_hash = EXCLUDED.email_hash,
             role = EXCLUDED.role,

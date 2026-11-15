@@ -247,6 +247,15 @@ export function verifyUserSessionToken(token) {
 }
 
 neonConfig.fetchConnectionCache = true;
+let _cachedAuthSqlClient = null;
+let _cachedAuthDbUrl = "";
+function getAuthSqlClient(databaseUrl) {
+  if (!_cachedAuthSqlClient || _cachedAuthDbUrl !== databaseUrl) {
+    _cachedAuthSqlClient = neon(databaseUrl);
+    _cachedAuthDbUrl = databaseUrl;
+  }
+  return _cachedAuthSqlClient;
+}
 
 const AUTH_FAIL_TRACKER = new Map();
 const MAX_AUTH_FAIL_PER_MIN = 15;
@@ -345,7 +354,7 @@ export default async function handler(req, res) {
     const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.NEON_DATABASE_URL;
     if (!role && databaseUrl) {
       try {
-        const sql = neon(databaseUrl);
+        const sql = getAuthSqlClient(databaseUrl);
         const rows = await executeWithRetry(() => sql`
           SELECT role FROM users
           WHERE email_hash = ${emailHash} OR LOWER(email) = ${email}
