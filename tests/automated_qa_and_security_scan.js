@@ -2,10 +2,13 @@
  * BỘ KIỂM THỬ TỰ ĐỘNG & QUÉT BẢO MẬT CẤP ĐỘ GIÁO SƯ AN TOÀN THÔNG TIN (PRE-GO-LIVE GATE v6.0)
  * Hệ thống Quản lý Tài liệu & Quy trình QMS - FSC Cần Thơ
  */
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
-const crypto = require('crypto');
+import fs from 'fs';
+import path from 'path';
+import vm from 'vm';
+import crypto from 'crypto';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const HTML_FILE = path.join(ROOT_DIR, 'public', 'index.html');
@@ -180,6 +183,59 @@ assertCheck(
   htmlContent.includes('deleteExcelEditorRow') &&
   htmlContent.includes('modal-confirm-close-edit') &&
   htmlContent.includes('executeCleanPrintHtml')
+);
+
+
+// 12. KIỂM TRA XÁC THỰC GOOGLE ZERO-PII (KHÔNG LƯU DỮ LIỆU CÁ NHÂN USER KHI ĐĂNG NHẬP)
+const googleAuthCode = fs.readFileSync(path.join(ROOT_DIR, 'api', 'auth', 'google.js'), 'utf8');
+assertCheck(
+  'Bảo mật Xác thực Google Zero-PII: Không thu thập profile cá nhân và không INSERT dữ liệu người dùng đăng nhập vào DB',
+  googleAuthCode.includes('zeroPiiVerified: true') &&
+  !googleAuthCode.includes('INSERT INTO users') &&
+  htmlContent.includes("scope: 'openid email profile'") &&
+  !htmlContent.includes('<span class="text-[#B8C8DC]">Đơn vị:</span>') &&
+  htmlContent.includes("localStorage.removeItem('school_portal_user')")
+);
+
+// 13. KIỂM TRA CHỊU TẢI ĐỒNG THỜI CAO & HÀNG ĐỢI CHỐNG BÁO BẬN / CHỐNG LỖI (SINGLEFLIGHT + AUTO-RETRY QUEUE)
+assertCheck(
+  'Chịu tải đồng thời cao & Chống báo lỗi/báo bận: Singleflight Query Coalescing, Exponential Backoff Retry & Cloud Sync Queue',
+  docsApiCode.includes('coalesceInFlightQuery') &&
+  docsApiCode.includes('executeWithRetry') &&
+  htmlContent.includes('enqueueCloudSyncTask') &&
+  htmlContent.includes('fetchWithAutoRetry')
+);
+
+// 14. KIỂM TRA DỌN DẸP DỮ LIỆU CŨ CHỒNG LẤP & HIỆU ỨNG CHUYỂN TAB MƯỢT MÀ 60FPS
+assertCheck(
+  'Tối ưu hóa hệ thống: Tự động dọn khóa cũ (purgeObsoleteLegacyStorage), lọc phiên bản mới nhất & hiệu ứng chuyển Tab mượt mà',
+  htmlContent.includes('purgeObsoleteLegacyStorage') &&
+  htmlContent.includes('deduplicateLatestDocuments') &&
+  htmlContent.includes('triggerSmoothTabTransition') &&
+  htmlContent.includes('fscSmoothTabEnter')
+);
+
+
+// 15. KIỂM TRA ĐĂNG TẢI NHIỀU QUY TRÌNH RIÊNG BIỆT (MỖI QUY TRÌNH 1 FILE) & CHỐNG CHE KHUẤT TÌM KIẾM
+assertCheck(
+  'Đăng tải nhiều quy trình cùng lúc (mỗi quy trình 1 file riêng) & Khung gợi ý tìm kiếm nổi Z-Index cao không bị che khuất',
+  htmlContent.includes('multi-doc-entries-list') &&
+  htmlContent.includes('addAnotherDocEntryBlock') &&
+  htmlContent.includes('doesDocMatchCategory') &&
+  htmlContent.includes('#home-top-search-card {') &&
+  htmlContent.includes('z-[100] bg-[#04142B]')
+);
+
+
+// 16. KIỂM TRA 3 TÍNH NĂNG NÂNG CẤP QMS: MÃ QR QUY TRÌNH, MENU HỆ SINH THÁI (FSPACE) & NHẮC HẠN RÀ SOÁT ĐỊNH KỲ
+assertCheck(
+  'Bộ 3 tính năng nâng cấp QMS: Tạo/In Mã QR Quy trình, Menu Hệ sinh thái FSC (FSpace, IT...) & Nhắc hạn rà soát văn bản định kỳ',
+  htmlContent.includes('modal-doc-qrcode') &&
+  htmlContent.includes('openDocQrCodeModal') &&
+  htmlContent.includes('modal-fsc-ecosystem') &&
+  htmlContent.includes('DEFAULT_ECOSYSTEM_LINKS') &&
+  htmlContent.includes('modal-qms-review-tracker') &&
+  htmlContent.includes('computeDocReviewInfo')
 );
 
 console.log('\n================================================================================');

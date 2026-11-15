@@ -501,18 +501,23 @@
           </button>
         </div>
 
-        <!-- PHÂN HỆ NGHIỆP VỤ VĂN PHÒNG: TỰ ĐỘNG ẨN KHI CHƯA ĐĂNG NHẬP -->
-        <div id="section-office-ops" class="hidden space-y-1">
-          <div class="pt-2.5 pb-1 px-3 text-[10px] uppercase font-bold tracking-wider text-[#FFC857]/80">Tiện ích nội bộ</div>
+        <!-- TAB TÍNH NĂNG HỆ SINH THÁI BÊN TRÁI: HIỂN THỊ CHO MỌI TÀI KHOẢN ĐÃ ĐĂNG NHẬP (USER & ADMIN) -->
+        <div id="section-user-ecosystem" class="hidden space-y-1">
+          <div class="pt-2.5 pb-1 px-3 text-[10px] uppercase font-bold tracking-wider text-[#38BDF8]/90">Liên kết hệ thống</div>
 
-          <button type="button" onclick="openFscEcosystemModal()" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl nav-btn-inactive transition cursor-pointer">
+          <button type="button" id="btn-sidebar-user-ecosystem" onclick="openFscEcosystemModal()" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl nav-btn-inactive hover:bg-[#102E52]/80 transition cursor-pointer">
             <svg class="w-4 h-4 shrink-0 text-[#38BDF8]" fill="currentColor" viewBox="0 0 20 20">
               <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
             </svg>
-            <span class="flex-1 text-left font-medium">Hệ sinh thái FSC</span>
+            <span class="flex-1 text-left font-semibold text-white">Hệ sinh thái FSC</span>
           </button>
+        </div>
 
-          <button type="button" onclick="openQmsReviewTrackerModal()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl nav-btn-inactive transition cursor-pointer">
+        <!-- PHÂN HỆ NGHIỆP VỤ & HẠN RÀ SOÁT VĂN BẢN: CHỈ DÀNH RIÊNG CHO ADMIN -->
+        <div id="section-office-ops" class="hidden space-y-1">
+          <div class="pt-2.5 pb-1 px-3 text-[10px] uppercase font-bold tracking-wider text-[#FFC857]/80">Quản lý & Rà soát (Admin)</div>
+
+          <button type="button" id="btn-sidebar-admin-review" onclick="openQmsReviewTrackerModal()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl nav-btn-inactive transition cursor-pointer">
             <span class="flex items-center space-x-3">
               <span class="text-sm shrink-0">🔔</span>
               <span class="font-medium">Hạn rà soát văn bản</span>
@@ -893,7 +898,7 @@
             </div>
           </div>
           <div class="card-enterprise rounded-2xl p-5 space-y-3">
-            <h3 class="font-bold text-white text-xs sm:text-sm">Văn phòng số hóa</h3>
+            <h3 class="font-bold text-white text-xs sm:text-sm">Cổng thông tin Nội bộ</h3>
             <p class="text-xs text-[#B8C8DC] leading-relaxed">Hệ thống áp dụng cơ chế xác thực tài khoản Google nội bộ và lưu trữ, bảo mật tài liệu số hóa trực tiếp.</p>
           </div>
         </div>
@@ -1710,53 +1715,70 @@
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
     <!-- ==================== MODAL 1: THẺ MÃ QR TRA CỨU NHANH QUY TRÌNH (IN DÁN PHÒNG BAN / BẾP ĂN / HỘI TRƯỜNG) ==================== -->
-  <div id="modal-doc-qrcode" onclick="if(event.target === this) closeDocQrCodeModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    <div class="bg-[#071F3D] border-2 border-[#FFC857]/60 rounded-2xl w-full max-w-md mx-auto my-auto p-5 shadow-2xl space-y-4 fsc-tab-anim-enter">
-      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-3">
+    <!-- ==================== MODAL 1: MÃ QR TRA CỨU NHANH QUY TRÌNH (CHUẨN IN ẤN A4 / A5 ĐỘ NÉT CAO) ==================== -->
+  <div id="modal-doc-qrcode" onclick="if(event.target === this) closeDocQrCodeModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
+    <div class="bg-[#071F3D] border-2 border-[#FFC857]/60 rounded-2xl w-[94vw] max-w-lg mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-3.5 fsc-tab-anim-enter">
+      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-2.5">
         <div class="flex items-center space-x-2">
           <span class="text-lg">📱</span>
           <div>
-            <h3 class="font-extrabold text-white text-sm">Mã QR Tài liệu</h3>
+            <h3 class="font-extrabold text-white text-sm sm:text-base">Thẻ Mã QR Quy trình</h3>
           </div>
         </div>
         <button type="button" onclick="closeDocQrCodeModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1 transition cursor-pointer shadow-md shrink-0"><span class="text-sm leading-none">✕</span><span>Đóng</span></button>
       </div>
 
-      <!-- THẺ STANDEE QR CODE CHUẨN IN ẤN -->
-      <div id="qr-printable-card-area" class="bg-white text-slate-900 rounded-2xl p-4 sm:p-5 border-2 border-[#FFC857] shadow-inner text-center space-y-2.5">
-        <div class="text-[10.5px] font-extrabold uppercase tracking-wider text-[#071F3D] border-b border-slate-200 pb-1.5">
-          TRƯỜNG THPT FPT CẦN THƠ • HỆ THỐNG VĂN PHÒNG SỐ
-        </div>
-        <div class="flex items-center justify-center space-x-2">
-          <span id="qr-card-dept-badge" class="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-900 font-bold text-[11px]">Bộ phận IT</span>
-          <span id="qr-card-code-badge" class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-mono font-bold text-[11px]">01-QT/IT/FSC (v1.0)</span>
-        </div>
-        <h4 id="qr-card-doc-title" class="text-sm sm:text-base font-black text-[#03152D] leading-snug px-2">
-          Quy trình Cấp mới và Thu hồi Tài khoản Hệ thống
-        </h4>
-        <div class="flex justify-center py-2">
-          <div class="p-2.5 bg-white rounded-xl border-2 border-[#071F3D] shadow-md inline-block">
-            <canvas id="qr-code-canvas" width="200" height="200" class="w-44 h-44 mx-auto block"></canvas>
+      <!-- THẺ STANDEE QR CODE THIẾT KẾ CHỈNH CHU (CÓ LOGO SCHOOL OFFICE PORTAL, KHÔNG HIỂN THỊ BỘ PHẬN / MÃ / URL) -->
+      <div id="qr-printable-card-area" class="bg-white text-slate-900 rounded-2xl overflow-hidden border-2 border-[#FFC857] shadow-xl text-center">
+        <!-- Header Navy sang trọng làm nổi bật Logo School Office Portal -->
+        <div class="bg-[#03152D] px-4 py-3.5 border-b-2 border-[#FFC857] flex flex-col items-center justify-center space-y-1">
+          <img id="qr-card-banner-logo" src="" alt="School Office Portal" class="h-12 sm:h-14 w-auto object-contain mx-auto drop-shadow-md">
+          <div class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#FFC857]">
+            TRƯỜNG THPT FPT CẦN THƠ
           </div>
         </div>
-        <div class="text-[11px] font-semibold text-slate-700">
-          📷 Mở Camera điện thoại hoặc Zalo quét mã để xem trực tuyến
-        </div>
-        <div id="qr-card-direct-url" class="text-[10px] font-mono text-sky-700 bg-slate-100 px-2.5 py-1 rounded-lg truncate">
-          https://vp-fsc.vercel.app/?doc=01-QT/IT/FSC
+
+        <div class="p-4 sm:p-5 space-y-3 bg-gradient-to-b from-white to-slate-50">
+          <h4 id="qr-card-doc-title" class="text-base sm:text-lg font-black text-[#03152D] leading-snug px-2">
+            Quy trình Cấp mới và Thu hồi Tài khoản Hệ thống
+          </h4>
+
+          <div class="flex justify-center py-1">
+            <div class="p-3 bg-white rounded-2xl border-2 border-[#03152D] ring-4 ring-[#FFC857]/35 shadow-lg inline-block">
+              <canvas id="qr-code-canvas" width="1200" height="1200" class="w-52 h-52 sm:w-56 sm:h-56 mx-auto block" style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;"></canvas>
+            </div>
+          </div>
+
+          <div class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-[#03152D]/5 border border-[#03152D]/15 text-[11.5px] font-bold text-[#03152D]">
+            <span>📷</span>
+            <span>Quét mã QR bằng Camera hoặc Zalo để xem trực tuyến</span>
+          </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-        <button type="button" onclick="printDocQrStandeeCard()" class="px-3 py-2 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-extrabold text-xs flex items-center justify-center space-x-1.5 cursor-pointer shadow-md">
+      <!-- Tuỳ chọn Khổ giấy in A5 hoặc A4 -->
+      <div class="flex items-center justify-between bg-[#03152D]/80 border border-[#B98A33]/35 rounded-xl px-3.5 py-2 text-xs">
+        <span class="text-[#B8C8DC] font-semibold">Khổ giấy in thẻ QR:</span>
+        <div class="flex items-center space-x-2">
+          <button type="button" id="btn-qr-size-a5" onclick="setQrPrintPaperSize('A5')" class="px-3 py-1 rounded-lg bg-[#FFC857] text-[#03152D] font-extrabold text-xs transition cursor-pointer">
+            Khổ A5 (Để bàn / Dán tường)
+          </button>
+          <button type="button" id="btn-qr-size-a4" onclick="setQrPrintPaperSize('A4')" class="px-3 py-1 rounded-lg bg-[#102E52] text-[#B8C8DC] hover:text-white border border-[#B98A33]/35 font-bold text-xs transition cursor-pointer">
+            Khổ A4 (Bảng lớn)
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5">
+        <button type="button" onclick="printDocQrStandeeCard()" class="px-3 py-2.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-extrabold text-xs flex items-center justify-center space-x-1.5 cursor-pointer shadow-md">
           <span>🖨️</span>
-          <span>In Thẻ QR</span>
+          <span id="lbl-btn-print-qr">In Thẻ QR (A5)</span>
         </button>
-        <button type="button" onclick="downloadDocQrPng()" class="px-3 py-2 rounded-xl bg-[#102E52] hover:bg-[#163B68] text-white border border-[#B98A33]/40 font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer">
+        <button type="button" onclick="downloadDocQrPng()" class="px-3 py-2.5 rounded-xl bg-[#102E52] hover:bg-[#163B68] text-white border border-[#B98A33]/40 font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer">
           <span>⬇️</span>
-          <span>Tải ảnh PNG</span>
+          <span>Tải QR sắc nét (HD)</span>
         </button>
-        <button type="button" onclick="copyDocQrDirectLink()" class="px-3 py-2 rounded-xl bg-[#102E52] hover:bg-[#163B68] text-[#38BDF8] border border-sky-400/30 font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer">
+        <button type="button" onclick="copyDocQrDirectLink()" class="px-3 py-2.5 rounded-xl bg-[#102E52] hover:bg-[#163B68] text-[#38BDF8] border border-sky-400/30 font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer">
           <span>🔗</span>
           <span>Sao chép Link</span>
         </button>
@@ -2516,14 +2538,26 @@
     }
 
     let _qrDeepLinkHandled = false;
+    let _pendingDeepLinkDocCode = '';
+
     function checkQrDeepLinkParam() {
       if (_qrDeepLinkHandled) return;
       try {
         const params = new URLSearchParams(window.location.search || '');
         const docParam = params.get('doc');
-        if (docParam && documents.length > 0) {
+        if (!docParam) return;
+        if (documents.length > 0) {
           const target = documents.find(d => String(d.code || '').toLowerCase() === docParam.trim().toLowerCase() || String(d.id || '') === docParam.trim());
           if (target) {
+            if (!isDocVisible(target)) {
+              // Chặn tuyệt đối tài liệu Nội bộ trên trình duyệt ẩn danh / chưa đăng nhập!
+              _qrDeepLinkHandled = true;
+              _pendingDeepLinkDocCode = target.code;
+              closeDocReader();
+              showToast('🔒 Tài liệu nội bộ: Vui lòng đăng nhập tài khoản để xem quy trình này!', 'error');
+              openAuthModal();
+              return;
+            }
             _qrDeepLinkHandled = true;
             openDocReader(target.id);
           }
@@ -2608,21 +2642,24 @@
       }
     }
 
-    async function pushDocumentToBackend(docObj, oldCode = '') {
+    async function pushDocumentToBackend(docObj, oldCode = '', isMetadataOnly = false) {
       if (!docObj || !docObj.code) return false;
-      let fileBlob = docObj.fileData || '';
-      if (!fileBlob) {
-        try {
-          const idbRec = await getFileFromIDB(docObj.code);
-          if (idbRec && idbRec.fileData) {
-            fileBlob = idbRec.fileData;
-            docObj.fileData = fileBlob;
-          }
-        } catch (e) {}
+      let fileBlob = '';
+      if (!isMetadataOnly) {
+        fileBlob = docObj.fileData || '';
+        if (!fileBlob) {
+          try {
+            const idbRec = await getFileFromIDB(docObj.code);
+            if (idbRec && idbRec.fileData) {
+              fileBlob = idbRec.fileData;
+              docObj.fileData = fileBlob;
+            }
+          } catch (e) {}
+        }
       }
 
       const CHUNK_SIZE = 950000; // 950KB mỗi phân đoạn (An toàn dưới giới hạn 4.5MB của Vercel Serverless)
-      const isLargeFile = Boolean(fileBlob && fileBlob.length > CHUNK_SIZE);
+      const isLargeFile = Boolean(!isMetadataOnly && fileBlob && fileBlob.length > CHUNK_SIZE);
 
       const buildMetaBody = (inlineFileStr) => JSON.stringify({
         id: docObj.id || ('DOC-' + docObj.code),
@@ -2687,18 +2724,18 @@
     window.pushDocumentToBackend = pushDocumentToBackend;
 
     async function syncBackendConfigAndData(isManualRefresh = false) {
-      const headers = { 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' };
+      const headers = getAuthRequestHeaders();
 
       // Thực thi SONG SONG cả 3 tác vụ (Config API + Documents API + IndexedDB Metadata) thay vì chờ tuần tự
       const cfgPromise = (!isManualRefresh && window._earlyConfigFetchPromise)
         ? window._earlyConfigFetchPromise
-        : fetch('/api/config?_t=' + Date.now()).catch(() => null);
+        : fetch('/api/config?_t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
       window._earlyConfigFetchPromise = null;
 
-      const docsUrl = isManualRefresh ? ('/api/documents?_t=' + Date.now()) : '/api/documents';
-      const docsPromise = (!isManualRefresh && window._earlyDocsFetchPromise)
+      const docsUrl = '/api/documents?_t=' + Date.now();
+      const docsPromise = (!isManualRefresh && !currentUser && window._earlyDocsFetchPromise)
         ? window._earlyDocsFetchPromise
-        : fetch(docsUrl, { cache: isManualRefresh ? 'no-store' : 'default', headers }).catch(() => null);
+        : fetch(docsUrl, { cache: 'no-store', headers }).catch(() => null);
       window._earlyDocsFetchPromise = null;
 
       const idbPromise = loadAllFilesFromIDB(false).catch(() => ({}));
@@ -2906,6 +2943,16 @@
               showToast(`☁️ Đã làm mới và đồng bộ ${documents.length} tài liệu mới nhất từ đám mây!`, 'info');
             }
           }
+          if (currentDoc) {
+            const refreshedCurrent = documents.find(d => String(d.code || '').toLowerCase() === String(currentDoc.code || '').toLowerCase());
+            if (refreshedCurrent && !isDocVisible(refreshedCurrent)) {
+              _pendingDeepLinkDocCode = refreshedCurrent.code;
+              closeDocReader();
+              showToast('🔒 Tài liệu nội bộ: Vui lòng đăng nhập tài khoản để xem quy trình này!', 'error');
+              openAuthModal();
+            }
+          }
+          checkQrDeepLinkParam();
         }
       } catch (e) {
         if (isManualRefresh) {
@@ -2948,9 +2995,31 @@
       }, 3200);
     }
 
+    function isInternalDoc(doc) {
+      if (!doc) return false;
+      const acc = String(doc.access || doc.access_level || '').trim().toLowerCase();
+      return acc === 'nội bộ' || acc === 'noi bo' || acc === 'internal';
+    }
+
     function isDocVisible(doc) {
-      if (doc.access === 'Nội bộ' && !currentUser) return false;
+      if (!doc) return false;
+      if (isInternalDoc(doc) && !currentUser) return false;
       return true;
+    }
+
+    function getAuthRequestHeaders(extraHeaders = {}) {
+      const headers = {
+        'X-FSC-Security-Token': 'FSC-ZeroTrust-v6',
+        ...extraHeaders
+      };
+      if (currentUser && currentUser.email) {
+        headers['X-User-Email'] = currentUser.email;
+        headers['X-User-Role'] = currentUser.role || 'user';
+        if (currentUser.sessionToken) {
+          headers['Authorization'] = `Bearer ${currentUser.sessionToken}`;
+        }
+      }
+      return headers;
     }
 
     function canDownloadDoc(doc) {
@@ -3702,6 +3771,27 @@
     // TÍNH NĂNG 1: MÃ QR TRA CỨU NHANH CHO TỪNG QUY TRÌNH (QR MATRIX GENERATOR + IN THẺ STANDEE)
     // =========================================================================
     let currentQrDoc = null;
+    let selectedQrPaperSize = 'A5';
+
+    function setQrPrintPaperSize(sizeVal) {
+      selectedQrPaperSize = (sizeVal === 'A4') ? 'A4' : 'A5';
+      const btnA5 = document.getElementById('btn-qr-size-a5');
+      const btnA4 = document.getElementById('btn-qr-size-a4');
+      const lblPrint = document.getElementById('lbl-btn-print-qr');
+      if (btnA5 && btnA4) {
+        if (selectedQrPaperSize === 'A5') {
+          btnA5.className = 'px-3 py-1 rounded-lg bg-[#FFC857] text-[#03152D] font-extrabold text-xs transition cursor-pointer';
+          btnA4.className = 'px-3 py-1 rounded-lg bg-[#102E52] text-[#B8C8DC] hover:text-white border border-[#B98A33]/35 font-bold text-xs transition cursor-pointer';
+        } else {
+          btnA4.className = 'px-3 py-1 rounded-lg bg-[#FFC857] text-[#03152D] font-extrabold text-xs transition cursor-pointer';
+          btnA5.className = 'px-3 py-1 rounded-lg bg-[#102E52] text-[#B8C8DC] hover:text-white border border-[#B98A33]/35 font-bold text-xs transition cursor-pointer';
+        }
+      }
+      if (lblPrint) {
+        lblPrint.textContent = `In Thẻ QR (${selectedQrPaperSize})`;
+      }
+    }
+    window.setQrPrintPaperSize = setQrPrintPaperSize;
 
     function getDocDirectUrl(docCode) {
       const base = (window.location && window.location.origin && window.location.origin !== 'null')
@@ -3710,7 +3800,14 @@
       return `${base}/?doc=${encodeURIComponent(docCode || '')}`;
     }
 
-    // Bộ vẽ Mã QR sắc nét kèm Logo 3D chính thức của Hệ thống ở chính giữa tâm mã QR
+    function getSchoolOfficePortalBannerLogoSrc() {
+      const sidebarLogo = document.querySelector('#btn-sidebar-brand img');
+      if (sidebarLogo && sidebarLogo.src) return sidebarLogo.src;
+      const iconLink = document.querySelector('link[rel="icon"]');
+      return (iconLink && iconLink.href) ? iconLink.href : '';
+    }
+
+    // Bộ vẽ Mã QR độ phân giải Ultra-HD (1200x1200 px) sắc nét kèm Logo 3D chính thức của Hệ thống ở tâm
     let _cachedPortalLogoImg = null;
     function getPortalSystemLogoImage() {
       if (_cachedPortalLogoImg) return _cachedPortalLogoImg;
@@ -3724,32 +3821,40 @@
     }
 
     function drawCenterSystemLogoOnQr(ctx, size) {
-      const boxSize = 46;
-      const half = boxSize / 2;
-      const cx = size / 2;
-      const cy = size / 2;
+      const boxSize = Math.round(size * 0.21);
+      const half = Math.round(boxSize / 2);
+      const cx = Math.round(size / 2);
+      const cy = Math.round(size / 2);
+      const radius = Math.round(size * 0.038);
+      const pad = Math.round(size * 0.018);
 
-      // Vẽ khung nền trắng bo góc viền vàng sang trọng ở tâm mã QR
       ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      // Vẽ khung nền trắng bo góc viền kép Navy & Vàng Gold ở tâm mã QR
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
       if (ctx.roundRect) {
-        ctx.roundRect(cx - half, cy - half, boxSize, boxSize, 10);
+        ctx.roundRect(cx - half, cy - half, boxSize, boxSize, radius);
       } else {
         ctx.rect(cx - half, cy - half, boxSize, boxSize);
       }
       ctx.fill();
-      ctx.lineWidth = 2;
+      ctx.lineWidth = Math.max(4, Math.round(size * 0.008));
       ctx.strokeStyle = '#03152D';
       ctx.stroke();
 
-      // Vẽ Logo 3D của hệ thống vào chính giữa khung
       const logoImg = getPortalSystemLogoImage();
       if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
-        ctx.drawImage(logoImg, cx - half + 4, cy - half + 4, boxSize - 8, boxSize - 8);
+        ctx.drawImage(logoImg, cx - half + pad, cy - half + pad, boxSize - pad * 2, boxSize - pad * 2);
       } else if (logoImg) {
         logoImg.onload = () => {
-          ctx.drawImage(logoImg, cx - half + 4, cy - half + 4, boxSize - 8, boxSize - 8);
+          ctx.save();
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(logoImg, cx - half + pad, cy - half + pad, boxSize - pad * 2, boxSize - pad * 2);
+          ctx.restore();
         };
       }
       ctx.restore();
@@ -3758,19 +3863,21 @@
     function renderQrCodeToCanvas(canvasEl, textUrl, docCodeLabel) {
       if (!canvasEl) return;
       const ctx = canvasEl.getContext('2d');
-      const size = 220;
+      const size = 1200; // Độ phân giải Ultra-HD 1200x1200px giúp in khổ A4/A5 và tải file PNG siêu nét
       canvasEl.width = size;
       canvasEl.height = size;
 
-      // Khởi tạo sẵn ảnh logo hệ thống
       getPortalSystemLogoImage();
 
       const drawDeterministicQrPattern = () => {
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, size, size);
-        const cells = 25;
-        const pad = 12;
-        const cellSize = (size - pad * 2) / cells;
+        const cells = 29;
+        const pad = 54;
+        const cellSize = Math.floor((size - pad * 2) / cells);
+        const realPad = Math.floor((size - cellSize * cells) / 2);
         ctx.fillStyle = '#03152D';
 
         const drawFinder = (r0, c0) => {
@@ -3779,7 +3886,7 @@
               const isBorder = r === 0 || r === 6 || c === 0 || c === 6;
               const isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
               if (isBorder || isInner) {
-                ctx.fillRect(pad + (c0 + c) * cellSize, pad + (r0 + r) * cellSize, Math.ceil(cellSize), Math.ceil(cellSize));
+                ctx.fillRect(realPad + (c0 + c) * cellSize, realPad + (r0 + r) * cellSize, cellSize, cellSize);
               }
             }
           }
@@ -3797,32 +3904,36 @@
           for (let c = 0; c < cells; c++) {
             if ((r < 8 && c < 8) || (r < 8 && c >= cells - 8) || (r >= cells - 8 && c < 8)) continue;
             if (r === 6 || c === 6) {
-              if ((r + c) % 2 === 0) ctx.fillRect(pad + c * cellSize, pad + r * cellSize, Math.ceil(cellSize), Math.ceil(cellSize));
+              if ((r + c) % 2 === 0) ctx.fillRect(realPad + c * cellSize, realPad + r * cellSize, cellSize, cellSize);
               continue;
             }
-            if (r >= 9 && r <= 15 && c >= 9 && c <= 15) continue;
+            if (r >= 11 && r <= 17 && c >= 11 && c <= 17) continue;
             seed ^= (r * 31 + c * 17) & 0xff;
             seed = Math.imul(seed, 16777619);
             if ((seed >>> 0) % 100 < 48) {
-              ctx.fillRect(pad + c * cellSize, pad + r * cellSize, Math.ceil(cellSize), Math.ceil(cellSize));
+              ctx.fillRect(realPad + c * cellSize, realPad + r * cellSize, cellSize, cellSize);
             }
           }
         }
+        ctx.restore();
         drawCenterSystemLogoOnQr(ctx, size);
       };
 
       drawDeterministicQrPattern();
 
-      // Nạp mã QR chuẩn quốc tế với mức sửa lỗi cao nhất (ecc=H, cho phép chèn Logo 30% diện tích tâm mà vẫn quét nhạy 100%)
+      // Nạp mã QR chuẩn quốc tế độ phân giải 1000x1000 với mức sửa lỗi cao nhất (ecc=H) và tắt làm mờ điểm ảnh
       const qrImg = new Image();
       qrImg.crossOrigin = 'anonymous';
       qrImg.onload = () => {
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, size, size);
-        ctx.drawImage(qrImg, 8, 8, size - 16, size - 16);
+        ctx.drawImage(qrImg, 36, 36, size - 72, size - 72);
+        ctx.restore();
         drawCenterSystemLogoOnQr(ctx, size);
       };
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=H&margin=4&data=${encodeURIComponent(textUrl)}`;
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&ecc=H&margin=2&data=${encodeURIComponent(textUrl)}`;
     }
 
     function openDocQrCodeModal(docCodeOrId) {
@@ -3838,17 +3949,14 @@
       }
       currentQrDoc = doc;
       const directUrl = getDocDirectUrl(doc.code);
-      const deptEl = document.getElementById('qr-card-dept-badge');
-      const codeEl = document.getElementById('qr-card-code-badge');
       const titleEl = document.getElementById('qr-card-doc-title');
-      const urlEl = document.getElementById('qr-card-direct-url');
+      const bannerLogoEl = document.getElementById('qr-card-banner-logo');
       const canvasEl = document.getElementById('qr-code-canvas');
 
-      if (deptEl) deptEl.textContent = `Bộ phận: ${doc.dept || doc.category || 'Văn phòng'} • ${doc.type || 'Quy trình'}`;
-      if (codeEl) codeEl.textContent = `${doc.code} (v${doc.version || '1.0'})`;
       if (titleEl) titleEl.textContent = doc.title;
-      if (urlEl) urlEl.textContent = directUrl;
+      if (bannerLogoEl) bannerLogoEl.src = getSchoolOfficePortalBannerLogoSrc();
 
+      setQrPrintPaperSize(selectedQrPaperSize || 'A5');
       renderQrCodeToCanvas(canvasEl, directUrl, doc.code);
 
       const modal = document.getElementById('modal-doc-qrcode');
@@ -3881,7 +3989,7 @@
       const url = getDocDirectUrl(currentQrDoc.code);
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(() => {
-          showToast(`🔗 Đã sao chép đường dẫn QR: ${url}`, 'success');
+          showToast(`🔗 Đã sao chép đường dẫn QR của tài liệu!`, 'success');
         }).catch(() => {
           showToast(`🔗 Đường dẫn: ${url}`, 'info');
         });
@@ -3898,49 +4006,136 @@
         const dataUrl = canvasEl.toDataURL('image/png');
         const a = document.createElement('a');
         a.href = dataUrl;
-        a.download = `QR_${currentQrDoc.code.replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
+        a.download = `QR_HD_${currentQrDoc.code.replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        showToast(`⬇️ Đã tải xuống ảnh mã QR của ${currentQrDoc.code}!`, 'success');
+        showToast(`⬇️ Đã tải xuống ảnh Mã QR độ phân giải cao (1200x1200px)!`, 'success');
       } catch (e) {
         printDocQrStandeeCard();
       }
     }
     window.downloadDocQrPng = downloadDocQrPng;
 
-    function printDocQrStandeeCard() {
+    function printDocQrStandeeCard(paperOverride) {
       if (!currentQrDoc) return;
+      const paperSize = (paperOverride === 'A4' || paperOverride === 'A5') ? paperOverride : (selectedQrPaperSize || 'A5');
+      const isA4 = (paperSize === 'A4');
       const canvasEl = document.getElementById('qr-code-canvas');
       let imgSrc = '';
       try { imgSrc = canvasEl.toDataURL('image/png'); } catch (e) {
-        imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=4&data=${encodeURIComponent(getDocDirectUrl(currentQrDoc.code))}`;
+        imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&ecc=H&margin=2&data=${encodeURIComponent(getDocDirectUrl(currentQrDoc.code))}`;
       }
+      const portalLogoSrc = getSchoolOfficePortalBannerLogoSrc();
+
       const printHtml = `<!DOCTYPE html>
       <html lang="vi">
       <head>
         <meta charset="utf-8">
-        <title>Thẻ QR - ${escapeHtmlStr(currentQrDoc.code)}</title>
+        <title>Thẻ QR (${paperSize}) - ${escapeHtmlStr(currentQrDoc.title)}</title>
         <style>
-          @page { size: A5 portrait; margin: 12mm; }
-          body { font-family: 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif; text-align: center; color: #03152D; margin: 0; padding: 16px; }
-          .qr-box { border: 3px solid #03152D; border-radius: 18px; padding: 24px 20px; max-width: 380px; margin: 0 auto; }
-          .org { font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #071F3D; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 12px; }
-          .badges { margin-bottom: 10px; font-size: 12px; font-weight: 700; color: #0369a1; }
-          .title { font-size: 18px; font-weight: 900; margin: 10px 0 16px 0; line-height: 1.35; color: #03152D; }
-          .qr-img { width: 210px; height: 210px; border: 2px solid #03152D; border-radius: 12px; padding: 8px; }
-          .guide { font-size: 12.5px; font-weight: 700; margin-top: 14px; color: #1e293b; }
-          .url { font-size: 10.5px; font-family: monospace; color: #475569; margin-top: 6px; word-break: break-all; }
+          @page { size: ${paperSize} portrait; margin: ${isA4 ? '14mm' : '10mm'}; }
+          * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body {
+            font-family: 'Be Vietnam Pro', 'Segoe UI', Roboto, Arial, sans-serif;
+            text-align: center;
+            color: #03152D;
+            margin: 0;
+            padding: 0;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: ${isA4 ? '265mm' : '186mm'};
+          }
+          .standee-card {
+            width: 100%;
+            max-width: ${isA4 ? '176mm' : '126mm'};
+            margin: 0 auto;
+            border: ${isA4 ? '3.5px' : '2.5px'} solid #03152D;
+            border-radius: ${isA4 ? '24px' : '18px'};
+            overflow: hidden;
+            background: #FFFFFF;
+            box-shadow: 0 10px 30px rgba(3, 21, 45, 0.08);
+          }
+          .standee-header {
+            background: #03152D;
+            padding: ${isA4 ? '22px 24px 18px' : '16px 18px 13px'};
+            border-bottom: ${isA4 ? '4px' : '3px'} solid #FFC857;
+          }
+          .portal-logo {
+            height: ${isA4 ? '68px' : '50px'};
+            width: auto;
+            max-width: 88%;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto ${isA4 ? '8px' : '6px'} auto;
+          }
+          .school-name {
+            font-size: ${isA4 ? '13px' : '10.5px'};
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #FFC857;
+          }
+          .standee-body {
+            padding: ${isA4 ? '28px 26px 26px' : '18px 18px 18px'};
+          }
+          .doc-title {
+            font-size: ${isA4 ? '24px' : '17.5px'};
+            font-weight: 900;
+            line-height: 1.35;
+            color: #03152D;
+            margin: 0 auto ${isA4 ? '22px' : '14px'} auto;
+            max-width: 94%;
+          }
+          .qr-frame {
+            display: inline-block;
+            padding: ${isA4 ? '16px' : '11px'};
+            background: #FFFFFF;
+            border: ${isA4 ? '3px' : '2.5px'} solid #03152D;
+            outline: ${isA4 ? '5px' : '3.5px'} solid rgba(255, 200, 87, 0.45);
+            border-radius: ${isA4 ? '22px' : '16px'};
+            margin: ${isA4 ? '4px 0 22px 0' : '2px 0 14px 0'};
+          }
+          .qr-img {
+            width: ${isA4 ? '340px' : '235px'};
+            height: ${isA4 ? '340px' : '235px'};
+            display: block;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+          }
+          .scan-guide {
+            display: inline-block;
+            font-size: ${isA4 ? '14.5px' : '11.5px'};
+            font-weight: 800;
+            color: #03152D;
+            background: #F8FAFC;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 999px;
+            padding: ${isA4 ? '9px 22px' : '6px 14px'};
+          }
         </style>
       </head>
       <body>
-        <div class="qr-box">
-          <div class="org">TRƯỜNG THPT FPT CẦN THƠ • VĂN PHÒNG SỐ</div>
-          <div class="badges">Bộ phận: ${escapeHtmlStr(currentQrDoc.dept || currentQrDoc.category)} | Mã: ${escapeHtmlStr(currentQrDoc.code)} (v${escapeHtmlStr(currentQrDoc.version || '1.0')})</div>
-          <div class="title">${escapeHtmlStr(currentQrDoc.title)}</div>
-          <img class="qr-img" src="${imgSrc}" alt="QR Code">
-          <div class="guide">📷 Quét mã QR bằng Camera điện thoại hoặc Zalo để mở xem trực tuyến</div>
-          <div class="url">${escapeHtmlStr(getDocDirectUrl(currentQrDoc.code))}</div>
+        <div class="standee-card">
+          <div class="standee-header">
+            <img class="portal-logo" src="${portalLogoSrc}" alt="School Office Portal">
+            <div class="school-name">TRƯỜNG THPT FPT CẦN THƠ</div>
+          </div>
+          <div class="standee-body">
+            <div class="doc-title">${escapeHtmlStr(currentQrDoc.title)}</div>
+            <div class="qr-frame">
+              <img class="qr-img" src="${imgSrc}" alt="QR Code">
+            </div>
+            <div>
+              <span class="scan-guide">📷 Quét mã QR bằng Camera hoặc Zalo để xem trực tuyến</span>
+            </div>
+          </div>
         </div>
       </body>
       </html>`;
@@ -4230,7 +4425,7 @@
     }
 
     function getDocReviewBadgeHtml(doc) {
-      if (!currentUser) return '';
+      if (!currentUser || currentUser.role !== 'admin') return '';
       const info = computeDocReviewInfo(doc);
       if (info.status === 'overdue') {
         return `<span onclick="event.stopPropagation(); openQmsReviewTrackerModal()" class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${info.badgeClass} cursor-pointer" title="Hạn rà soát: ${info.dueDateStr}">⚠️ ${info.label}</span>`;
@@ -4317,8 +4512,12 @@
 
     function openQmsReviewTrackerModal() {
       if (!currentUser) {
-        showToast('Vui lòng đăng nhập để theo dõi hạn rà soát văn bản.', 'info');
+        showToast('Vui lòng đăng nhập tài khoản Quản trị viên (Admin) để sử dụng mục Rà soát.', 'info');
         openAuthModal();
+        return;
+      }
+      if (currentUser.role !== 'admin') {
+        showToast('Mục Theo dõi hạn rà soát văn bản chỉ dành riêng cho Quản trị viên (Admin).', 'error');
         return;
       }
       renderQmsReviewTrackerModalDOM();
@@ -5793,6 +5992,12 @@
 
     function printCurrentDocument() {
       if (!currentDoc) return;
+      if (!isDocVisible(currentDoc)) {
+        closeDocReader();
+        showToast('🔒 Tài liệu nội bộ: Vui lòng đăng nhập tài khoản để in tài liệu này!', 'error');
+        openAuthModal();
+        return;
+      }
       const officeEditor = document.getElementById('reader-office-live-editor');
       const officeCanvas = document.getElementById('office-editor-canvas');
       const sheetTarget = document.getElementById('reader-sheet-zoom-target');
@@ -5924,26 +6129,45 @@
     window.printCurrentDocument = printCurrentDocument;
 
     async function openDocReader(docId) {
-      const doc = documents.find(d => d.id === docId || d.code === docId);
+      const doc = documents.find(d => String(d.id || '') === String(docId || '') || String(d.code || '').toLowerCase() === String(docId || '').trim().toLowerCase());
       if (!doc) return;
+
+      // CHỐT CHẶN BẢO MẬT ZERO-TRUST: Tài liệu Nội bộ bắt buộc phải đăng nhập mới được mở xem!
+      if (!isDocVisible(doc)) {
+        _pendingDeepLinkDocCode = doc.code;
+        closeDocReader();
+        showToast('🔒 Tài liệu nội bộ: Vui lòng đăng nhập tài khoản để xem quy trình này!', 'error');
+        openAuthModal();
+        return;
+      }
+
       if (!doc.fileData && doc.code) {
         const cachedFile = await getFileFromIDB(doc.code);
         if (cachedFile && cachedFile.fileData) {
           doc.fileData = cachedFile.fileData;
           if (cachedFile.fileName) doc.currentFile = cachedFile.fileName;
         } else {
-          // Tải trực tiếp tệp đính kèm đã mã hóa từ cơ sở dữ liệu Neon PostgreSQL khi mở xem trên Điện thoại hoặc Cửa sổ Ẩn danh
+          // Tải trực tiếp tệp đính kèm đã mã hóa từ cơ sở dữ liệu Neon PostgreSQL (có kiểm tra xác thực Nội bộ)
           try {
             showToast('⏳ Đang tải tệp tài liệu từ máy chủ...', 'info');
-            const fRes = await fetch(`/api/documents?code=${encodeURIComponent(doc.code)}`, {
-              headers: { 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' }
+            const fRes = await fetch(`/api/documents?code=${encodeURIComponent(doc.code)}&_t=${Date.now()}`, {
+              cache: 'no-store',
+              headers: getAuthRequestHeaders()
             });
+            if (fRes.status === 401 || fRes.status === 403) {
+              doc.access = 'Nội bộ';
+              _pendingDeepLinkDocCode = doc.code;
+              closeDocReader();
+              showToast('🔒 Tài liệu nội bộ: Vui lòng đăng nhập tài khoản để xem quy trình này!', 'error');
+              openAuthModal();
+              return;
+            }
             if (fRes.ok) {
               const fJson = await fRes.json();
               if (fJson && fJson.file_data) {
                 doc.fileData = fJson.file_data;
                 if (fJson.current_file) doc.currentFile = fJson.current_file;
-                await saveFileToIDB(doc.code, doc.currentFile, doc.fileData);
+                await saveFileToIDB(doc.code, doc.currentFile, doc.fileData, doc);
               }
             }
           } catch (e) {
@@ -6404,12 +6628,13 @@
       const btnHeaderReview = document.getElementById('btn-header-review-tracker');
       const btnHeaderEco = document.getElementById('btn-header-ecosystem-launcher');
       const btnReaderQr = document.getElementById('btn-modal-qr-code');
+      const sectionUserEcosystem = document.getElementById('section-user-ecosystem');
 
       if (currentUser) {
         loggedOutBox.classList.add('hidden');
         loggedInBox.classList.remove('hidden');
         loggedInBox.classList.add('flex');
-        if (btnHeaderReview) { btnHeaderReview.classList.remove('hidden'); btnHeaderReview.classList.add('flex'); }
+        if (sectionUserEcosystem) sectionUserEcosystem.classList.remove('hidden');
         if (btnHeaderEco) { btnHeaderEco.classList.remove('hidden'); btnHeaderEco.classList.add('flex'); }
         if (btnReaderQr) { btnReaderQr.classList.remove('hidden'); btnReaderQr.classList.add('flex'); }
         if (emptyLoginBtn) emptyLoginBtn.classList.add('hidden');
@@ -6440,6 +6665,7 @@
         if (currentUser.role === 'admin') {
           adminNavBtn.classList.remove('hidden');
           if (sectionOfficeOps) sectionOfficeOps.classList.remove('hidden');
+          if (btnHeaderReview) { btnHeaderReview.classList.remove('hidden'); btnHeaderReview.classList.add('flex'); }
           if (sectionAdminDocTypes) sectionAdminDocTypes.classList.remove('hidden');
           if (btnAdminAddCat) btnAdminAddCat.classList.remove('hidden');
           if (btnAdminAddDoc) btnAdminAddDoc.classList.remove('hidden');
@@ -6448,6 +6674,8 @@
         } else {
           adminNavBtn.classList.add('hidden');
           if (sectionOfficeOps) sectionOfficeOps.classList.add('hidden');
+          if (btnHeaderReview) { btnHeaderReview.classList.add('hidden'); btnHeaderReview.classList.remove('flex'); }
+          closeQmsReviewTrackerModal();
           if (sectionAdminDocTypes) sectionAdminDocTypes.classList.add('hidden');
           if (btnAdminAddCat) btnAdminAddCat.classList.add('hidden');
           if (currentUser.role === 'editor') if (btnAdminAddDoc) btnAdminAddDoc.classList.remove('hidden');
@@ -6460,6 +6688,7 @@
         loggedOutBox.classList.remove('hidden');
         loggedInBox.classList.add('hidden');
         loggedInBox.classList.remove('flex');
+        if (sectionUserEcosystem) sectionUserEcosystem.classList.add('hidden');
         if (btnHeaderReview) { btnHeaderReview.classList.add('hidden'); btnHeaderReview.classList.remove('flex'); }
         if (btnHeaderEco) { btnHeaderEco.classList.add('hidden'); btnHeaderEco.classList.remove('flex'); }
         if (btnReaderQr) { btnReaderQr.classList.add('hidden'); btnReaderQr.classList.remove('flex'); }
@@ -6617,6 +6846,12 @@
         renderDirectCards();
         renderOtherViews();
         showToast(`Đăng nhập thành công: ${currentUser.name}`, 'success');
+        await syncBackendConfigAndData(false);
+        if (_pendingDeepLinkDocCode) {
+          const codeToOpen = _pendingDeepLinkDocCode;
+          _pendingDeepLinkDocCode = '';
+          openDocReader(codeToOpen);
+        }
       } catch (err) {
         showToast('Lỗi xử lý đăng nhập tài khoản Google.', 'error');
       }
@@ -7031,6 +7266,12 @@
 
     function triggerDocumentDownload() {
       if (!currentDoc) return;
+      if (!isDocVisible(currentDoc)) {
+        closeDocReader();
+        showToast('🔒 Tài liệu nội bộ: Vui lòng đăng nhập tài khoản để tải tài liệu này!', 'error');
+        openAuthModal();
+        return;
+      }
       if (!canDownloadDoc(currentDoc)) {
         showToast('Tài liệu này chỉ cho phép xem trực tuyến, không được phép tải về máy.', 'error');
         return;
@@ -7488,8 +7729,11 @@
       if (btnQuickLogout) {
         btnQuickLogout.addEventListener('click', () => {
           currentUser = null;
-          sessionStorage.removeItem('fpt_auth_user');
-          localStorage.removeItem('school_portal_user');
+          saveEncryptedUserSession(null);
+          closeDocReader();
+          closeFscEcosystemModal();
+          closeQmsReviewTrackerModal();
+          closeDocQrCodeModal();
           showToast('Đã đăng xuất khỏi hệ thống thành công', 'info');
           switchView('dashboard');
           updateAuthState();
@@ -8072,7 +8316,11 @@
         btnModalLogout.addEventListener('click', () => {
           closeProfileModal();
           currentUser = null;
-          localStorage.removeItem('school_portal_user');
+          saveEncryptedUserSession(null);
+          closeDocReader();
+          closeFscEcosystemModal();
+          closeQmsReviewTrackerModal();
+          closeDocQrCodeModal();
           updateAuthState();
           renderDirectCards();
           renderOtherViews();
@@ -8260,10 +8508,17 @@
           if (editUploadedFileData) {
             doc.fileData = editUploadedFileData;
             doc.currentFile = editUploadedFileName;
-            await saveFileToIDB(doc.code, doc.currentFile, doc.fileData);
+            await saveFileToIDB(doc.code, doc.currentFile, doc.fileData, doc);
             showToast(`Đã cập nhật phiên bản v${doc.version} kèm tệp "${editUploadedFileName}" (Bản cũ v${oldVer} đã lưu cho Admin)!`, 'info');
-          } else if (isVersionUpgraded) {
-            showToast(`Đã nâng cấp phiên bản từ v${oldVer} lên v${doc.version} (Bản cũ vẫn lưu cho Admin xem)!`, 'info');
+          } else {
+            // Cập nhật lại metadata (bao gồm mức độ truy cập Nội bộ / Mở) vào IndexedDB
+            const existingCached = await getFileFromIDB(oldDocCode || doc.code);
+            if (existingCached && existingCached.fileData) {
+              await saveFileToIDB(doc.code, doc.currentFile || existingCached.fileName, existingCached.fileData, doc);
+            }
+            if (isVersionUpgraded) {
+              showToast(`Đã nâng cấp phiên bản từ v${oldVer} lên v${doc.version} (Bản cũ vẫn lưu cho Admin xem)!`, 'info');
+            }
           }
 
           safeSaveDocumentsToLocal(documents);
@@ -8271,8 +8526,8 @@
           updateBadges();
           renderDirectCards();
           renderOtherViews();
-          localStorage.setItem('fsc_initial_db_migrated_v6', 'true');
-          const syncedEditOk = await pushDocumentToBackend(doc, oldDocCode);
+          const isMetaOnlyUpdate = !Boolean(editUploadedFileData) && Boolean(doc.hasRemoteFile);
+          const syncedEditOk = await pushDocumentToBackend(doc, oldDocCode, isMetaOnlyUpdate);
           if (syncedEditOk) {
             showToast(`☁️ Đã cập nhật và đồng bộ "${doc.code}" lên đám mây cho mọi thiết bị!`, 'success');
           } else {

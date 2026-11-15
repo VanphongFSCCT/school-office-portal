@@ -246,6 +246,21 @@ export function verifyUserSessionToken(token) {
   }
 }
 
+export function isRequestAuthenticated(req) {
+  if (!req || !req.headers) return false;
+  const authHeader = String(req.headers['authorization'] || '').trim();
+  if (authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7).trim();
+    const verified = verifyUserSessionToken(token);
+    if (verified) return true;
+  }
+  const userEmail = String(req.headers['x-user-email'] || '').trim().toLowerCase();
+  if (userEmail && userEmail.includes('@') && userEmail !== '@fpt.edu.vn') {
+    return true;
+  }
+  return false;
+}
+
 neonConfig.fetchConnectionCache = true;
 
 let isDocSchemaReady = false;
@@ -363,12 +378,21 @@ export default async function handler(req, res) {
         const docRows = await sql`
           SELECT to_jsonb(d) AS row_json FROM documents d
           WHERE LOWER(code) = ${requestedCode.toLowerCase()}
+          ORDER BY updated_at DESC NULLS LAST
           LIMIT 1
         `;
         if (docRows.length === 0) {
           return res.status(404).json({ error: 'Không tìm thấy tài liệu' });
         }
         const r = docRows[0].row_json || {};
+        const docAccessLevel = String(decryptSensitiveText(r.access_level) || r.access_level || 'Mở').trim();
+        if (docAccessLevel === 'Nội bộ' && !isRequestAuthenticated(req)) {
+          return res.status(403).json({
+            error: 'Tài liệu nội bộ: Vui lòng đăng nhập tài khoản hệ thống để xem quy trình này.',
+            requiresAuth: true,
+            access_level: 'Nội bộ'
+          });
+        }
         const rawStoredFile = r.file_data || r.file_url || '';
         let fullFileData = decryptSensitiveText(rawStoredFile) || rawStoredFile || '';
         if (!fullFileData || fullFileData === '__CHUNKED_IN_DB__') {
@@ -395,17 +419,19 @@ export default async function handler(req, res) {
         });
       }
 
-      // 2. Kiểm tra L1 Cache & ETag (bỏ qua khi client truyền _t để lấy dữ liệu mới nhất tức thì)
+      // 2. Kiểm tra L1 Micro-Cache tách biệt theo trạng thái xác thực (bỏ qua 100% khi trình duyệt truyền _t để cập nhật quyền Nội bộ tức thì)
+      const isCallerAuthed = isRequestAuthenticated(req);
+      const cacheKey = isCallerAuthed ? "docs_list_v6_auth" : "docs_list_v6_guest";
       const bypassCache = Boolean(req.query && req.query._t);
       if (!bypassCache) {
-        const cached = getCachedResponse('docs_list_v6', 30000);
+        const cached = getCachedResponse(cacheKey, 1500);
         if (cached) {
-          const clientEtag = req.headers['if-none-match'];
+          const clientEtag = req.headers["if-none-match"];
           if (clientEtag && clientEtag === cached.etag) {
             return res.status(304).end();
           }
-          res.setHeader('ETag', cached.etag);
-          res.setHeader('X-Cache', 'HIT-L1');
+          res.setHeader("ETag", cached.etag);
+          res.setHeader("X-Cache", "HIT-L1");
           return res.status(200).json(cached.data);
         }
       }
@@ -458,7 +484,11 @@ export default async function handler(req, res) {
           }));
         }
 
-        const inlineDec = item.inline_file ? (decryptSensitiveText(item.inline_file) || item.inline_file) : '';
+        const resolvedAccess = String(decryptSensitiveText(r.access_level) || r.access_level || 'Mở').trim();
+        const isInternalProtected = (resolvedAccess === 'Nội bộ');
+        const inlineDec = (!isInternalProtected || isCallerAuthed) && item.inline_file
+          ? (decryptSensitiveText(item.inline_file) || item.inline_file)
+          : '';
         const codeLower = String(r.code || '').toLowerCase();
         return {
           id: String(r.id || r.code || ''),
@@ -471,12 +501,12 @@ export default async function handler(req, res) {
           status: r.status || 'Có hiệu lực',
           department: decryptSensitiveText(r.department) || r.department || r.category_id || 'Văn phòng',
           current_file: decryptSensitiveText(r.current_file) || r.current_file || `${r.code || 'tai-lieu'}.pdf`,
-          description: decryptSensitiveText(r.description) || r.description || '',
-          access_level: r.access_level || 'Mở',
+          description: (!isInternalProtected || isCallerAuthed) ? (decryptSensitiveText(r.description) || r.description || '') : '',
+          access_level: resolvedAccess,
           download_perm: r.download_perm || 'allow_all',
           file_data: inlineDec === '__CHUNKED_IN_DB__' ? '' : inlineDec,
           has_remote_file: Boolean(item.has_file || chunkedCodesSet.has(codeLower)),
-          version_history: verHist,
+          version_history: (!isInternalProtected || isCallerAuthed) ? verHist : [],
           updated_at: r.updated_at || r.created_at || ''
         };
       }).filter(d => d.code);
@@ -500,7 +530,7 @@ export default async function handler(req, res) {
         data: uniqueLatestRows,
         deletedCodes: deletedCodesList
       };
-      const savedCache = setCachedResponse('docs_list_v6', responsePayload);
+      const savedCache = setCachedResponse(cacheKey, responsePayload);
       res.setHeader('ETag', savedCache.etag);
       res.setHeader('X-Cache', bypassCache ? 'BYPASS-FRESH' : 'MISS');
       return res.status(200).json(responsePayload);
@@ -599,7 +629,7 @@ export default async function handler(req, res) {
       const existingRows = await sql`
         SELECT id, to_jsonb(d) AS row_json FROM documents d
         WHERE LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
-        LIMIT 1
+        ORDER BY updated_at DESC NULLS LAST
       `;
 
       let savedRecord = null;
@@ -608,6 +638,16 @@ export default async function handler(req, res) {
         const prevRow = existingRows[0].row_json || {};
         const finalFileData = encryptedFileData !== '' ? encryptedFileData : (prevRow.file_data || prevRow.file_url || '');
         const finalHistory = safeHistoryArray.length > 0 ? historyJson : JSON.stringify(prevRow.version_history || []);
+        // Xóa các bản ghi trùng mã cũ (nếu có) để đảm bảo tính nhất quán tuyệt đối của access_level
+        if (existingRows.length > 1) {
+          try {
+            await sql`
+              DELETE FROM documents
+              WHERE (LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()})
+                AND id <> ${targetId}
+            `;
+          } catch (e) {}
+        }
         try {
           const updated = await sql`
             UPDATE documents SET
@@ -626,8 +666,8 @@ export default async function handler(req, res) {
               file_url = '',
               version_history = ${finalHistory}::jsonb,
               updated_at = CURRENT_TIMESTAMP
-            WHERE id = ${targetId}
-            RETURNING id, code, version, effective_date
+            WHERE id = ${targetId} OR LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
+            RETURNING id, code, version, effective_date, access_level
           `;
           savedRecord = updated[0];
         } catch (upErr) {
@@ -645,8 +685,8 @@ export default async function handler(req, res) {
               access_level = ${cleanAccess.slice(0, 45)},
               file_url = ${finalFileData},
               updated_at = CURRENT_TIMESTAMP
-            WHERE id = ${targetId}
-            RETURNING id, code, version, effective_date
+            WHERE id = ${targetId} OR LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
+            RETURNING id, code, version, effective_date, access_level
           `;
           savedRecord = updatedFallback[0];
         }
