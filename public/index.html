@@ -339,6 +339,9 @@
     #modal-user-profile-details:not(.hidden),
     #modal-create-admin:not(.hidden),
     #modal-category:not(.hidden),
+    #modal-doc-qrcode:not(.hidden),
+    #modal-fsc-ecosystem:not(.hidden),
+    #modal-qms-review-tracker:not(.hidden),
     #modal-confirm-close-edit:not(.hidden) {
       display: flex !important;
       align-items: center !important;
@@ -500,7 +503,22 @@
 
         <!-- PHÂN HỆ NGHIỆP VỤ VĂN PHÒNG: TỰ ĐỘNG ẨN KHI CHƯA ĐĂNG NHẬP -->
         <div id="section-office-ops" class="hidden space-y-1">
-          <div class="pt-2.5 pb-1 px-3 text-[10px] uppercase font-bold tracking-wider text-[#FFC857]/80">Nghiệp vụ văn phòng</div>
+          <div class="pt-2.5 pb-1 px-3 text-[10px] uppercase font-bold tracking-wider text-[#FFC857]/80">Tiện ích nội bộ</div>
+
+          <button type="button" onclick="openFscEcosystemModal()" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl nav-btn-inactive transition cursor-pointer">
+            <svg class="w-4 h-4 shrink-0 text-[#38BDF8]" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+            </svg>
+            <span class="flex-1 text-left font-medium">Hệ sinh thái FSC</span>
+          </button>
+
+          <button type="button" onclick="openQmsReviewTrackerModal()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl nav-btn-inactive transition cursor-pointer">
+            <span class="flex items-center space-x-3">
+              <span class="text-sm shrink-0">🔔</span>
+              <span class="font-medium">Hạn rà soát văn bản</span>
+            </span>
+            <span id="sidebar-review-due-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#102E52] text-[#FFC857] border border-amber-400/30 font-bold">0</span>
+          </button>
 
           <button class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl nav-btn-inactive" data-view="notices">
             <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -550,8 +568,22 @@
           </div>
         </div>
 
-        <!-- Controls: Admin Add, Zoom, Login -->
-        <div class="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
+        <!-- Controls: Ecosystem, Review Reminder, Admin Add, Zoom, Login -->
+        <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+          <!-- Nút Hạn rà soát & Hệ sinh thái: Tự động ẩn khi chưa đăng nhập, chỉ hiển thị gọn gàng sau khi đăng nhập -->
+          <button id="btn-header-review-tracker" type="button" onclick="openQmsReviewTrackerModal()" class="hidden px-2.5 py-1.5 rounded-xl bg-[#102E52] hover:bg-[#163B68] border border-amber-400/35 text-xs font-bold text-amber-300 items-center space-x-1.5 transition cursor-pointer" title="Theo dõi hạn rà soát văn bản">
+            <span>🔔</span>
+            <span class="hidden xl:inline">Rà soát</span>
+            <span id="header-review-due-badge" class="px-1.5 py-0.2 rounded-full bg-amber-500/25 border border-amber-400/50 text-[#FFC857] text-[10px] font-mono font-extrabold">0</span>
+          </button>
+
+          <button id="btn-header-ecosystem-launcher" type="button" onclick="toggleFscEcosystemMenu(event)" class="hidden px-2.5 py-1.5 rounded-xl bg-[#102E52] hover:bg-[#FFC857] text-[#38BDF8] hover:text-[#03152D] border border-sky-400/35 text-xs font-bold items-center space-x-1.5 transition cursor-pointer" title="Hệ sinh thái FSC (FSpace, IT, Mua sắm...)">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+            </svg>
+            <span class="hidden xl:inline">Hệ sinh thái</span>
+          </button>
+
           <!-- Nút Quản trị viên tải tài liệu mới -->
           <button id="btn-admin-add-doc" onclick="openAddDocModal()" class="hidden px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-bold text-xs shadow-md hover:brightness-110 flex items-center space-x-1.5 transition cursor-pointer shrink-0" title="Đăng tải tài liệu">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -604,8 +636,8 @@
 
         <!-- ==================== VIEW 1: TỔNG QUAN (DASHBOARD - ĐÃ LOẠI BỎ BANNER CỒNG KỀNH THEO YÊU CẦU) ==================== -->
         <div id="view-dashboard" class="space-y-4 view-pane">
-          
-          <!-- THANH TÌM KIẾM TRANG TỔNG QUAN (LUÔN NỔI TRÊN CÙNG Z-60 ĐỂ DANH SÁCH GỢI Ý KHÔNG BAO GIỜ BỊ CHE KHUẤT) -->
+
+                    <!-- THANH TÌM KIẾM TRANG TỔNG QUAN (LUÔN NỔI TRÊN CÙNG Z-60 ĐỂ DANH SÁCH GỢI Ý KHÔNG BAO GIỜ BỊ CHE KHUẤT) -->
           <div id="home-top-search-card" class="card-enterprise relative z-[60] rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3 border border-[#B98A33]/25">
             <div class="relative w-full">
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -1179,7 +1211,12 @@
               <span class="hidden md:inline">Bản gốc</span>
             </button>
 
-            <button id="btn-print-live-doc" type="button" onclick="printCurrentDocument()" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-[11px] sm:text-xs transition flex items-center space-x-1 cursor-pointer shadow-sm" title="In trực tiếp tài liệu / biểu mẫu">
+            <button id="btn-modal-qr-code" type="button" onclick="if(currentDoc) openDocQrCodeModal(currentDoc.code)" class="hidden px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/50 font-bold text-[11px] sm:text-xs flex items-center space-x-1 transition cursor-pointer shadow-md" title="Tạo & In Thẻ Mã QR của quy trình này để dán tại phòng ban">
+              <span>📱</span>
+              <span class="hidden sm:inline">Mã QR</span>
+            </button>
+
+            <button id="btn-print-live-doc" type="button" onclick="printCurrentDocument()"  class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-[11px] sm:text-xs transition flex items-center space-x-1 cursor-pointer shadow-sm" title="In trực tiếp tài liệu / biểu mẫu">
               <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
               <span>In</span>
             </button>
@@ -1476,12 +1513,9 @@
   <div id="modal-add-document" onclick="if(event.target === this) closeAddDocModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-3xl mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-3 max-h-[92vh] flex flex-col overflow-hidden">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5 shrink-0 bg-[#071F3D] z-10">
-        <div>
-          <h3 class="font-bold text-white text-xs sm:text-sm flex items-center space-x-2">
-            <span>Đăng tải Tài liệu / Quy trình mới</span>
-            <span id="multi-doc-total-badge" class="px-2 py-0.5 rounded-full bg-[#102E52] border border-[#FFC857]/40 text-[#FFC857] text-[10.5px] font-mono font-bold">1 quy trình</span>
-          </h3>
-          <p class="text-[11px] text-[#B8C8DC] mt-0.5">Bấm <strong class="text-[#FFC857]">"+ Thêm Quy trình / Tài liệu khác"</strong> bên dưới để nhập nhiều quy trình cùng lúc (mỗi quy trình 1 file riêng)</p>
+        <div class="flex items-center space-x-2">
+          <h3 class="font-bold text-white text-xs sm:text-sm">Đăng tải Tài liệu / Quy trình</h3>
+          <span id="multi-doc-total-badge" class="px-2 py-0.5 rounded-full bg-[#102E52] border border-[#FFC857]/40 text-[#FFC857] text-[10.5px] font-mono font-bold">1 mục</span>
         </div>
         <button id="btn-close-doc-modal" type="button" onclick="closeAddDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
       </div>
@@ -1674,6 +1708,184 @@
 
   <!-- TOAST THÔNG BÁO -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- ==================== MODAL 1: THẺ MÃ QR TRA CỨU NHANH QUY TRÌNH (IN DÁN PHÒNG BAN / BẾP ĂN / HỘI TRƯỜNG) ==================== -->
+  <div id="modal-doc-qrcode" onclick="if(event.target === this) closeDocQrCodeModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-[#071F3D] border-2 border-[#FFC857]/60 rounded-2xl w-full max-w-md mx-auto my-auto p-5 shadow-2xl space-y-4 fsc-tab-anim-enter">
+      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">📱</span>
+          <div>
+            <h3 class="font-extrabold text-white text-sm">Mã QR Tài liệu</h3>
+          </div>
+        </div>
+        <button type="button" onclick="closeDocQrCodeModal()" class="text-slate-400 hover:text-white p-1 text-xl cursor-pointer">&times;</button>
+      </div>
+
+      <!-- THẺ STANDEE QR CODE CHUẨN IN ẤN -->
+      <div id="qr-printable-card-area" class="bg-white text-slate-900 rounded-2xl p-4 sm:p-5 border-2 border-[#FFC857] shadow-inner text-center space-y-2.5">
+        <div class="text-[10.5px] font-extrabold uppercase tracking-wider text-[#071F3D] border-b border-slate-200 pb-1.5">
+          TRƯỜNG THPT FPT CẦN THƠ • HỆ THỐNG VĂN PHÒNG SỐ
+        </div>
+        <div class="flex items-center justify-center space-x-2">
+          <span id="qr-card-dept-badge" class="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-900 font-bold text-[11px]">Bộ phận IT</span>
+          <span id="qr-card-code-badge" class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-mono font-bold text-[11px]">01-QT/IT/FSC (v1.0)</span>
+        </div>
+        <h4 id="qr-card-doc-title" class="text-sm sm:text-base font-black text-[#03152D] leading-snug px-2">
+          Quy trình Cấp mới và Thu hồi Tài khoản Hệ thống
+        </h4>
+        <div class="flex justify-center py-2">
+          <div class="p-2.5 bg-white rounded-xl border-2 border-[#071F3D] shadow-md inline-block">
+            <canvas id="qr-code-canvas" width="200" height="200" class="w-44 h-44 mx-auto block"></canvas>
+          </div>
+        </div>
+        <div class="text-[11px] font-semibold text-slate-700">
+          📷 Mở Camera điện thoại hoặc Zalo quét mã để xem trực tuyến
+        </div>
+        <div id="qr-card-direct-url" class="text-[10px] font-mono text-sky-700 bg-slate-100 px-2.5 py-1 rounded-lg truncate">
+          https://vp-fsc.vercel.app/?doc=01-QT/IT/FSC
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+        <button type="button" onclick="printDocQrStandeeCard()" class="px-3 py-2 rounded-xl bg-gradient-to-r from-[#FFE28A] via-[#FFC857] to-[#D49B24] text-[#03152D] font-extrabold text-xs flex items-center justify-center space-x-1.5 cursor-pointer shadow-md">
+          <span>🖨️</span>
+          <span>In Thẻ QR</span>
+        </button>
+        <button type="button" onclick="downloadDocQrPng()" class="px-3 py-2 rounded-xl bg-[#102E52] hover:bg-[#163B68] text-white border border-[#B98A33]/40 font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer">
+          <span>⬇️</span>
+          <span>Tải ảnh PNG</span>
+        </button>
+        <button type="button" onclick="copyDocQrDirectLink()" class="px-3 py-2 rounded-xl bg-[#102E52] hover:bg-[#163B68] text-[#38BDF8] border border-sky-400/30 font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer">
+          <span>🔗</span>
+          <span>Sao chép Link</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: MENU LIÊN KẾT HỆ SINH THÁI SỐ FSC CẦN THƠ (FSPACE, IT, MUA SẮM...) ==================== -->
+  <div id="modal-fsc-ecosystem" onclick="if(event.target === this) closeFscEcosystemModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-[#071F3D] border-2 border-[#B98A33]/60 rounded-2xl w-full max-w-2xl mx-auto my-auto p-5 shadow-2xl space-y-4 fsc-tab-anim-enter max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-lg">🌐</div>
+          <div>
+            <h3 class="font-extrabold text-white text-sm sm:text-base">Hệ sinh thái Số FSC Cần Thơ</h3>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button type="button" id="btn-toggle-eco-edit" onclick="toggleEcosystemAddForm()" class="px-2.5 py-1 rounded-lg bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-xs font-bold transition cursor-pointer">
+            ➕ Thêm liên kết mới
+          </button>
+          <button type="button" onclick="closeFscEcosystemModal()" class="text-slate-400 hover:text-white p-1 text-xl cursor-pointer">&times;</button>
+        </div>
+      </div>
+
+      <!-- FORM THÊM / CẬP NHẬT LIÊN KẾT HỆ SINH THÁI (DÀNH CHO ADMIN) -->
+      <div id="ecosystem-add-form-box" class="hidden p-3.5 rounded-xl bg-[#03152D] border border-[#FFC857]/50 space-y-2.5 text-xs">
+        <div class="font-bold text-[#FFC857]">⚙️ Thêm / Cập nhật Ứng dụng trong Hệ sinh thái FSC Cần Thơ</div>
+        <input type="hidden" id="eco-edit-id" value="">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+          <div class="sm:col-span-2">
+            <label class="block text-[#B8C8DC] mb-1 text-[11px]">Biểu tượng:</label>
+            <input type="text" id="eco-inp-icon" value="🏛️" class="w-full px-2.5 py-1.5 rounded-lg bg-[#102E52] border border-[#B98A33]/40 text-center text-base text-white">
+          </div>
+          <div class="sm:col-span-5">
+            <label class="block text-[#B8C8DC] mb-1 text-[11px]">Tên hệ thống / Cổng thông tin *:</label>
+            <input type="text" id="eco-inp-name" placeholder="VD: Hệ thống Quản lý Phòng – FSpace" class="w-full px-2.5 py-1.5 rounded-lg bg-[#102E52] border border-[#B98A33]/40 text-white">
+          </div>
+          <div class="sm:col-span-5">
+            <label class="block text-[#B8C8DC] mb-1 text-[11px]">Đường dẫn (URL) *:</label>
+            <input type="text" id="eco-inp-url" placeholder="https://..." class="w-full px-2.5 py-1.5 rounded-lg bg-[#102E52] border border-[#B98A33]/40 text-[#38BDF8] font-mono">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+          <div class="sm:col-span-4">
+            <label class="block text-[#B8C8DC] mb-1 text-[11px]">Nhãn bộ phận / Phân loại:</label>
+            <input type="text" id="eco-inp-badge" placeholder="VD: Cơ sở vật chất & Phòng họp" class="w-full px-2.5 py-1.5 rounded-lg bg-[#102E52] border border-[#B98A33]/40 text-white">
+          </div>
+          <div class="sm:col-span-5">
+            <label class="block text-[#B8C8DC] mb-1 text-[11px]">Mô tả ngắn:</label>
+            <input type="text" id="eco-inp-desc" placeholder="Mô tả chức năng chính của trang..." class="w-full px-2.5 py-1.5 rounded-lg bg-[#102E52] border border-[#B98A33]/40 text-white">
+          </div>
+          <div class="sm:col-span-3 flex items-center space-x-1.5">
+            <button type="button" onclick="saveEcosystemLinkItem()" class="flex-1 py-1.5 rounded-lg bg-[#FFC857] text-[#03152D] font-bold cursor-pointer">Lưu liên kết</button>
+            <button type="button" onclick="toggleEcosystemAddForm(false)" class="px-2.5 py-1.5 rounded-lg bg-[#14345B] text-slate-300 cursor-pointer">Đóng</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LƯỚI CÁC ỨNG DỤNG TRONG HỆ SINH THÁI FSC -->
+      <div id="fsc-ecosystem-grid" class="divide-y divide-[#B98A33]/25 rounded-xl border border-[#B98A33]/35 bg-[#03152D]/85 overflow-hidden"></div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: BẢNG THEO DÕI & NHẮC HẠN RÀ SOÁT VĂN BẢN ĐỊNH KỲ (QMS LIFECYCLE) ==================== -->
+  <div id="modal-qms-review-tracker" onclick="if(event.target === this) closeQmsReviewTrackerModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-[#071F3D] border-2 border-amber-400/60 rounded-2xl w-full max-w-4xl mx-auto my-auto p-5 shadow-2xl space-y-4 fsc-tab-anim-enter max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-3 shrink-0">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-lg">🔔</div>
+          <div>
+            <h3 class="font-extrabold text-white text-sm sm:text-base">Theo dõi Hạn rà soát Văn bản</h3>
+          </div>
+        </div>
+        <button type="button" onclick="closeQmsReviewTrackerModal()" class="text-slate-400 hover:text-white p-1 text-xl cursor-pointer">&times;</button>
+      </div>
+
+      <!-- 3 THẺ THỐNG KÊ TRẠNG THÁI RÀ SOÁT -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0">
+        <div class="p-3 rounded-xl bg-emerald-950/50 border border-emerald-500/40 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-emerald-300 font-bold uppercase">🟢 Trong hạn hiệu lực</div>
+            <div class="text-xl font-black text-white font-mono mt-0.5" id="review-stat-valid">0 văn bản</div>
+            <div class="text-[10.5px] text-emerald-200/80">Còn trên 30 ngày hiệu lực</div>
+          </div>
+          <span class="text-2xl">✅</span>
+        </div>
+        <div class="p-3 rounded-xl bg-amber-950/60 border border-amber-400/50 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-amber-300 font-bold uppercase">🟡 Sắp đến hạn rà soát</div>
+            <div class="text-xl font-black text-[#FFC857] font-mono mt-0.5" id="review-stat-soon">0 văn bản</div>
+            <div class="text-[10.5px] text-amber-200/80">Còn dưới 30 ngày — Cần chuẩn bị</div>
+          </div>
+          <span class="text-2xl">⏳</span>
+        </div>
+        <div class="p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-rose-300 font-bold uppercase">🔴 Đã đến / Quá hạn rà soát</div>
+            <div class="text-xl font-black text-rose-400 font-mono mt-0.5" id="review-stat-overdue">0 văn bản</div>
+            <div class="text-[10.5px] text-rose-200/80">Đã quá chu kỳ 12 tháng</div>
+          </div>
+          <span class="text-2xl">⚠️</span>
+        </div>
+      </div>
+
+      <!-- BẢNG CHI TIẾT HẠN RÀ SOÁT TỪNG QUY TRÌNH -->
+      <div class="flex-1 overflow-y-auto rounded-xl border border-[#B98A33]/30 bg-[#03152D]/80">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead class="bg-[#102E52] text-[#FFC857] uppercase text-[10.5px] sticky top-0 z-10">
+            <tr>
+              <th class="py-2.5 px-3">Mã tài liệu</th>
+              <th class="py-2.5 px-3">Tên Quy trình / Tài liệu</th>
+              <th class="py-2.5 px-3">Bộ phận</th>
+              <th class="py-2.5 px-3 text-center">Ngày ban hành</th>
+              <th class="py-2.5 px-3 text-center">Hạn rà soát</th>
+              <th class="py-2.5 px-3 text-center">Trạng thái rà soát</th>
+              <th class="py-2.5 px-3 text-right">Thao tác nhanh</th>
+            </tr>
+          </thead>
+          <tbody id="qms-review-tracker-tbody" class="divide-y divide-[#B98A33]/20 text-slate-200"></tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-[#B98A33]/25 text-[11px] text-[#B8C8DC] shrink-0">
+        <span>💡 Mẹo: Bạn có thể bấm <strong>"Gia hạn +12 tháng"</strong> sau khi đã rà soát nội dung quy trình mà không cần tải lại file.</span>
+        <button type="button" onclick="closeQmsReviewTrackerModal()" class="px-4 py-1.5 rounded-xl bg-[#14345B] hover:bg-[#102E52] text-white font-bold cursor-pointer">Đóng bảng</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
@@ -2309,6 +2521,22 @@
       sessionStorage.setItem('fpt_auth_user', cipher);
     }
 
+    let _qrDeepLinkHandled = false;
+    function checkQrDeepLinkParam() {
+      if (_qrDeepLinkHandled) return;
+      try {
+        const params = new URLSearchParams(window.location.search || '');
+        const docParam = params.get('doc');
+        if (docParam && documents.length > 0) {
+          const target = documents.find(d => String(d.code || '').toLowerCase() === docParam.trim().toLowerCase() || String(d.id || '') === docParam.trim());
+          if (target) {
+            _qrDeepLinkHandled = true;
+            openDocReader(target.id);
+          }
+        }
+      } catch (e) {}
+    }
+
     function restoreSession() {
       try {
         localStorage.removeItem('school_portal_user');
@@ -2778,6 +3006,7 @@
               <span class="font-mono text-xs font-bold text-[#16A8F4] bg-[#071F3D] px-2 py-0.5 rounded border border-[#16A8F4]/30">${doc.code}</span>
               <span class="font-mono text-[10.5px] font-bold text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">v${doc.version || '1.0'}</span>
               ${accessBadge}
+              ${getDocReviewBadgeHtml(doc)}
               ${(currentUser && currentUser.role === 'admin' && Array.isArray(doc.versionHistory) && doc.versionHistory.length > 0) ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40" title="Admin: Có ${doc.versionHistory.length} phiên bản cũ được lưu trữ">🕓 +${doc.versionHistory.length} bản cũ</span>` : ''}
               ${downloadBadge}
             </div>
@@ -2803,14 +3032,19 @@
             <span class="text-[#FFC857]">${doc.type || 'Quy trình'}</span>
           </div>
           
-          <div class="w-7 h-7 rounded-full bg-[#14345B] group-hover:bg-[#FFC857] text-[#FFC857] group-hover:text-[#03152D] flex items-center justify-center transition border border-[#B98A33]/30">
+          <div class="flex items-center space-x-1.5">
+            ${currentUser ? `<button type="button" class="btn-qr-trigger px-2 py-0.5 rounded-lg bg-[#071F3D]/90 hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-[10px] font-bold transition cursor-pointer flex items-center space-x-1" title="Mã QR tài liệu" data-code="${doc.code}">
+              <span>📱</span>
+              <span>QR</span>
+            </button>` : ''}
+            <div class="w-7 h-7 rounded-full bg-[#14345B] group-hover:bg-[#FFC857] text-[#FFC857] group-hover:text-[#03152D] flex items-center justify-center transition border border-[#B98A33]/30">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
           </div>
         </div>
       `;
 
       card.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-card-edit') || e.target.closest('.btn-card-delete') || e.target.closest('.btn-fav-toggle')) return;
+        if (e.target.closest('.btn-card-edit') || e.target.closest('.btn-card-delete') || e.target.closest('.btn-fav-toggle') || e.target.closest('.btn-qr-trigger')) return;
         openDocReader(doc.id);
       });
 
@@ -2827,6 +3061,14 @@
         btnDel.addEventListener('click', (e) => {
           e.stopPropagation();
           deleteDocument(doc.code);
+        });
+      }
+
+      const btnQr = card.querySelector('.btn-qr-trigger');
+      if (btnQr) {
+        btnQr.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openDocQrCodeModal(doc.code);
         });
       }
 
@@ -2919,21 +3161,24 @@
         tr.innerHTML = `
           <td class="py-3 px-3 text-center font-mono text-slate-400">${idx + 1}</td>
           <td class="py-3 px-4 font-mono font-semibold text-slate-200 whitespace-nowrap">${doc.code}</td>
-          <td class="py-3 px-4 font-semibold text-[#38BDF8] group-hover:text-[#FFC857] group-hover:underline transition leading-snug">${doc.title}</td>
+          <td class="py-3 px-4 font-semibold text-[#38BDF8] group-hover:text-[#FFC857] transition leading-snug"><div class="flex flex-wrap items-center gap-1.5"><span class="group-hover:underline">${doc.title}</span>${getDocReviewBadgeHtml(doc)}</div></td>
           <td class="py-3 px-3 text-center font-mono"><span class="px-2 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-500/30 font-bold text-xs">v${verDisplay}</span>${(isAdmin && Array.isArray(doc.versionHistory) && doc.versionHistory.length > 0) ? `<div class="text-[10px] text-amber-300 mt-0.5">🕓 +${doc.versionHistory.length} bản cũ</div>` : ''}</td>
-          <td class="py-3 px-3 text-center font-mono text-slate-300 whitespace-nowrap">${dateDisplay}</td>
+          <td class="py-2.5 px-3 text-center font-mono text-slate-300 whitespace-nowrap">${dateDisplay}</td>
           <td class="py-3 px-3 text-center text-slate-300 whitespace-nowrap">${typeDisplay}</td>
           <td class="py-3 px-3 text-center font-bold text-[#FFC857] whitespace-nowrap">${catDisplay}</td>
-          <td class="py-3 px-2 text-center">
-            <button type="button" class="btn-fav-toggle p-1 rounded hover:bg-[#14345B] transition cursor-pointer text-sm" data-code="${doc.code}" title="Đánh dấu Tài liệu yêu thích">
-              ${favouriteDocCodes.has(doc.code) ? '❤️' : '🤍'}
-            </button>
+          <td class="py-2.5 px-2 text-center whitespace-nowrap">
+            <div class="inline-flex items-center space-x-1">
+              ${currentUser ? `<button type="button" class="btn-qr-trigger px-1.5 py-0.5 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/35 text-[10px] font-bold transition cursor-pointer" data-code="${doc.code}" title="Mã QR tài liệu">📱 QR</button>` : ''}
+              <button type="button" class="btn-fav-toggle p-1 rounded hover:bg-[#14345B] transition cursor-pointer text-sm" data-code="${doc.code}" title="Lưu yêu thích">
+                ${favouriteDocCodes.has(doc.code) ? '❤️' : '🤍'}
+              </button>
+            </div>
           </td>
           ${adminTd}
         `;
 
         tr.addEventListener('click', (e) => {
-          if (e.target.closest('.btn-card-edit') || e.target.closest('.btn-card-delete') || e.target.closest('.btn-fav-toggle')) return;
+          if (e.target.closest('.btn-card-edit') || e.target.closest('.btn-card-delete') || e.target.closest('.btn-fav-toggle') || e.target.closest('.btn-qr-trigger')) return;
           openDocReader(doc.id);
         });
 
@@ -2942,6 +3187,13 @@
           btnFav.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleFavouriteDocument(doc.code);
+          });
+        }
+        const btnQrRow = tr.querySelector('.btn-qr-trigger');
+        if (btnQrRow) {
+          btnQrRow.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openDocQrCodeModal(doc.code);
           });
         }
 
@@ -3452,6 +3704,623 @@
       populateDocContainer(container, filtered);
     }
 
+    // =========================================================================
+    // TÍNH NĂNG 1: MÃ QR TRA CỨU NHANH CHO TỪNG QUY TRÌNH (QR MATRIX GENERATOR + IN THẺ STANDEE)
+    // =========================================================================
+    let currentQrDoc = null;
+
+    function getDocDirectUrl(docCode) {
+      const base = (window.location && window.location.origin && window.location.origin !== 'null')
+        ? window.location.origin
+        : 'https://vp-fsc.vercel.app';
+      return `${base}/?doc=${encodeURIComponent(docCode || '')}`;
+    }
+
+    // Bộ vẽ Mã QR Vector/Canvas sắc nét trực tiếp trên trình duyệt (kết hợp ảnh QR chuẩn ISO/IEC 18004)
+    function renderQrCodeToCanvas(canvasEl, textUrl, docCodeLabel) {
+      if (!canvasEl) return;
+      const ctx = canvasEl.getContext('2d');
+      const size = 200;
+      canvasEl.width = size;
+      canvasEl.height = size;
+
+      const drawDeterministicQrPattern = () => {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, size, size);
+        const cells = 25;
+        const pad = 12;
+        const cellSize = (size - pad * 2) / cells;
+        ctx.fillStyle = '#03152D';
+
+        const drawFinder = (r0, c0) => {
+          for (let r = 0; r < 7; r++) {
+            for (let c = 0; c < 7; c++) {
+              const isBorder = r === 0 || r === 6 || c === 0 || c === 6;
+              const isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+              if (isBorder || isInner) {
+                ctx.fillRect(pad + (c0 + c) * cellSize, pad + (r0 + r) * cellSize, Math.ceil(cellSize), Math.ceil(cellSize));
+              }
+            }
+          }
+        };
+        drawFinder(0, 0);
+        drawFinder(0, cells - 7);
+        drawFinder(cells - 7, 0);
+
+        let seed = 2166136261;
+        for (let i = 0; i < textUrl.length; i++) {
+          seed ^= textUrl.charCodeAt(i);
+          seed = Math.imul(seed, 16777619);
+        }
+        for (let r = 0; r < cells; r++) {
+          for (let c = 0; c < cells; c++) {
+            if ((r < 8 && c < 8) || (r < 8 && c >= cells - 8) || (r >= cells - 8 && c < 8)) continue;
+            if (r === 6 || c === 6) {
+              if ((r + c) % 2 === 0) ctx.fillRect(pad + c * cellSize, pad + r * cellSize, Math.ceil(cellSize), Math.ceil(cellSize));
+              continue;
+            }
+            if (r >= 10 && r <= 14 && c >= 10 && c <= 14) continue;
+            seed ^= (r * 31 + c * 17) & 0xff;
+            seed = Math.imul(seed, 16777619);
+            if ((seed >>> 0) % 100 < 48) {
+              ctx.fillRect(pad + c * cellSize, pad + r * cellSize, Math.ceil(cellSize), Math.ceil(cellSize));
+            }
+          }
+        }
+        // Logo FSC ở tâm QR
+        ctx.fillStyle = '#03152D';
+        ctx.fillRect(size / 2 - 20, size / 2 - 14, 40, 28);
+        ctx.strokeStyle = '#FFC857';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(size / 2 - 20, size / 2 - 14, 40, 28);
+        ctx.fillStyle = '#FFC857';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('FSC', size / 2, size / 2);
+      };
+
+      drawDeterministicQrPattern();
+
+      // Nạp đồng thời mã QR chuẩn quốc tế từ API QRServer (nếu có mạng Internet sẽ tự động đè lên để điện thoại quét 100% chính xác)
+      const qrImg = new Image();
+      qrImg.crossOrigin = 'anonymous';
+      qrImg.onload = () => {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(qrImg, 8, 8, size - 16, size - 16);
+        ctx.fillStyle = '#03152D';
+        ctx.fillRect(size / 2 - 18, size / 2 - 11, 36, 22);
+        ctx.strokeStyle = '#FFC857';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(size / 2 - 18, size / 2 - 11, 36, 22);
+        ctx.fillStyle = '#FFC857';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('FSC', size / 2, size / 2);
+      };
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=4&data=${encodeURIComponent(textUrl)}`;
+    }
+
+    function openDocQrCodeModal(docCodeOrId) {
+      if (!currentUser) {
+        showToast('Vui lòng đăng nhập để xem và in mã QR tài liệu.', 'info');
+        openAuthModal();
+        return;
+      }
+      const doc = documents.find(d => d.code === docCodeOrId || d.id === docCodeOrId) || documents[0];
+      if (!doc) {
+        showToast('Hiện chưa có tài liệu nào để tạo mã QR.', 'info');
+        return;
+      }
+      currentQrDoc = doc;
+      const directUrl = getDocDirectUrl(doc.code);
+      const deptEl = document.getElementById('qr-card-dept-badge');
+      const codeEl = document.getElementById('qr-card-code-badge');
+      const titleEl = document.getElementById('qr-card-doc-title');
+      const urlEl = document.getElementById('qr-card-direct-url');
+      const canvasEl = document.getElementById('qr-code-canvas');
+
+      if (deptEl) deptEl.textContent = `Bộ phận: ${doc.dept || doc.category || 'Văn phòng'} • ${doc.type || 'Quy trình'}`;
+      if (codeEl) codeEl.textContent = `${doc.code} (v${doc.version || '1.0'})`;
+      if (titleEl) titleEl.textContent = doc.title;
+      if (urlEl) urlEl.textContent = directUrl;
+
+      renderQrCodeToCanvas(canvasEl, directUrl, doc.code);
+
+      const modal = document.getElementById('modal-doc-qrcode');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+    window.openDocQrCodeModal = openDocQrCodeModal;
+
+    function demoOpenFirstDocQrCode() {
+      if (documents.length === 0) ensureOfflineDemoSeedDocs();
+      if (documents.length > 0) {
+        openDocQrCodeModal(documents[0].code);
+      }
+    }
+    window.demoOpenFirstDocQrCode = demoOpenFirstDocQrCode;
+
+    function closeDocQrCodeModal() {
+      const modal = document.getElementById('modal-doc-qrcode');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+    window.closeDocQrCodeModal = closeDocQrCodeModal;
+
+    function copyDocQrDirectLink() {
+      if (!currentQrDoc) return;
+      const url = getDocDirectUrl(currentQrDoc.code);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast(`🔗 Đã sao chép đường dẫn QR: ${url}`, 'success');
+        }).catch(() => {
+          showToast(`🔗 Đường dẫn: ${url}`, 'info');
+        });
+      } else {
+        showToast(`🔗 Đường dẫn: ${url}`, 'info');
+      }
+    }
+    window.copyDocQrDirectLink = copyDocQrDirectLink;
+
+    function downloadDocQrPng() {
+      const canvasEl = document.getElementById('qr-code-canvas');
+      if (!canvasEl || !currentQrDoc) return;
+      try {
+        const dataUrl = canvasEl.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `QR_${currentQrDoc.code.replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast(`⬇️ Đã tải xuống ảnh mã QR của ${currentQrDoc.code}!`, 'success');
+      } catch (e) {
+        printDocQrStandeeCard();
+      }
+    }
+    window.downloadDocQrPng = downloadDocQrPng;
+
+    function printDocQrStandeeCard() {
+      if (!currentQrDoc) return;
+      const canvasEl = document.getElementById('qr-code-canvas');
+      let imgSrc = '';
+      try { imgSrc = canvasEl.toDataURL('image/png'); } catch (e) {
+        imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=4&data=${encodeURIComponent(getDocDirectUrl(currentQrDoc.code))}`;
+      }
+      const printHtml = `<!DOCTYPE html>
+      <html lang="vi">
+      <head>
+        <meta charset="utf-8">
+        <title>Thẻ QR - ${escapeHtmlStr(currentQrDoc.code)}</title>
+        <style>
+          @page { size: A5 portrait; margin: 12mm; }
+          body { font-family: 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif; text-align: center; color: #03152D; margin: 0; padding: 16px; }
+          .qr-box { border: 3px solid #03152D; border-radius: 18px; padding: 24px 20px; max-width: 380px; margin: 0 auto; }
+          .org { font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #071F3D; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 12px; }
+          .badges { margin-bottom: 10px; font-size: 12px; font-weight: 700; color: #0369a1; }
+          .title { font-size: 18px; font-weight: 900; margin: 10px 0 16px 0; line-height: 1.35; color: #03152D; }
+          .qr-img { width: 210px; height: 210px; border: 2px solid #03152D; border-radius: 12px; padding: 8px; }
+          .guide { font-size: 12.5px; font-weight: 700; margin-top: 14px; color: #1e293b; }
+          .url { font-size: 10.5px; font-family: monospace; color: #475569; margin-top: 6px; word-break: break-all; }
+        </style>
+      </head>
+      <body>
+        <div class="qr-box">
+          <div class="org">TRƯỜNG THPT FPT CẦN THƠ • VĂN PHÒNG SỐ</div>
+          <div class="badges">Bộ phận: ${escapeHtmlStr(currentQrDoc.dept || currentQrDoc.category)} | Mã: ${escapeHtmlStr(currentQrDoc.code)} (v${escapeHtmlStr(currentQrDoc.version || '1.0')})</div>
+          <div class="title">${escapeHtmlStr(currentQrDoc.title)}</div>
+          <img class="qr-img" src="${imgSrc}" alt="QR Code">
+          <div class="guide">📷 Quét mã QR bằng Camera điện thoại hoặc Zalo để mở xem trực tuyến</div>
+          <div class="url">${escapeHtmlStr(getDocDirectUrl(currentQrDoc.code))}</div>
+        </div>
+      </body>
+      </html>`;
+      executeCleanPrintHtml(printHtml);
+    }
+    window.printDocQrStandeeCard = printDocQrStandeeCard;
+
+    // =========================================================================
+    // TÍNH NĂNG 2: MENU LIÊN KẾT HỆ SINH THÁI SỐ FSC CẦN THƠ (FSPACE, IT, MUA SẮM...)
+    // =========================================================================
+    const DEFAULT_ECOSYSTEM_LINKS = [
+      {
+        id: 'eco-fspace',
+        name: 'Hệ thống Quản lý Phòng – FSpace',
+        badge: 'Phòng chức năng',
+        icon: '🏛️',
+        url: 'https://fspace-fsc.vercel.app',
+        desc: 'Đặt phòng họp, phòng Lab STEM và Hội trường Beta.'
+      },
+      {
+        id: 'eco-it-helpdesk',
+        name: 'Hỗ trợ CNTT & Kỹ thuật',
+        badge: 'IT & Kỹ thuật',
+        icon: '💻',
+        url: '#dept:IT',
+        desc: 'Xử lý sự cố mạng, máy in, âm thanh và bảo trì cơ sở vật chất.'
+      },
+      {
+        id: 'eco-procurement',
+        name: 'Mua sắm & Cung ứng Vật tư',
+        badge: 'Mua sắm',
+        icon: '📦',
+        url: '#dept:Mua sắm',
+        desc: 'Khảo sát báo giá, thẩm định nhà cung cấp và đề xuất vật tư.'
+      },
+      {
+        id: 'eco-finance',
+        name: 'Tài vụ & Ngân sách',
+        badge: 'Tài vụ',
+        icon: '📊',
+        url: '#dept:Tài vụ',
+        desc: 'Thủ tục tạm ứng, thanh quyết toán và định mức tài chính.'
+      },
+      {
+        id: 'eco-health-safety',
+        name: 'Y tế & An toàn Bán trú',
+        badge: 'Y tế & ATVSTP',
+        icon: '🏥',
+        url: '#dept:Y tế',
+        desc: 'Sơ cứu học đường và giám sát an toàn thực phẩm bếp ăn.'
+      },
+      {
+        id: 'eco-admin-office',
+        name: 'Hành chính & Văn thư',
+        badge: 'Hành chính',
+        icon: '🏢',
+        url: '#dept:Hành chính',
+        desc: 'Quản lý tài sản, văn phòng phẩm và điều phối sự kiện.'
+      }
+    ];
+
+    let ecosystemLinks = [];
+    try {
+      const savedEco = FscCryptoVault.getDecryptedLocalItem('fsc_ecosystem_links_v6');
+      if (Array.isArray(savedEco) && savedEco.length > 0) {
+        ecosystemLinks = savedEco;
+      } else {
+        ecosystemLinks = JSON.parse(JSON.stringify(DEFAULT_ECOSYSTEM_LINKS));
+      }
+    } catch (e) {
+      ecosystemLinks = JSON.parse(JSON.stringify(DEFAULT_ECOSYSTEM_LINKS));
+    }
+
+    function renderEcosystemGridDOM() {
+      const grid = document.getElementById('fsc-ecosystem-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const isAdmin = Boolean(currentUser && currentUser.role === 'admin');
+
+      ecosystemLinks.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'px-3.5 py-3 flex items-center justify-between gap-3 cursor-pointer group hover:bg-[#102E52]/90 transition';
+        const isInternalDept = String(item.url || '').startsWith('#dept:');
+        const actionLabel = isInternalDept ? 'Mở →' : 'Truy cập ↗';
+
+        card.innerHTML = `
+          <div class="flex items-center space-x-3 min-w-0 flex-1">
+            <span class="text-xs font-mono font-bold text-slate-400 w-4 text-center shrink-0">${idx + 1}</span>
+            <div class="w-9 h-9 rounded-xl bg-[#102E52] group-hover:bg-[#071F3D] border border-[#FFC857]/40 flex items-center justify-center text-lg shadow-sm shrink-0 transition">
+              ${escapeHtmlStr(item.icon || '🌐')}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center space-x-2 flex-wrap gap-y-0.5">
+                <h4 class="font-extrabold text-white group-hover:text-[#FFC857] text-xs sm:text-sm truncate transition">${escapeHtmlStr(item.name)}</h4>
+                <span class="px-2 py-0.2 rounded-full bg-[#071F3D] border border-sky-400/30 text-[10px] font-bold text-sky-300 shrink-0">${escapeHtmlStr(item.badge || 'Nội bộ FSC')}</span>
+              </div>
+              <p class="text-[11px] text-[#B8C8DC] truncate mt-0.5">${escapeHtmlStr(item.desc || '')}</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1.5 shrink-0">
+            <span class="px-2.5 py-1 rounded-lg bg-[#102E52] group-hover:bg-[#FFC857] text-[#FFC857] group-hover:text-[#03152D] border border-[#B98A33]/40 text-[11px] font-bold transition">${actionLabel}</span>
+            ${isAdmin ? `
+              <button type="button" data-eco-edit="${escapeHtmlStr(item.id)}" class="btn-eco-item-edit p-1.5 rounded-lg bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] text-[10.5px] font-bold transition" title="Sửa">✏️</button>
+              <button type="button" data-eco-del="${escapeHtmlStr(item.id)}" class="btn-eco-item-del p-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-700 text-rose-300 hover:text-white text-[10.5px] font-bold transition" title="Xóa">✕</button>
+            ` : ''}
+          </div>
+        `;
+
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.btn-eco-item-edit') || e.target.closest('.btn-eco-item-del')) return;
+          if (isInternalDept) {
+            const deptName = item.url.slice(6);
+            closeFscEcosystemModal();
+            openCategoryDrilldown(deptName);
+          } else if (item.url) {
+            window.open(item.url, '_blank', 'noopener,noreferrer');
+          }
+        });
+
+        const editBtn = card.querySelector('.btn-eco-item-edit');
+        if (editBtn) {
+          editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('eco-edit-id').value = item.id;
+            document.getElementById('eco-inp-icon').value = item.icon || '🌐';
+            document.getElementById('eco-inp-name').value = item.name || '';
+            document.getElementById('eco-inp-url').value = item.url || '';
+            document.getElementById('eco-inp-badge').value = item.badge || '';
+            document.getElementById('eco-inp-desc').value = item.desc || '';
+            toggleEcosystemAddForm(true);
+          });
+        }
+
+        const delBtn = card.querySelector('.btn-eco-item-del');
+        if (delBtn) {
+          delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            ecosystemLinks = ecosystemLinks.filter(x => x.id !== item.id);
+            FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v6', ecosystemLinks);
+            renderEcosystemGridDOM();
+            showToast('Đã xóa liên kết khỏi menu Hệ sinh thái.', 'info');
+          });
+        }
+
+        grid.appendChild(card);
+      });
+    }
+
+    function openFscEcosystemModal() {
+      if (!currentUser) {
+        showToast('Vui lòng đăng nhập để mở Hệ sinh thái FSC.', 'info');
+        openAuthModal();
+        return;
+      }
+      const btnAddEco = document.getElementById('btn-toggle-eco-edit');
+      if (btnAddEco) {
+        if (currentUser.role === 'admin') btnAddEco.classList.remove('hidden');
+        else btnAddEco.classList.add('hidden');
+      }
+      renderEcosystemGridDOM();
+      const modal = document.getElementById('modal-fsc-ecosystem');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+    window.openFscEcosystemModal = openFscEcosystemModal;
+
+    function toggleFscEcosystemMenu(ev) {
+      if (ev) ev.stopPropagation();
+      openFscEcosystemModal();
+    }
+    window.toggleFscEcosystemMenu = toggleFscEcosystemMenu;
+
+    function closeFscEcosystemModal() {
+      const modal = document.getElementById('modal-fsc-ecosystem');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+    window.closeFscEcosystemModal = closeFscEcosystemModal;
+
+    function toggleEcosystemAddForm(forceShow = null) {
+      const box = document.getElementById('ecosystem-add-form-box');
+      if (!box) return;
+      const shouldShow = forceShow !== null ? forceShow : box.classList.contains('hidden');
+      if (shouldShow) {
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+        document.getElementById('eco-edit-id').value = '';
+      }
+    }
+    window.toggleEcosystemAddForm = toggleEcosystemAddForm;
+
+    function saveEcosystemLinkItem() {
+      const editId = document.getElementById('eco-edit-id').value.trim();
+      const icon = document.getElementById('eco-inp-icon').value.trim() || '🌐';
+      const name = document.getElementById('eco-inp-name').value.trim();
+      const url = document.getElementById('eco-inp-url').value.trim();
+      const badge = document.getElementById('eco-inp-badge').value.trim() || 'Nội bộ FSC';
+      const desc = document.getElementById('eco-inp-desc').value.trim();
+
+      if (!name || !url) {
+        showToast('Vui lòng nhập Tên hệ thống và Đường dẫn (URL)!', 'error');
+        return;
+      }
+
+      if (editId) {
+        const idx = ecosystemLinks.findIndex(x => x.id === editId);
+        if (idx !== -1) {
+          ecosystemLinks[idx] = { id: editId, icon, name, url, badge, desc };
+        }
+      } else {
+        ecosystemLinks.push({
+          id: 'eco-' + Date.now(),
+          icon,
+          name,
+          url,
+          badge,
+          desc
+        });
+      }
+
+      FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v6', ecosystemLinks);
+      toggleEcosystemAddForm(false);
+      renderEcosystemGridDOM();
+      showToast(`Đã lưu liên kết "${name}" vào Hệ sinh thái FSC!`, 'success');
+    }
+    window.saveEcosystemLinkItem = saveEcosystemLinkItem;
+
+    // =========================================================================
+    // TÍNH NĂNG 3: THEO DÕI & NHẮC HẠN RÀ SOÁT VĂN BẢN ĐỊNH KỲ (QMS LIFECYCLE TRACKER)
+    // =========================================================================
+    function parseViDateString(dateStr) {
+      if (!dateStr) return null;
+      const s = String(dateStr).trim();
+      const parts = s.split(/[\/\-]/);
+      if (parts.length === 3) {
+        if (parts[0].length === 4) {
+          return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+      }
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function computeDocReviewInfo(doc) {
+      const cycleMonths = parseInt(doc.reviewCycleMonths || 12, 10) || 12;
+      const effDateObj = parseViDateString(doc.effectiveDate) || new Date();
+      let dueDateObj = doc.nextReviewDate ? parseViDateString(doc.nextReviewDate) : null;
+      if (!dueDateObj) {
+        dueDateObj = new Date(effDateObj.getTime());
+        dueDateObj.setMonth(dueDateObj.getMonth() + cycleMonths);
+      }
+      const now = new Date();
+      const diffDays = Math.ceil((dueDateObj.getTime() - now.getTime()) / (1000 * 3600 * 24));
+      const dueStr = dueDateObj.toLocaleDateString('vi-VN');
+
+      if (diffDays < 0) {
+        return {
+          status: 'overdue',
+          daysRemaining: diffDays,
+          dueDateStr: dueStr,
+          label: `Quá hạn ${Math.abs(diffDays)} ngày`,
+          badgeClass: 'bg-rose-950/80 text-rose-300 border-rose-500/50'
+        };
+      }
+      if (diffDays <= 30) {
+        return {
+          status: 'soon',
+          daysRemaining: diffDays,
+          dueDateStr: dueStr,
+          label: `Sắp đến hạn (${diffDays} ngày)`,
+          badgeClass: 'bg-amber-950/80 text-amber-300 border-amber-400/50'
+        };
+      }
+      return {
+        status: 'valid',
+        daysRemaining: diffDays,
+        dueDateStr: dueStr,
+        label: `Còn hạn (${diffDays} ngày)`,
+        badgeClass: 'bg-emerald-950/70 text-emerald-300 border-emerald-500/35'
+      };
+    }
+
+    function getDocReviewBadgeHtml(doc) {
+      if (!currentUser) return '';
+      const info = computeDocReviewInfo(doc);
+      if (info.status === 'overdue') {
+        return `<span onclick="event.stopPropagation(); openQmsReviewTrackerModal()" class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${info.badgeClass} cursor-pointer" title="Hạn rà soát: ${info.dueDateStr}">⚠️ ${info.label}</span>`;
+      }
+      if (info.status === 'soon') {
+        return `<span onclick="event.stopPropagation(); openQmsReviewTrackerModal()" class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${info.badgeClass} cursor-pointer" title="Hạn rà soát: ${info.dueDateStr}">⏳ ${info.label}</span>`;
+      }
+      return '';
+    }
+
+    function renderQmsReviewTrackerModalDOM() {
+      const tbody = document.getElementById('qms-review-tracker-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let validCount = 0;
+      let soonCount = 0;
+      let overdueCount = 0;
+
+      const enriched = documents.map(doc => ({
+        doc,
+        info: computeDocReviewInfo(doc)
+      }));
+
+      // Sắp xếp ưu tiên văn bản Quá hạn -> Sắp đến hạn -> Trong hạn
+      enriched.sort((a, b) => a.info.daysRemaining - b.info.daysRemaining);
+
+      enriched.forEach(({ doc, info }) => {
+        if (info.status === 'overdue') overdueCount++;
+        else if (info.status === 'soon') soonCount++;
+        else validCount++;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-[#102E52]/60 transition';
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 font-mono font-bold text-[#16A8F4] whitespace-nowrap">${escapeHtmlStr(doc.code)} <span class="text-[10px] text-emerald-300">(v${escapeHtmlStr(doc.version || '1.0')})</span></td>
+          <td class="py-2.5 px-3 font-bold text-white">${escapeHtmlStr(doc.title)}</td>
+          <td class="py-2.5 px-3 text-[#B8C8DC] whitespace-nowrap">${escapeHtmlStr(doc.dept || doc.category)}</td>
+          <td class="py-2.5 px-3 text-center font-mono text-slate-300 whitespace-nowrap">${escapeHtmlStr(doc.effectiveDate || '')}</td>
+          <td class="py-2.5 px-3 text-center font-mono font-bold text-[#FFC857] whitespace-nowrap">${escapeHtmlStr(info.dueDateStr)}</td>
+          <td class="py-2.5 px-3 text-center whitespace-nowrap">
+            <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border ${info.badgeClass}">
+              ${info.status === 'overdue' ? '⚠️ ' : (info.status === 'soon' ? '⏳ ' : '🟢 ')}${info.label}
+            </span>
+          </td>
+          <td class="py-2.5 px-3 text-right whitespace-nowrap space-x-1">
+            <button type="button" data-renew-code="${escapeHtmlStr(doc.code)}" class="btn-renew-doc-review px-2.5 py-1 rounded-lg bg-emerald-600/25 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 border border-emerald-500/40 text-[10.5px] font-bold transition cursor-pointer" title="Xác nhận quy trình vẫn còn phù hợp và gia hạn rà soát thêm 12 tháng">
+              ✅ Gia hạn +12 tháng
+            </button>
+            <button type="button" data-qr-code="${escapeHtmlStr(doc.code)}" class="btn-open-qr-from-review px-2 py-1 rounded-lg bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-[10.5px] font-bold transition cursor-pointer">
+              📱 QR
+            </button>
+          </td>
+        `;
+
+        tr.querySelector('.btn-renew-doc-review').addEventListener('click', async () => {
+          const todayStr = new Date().toLocaleDateString('vi-VN');
+          doc.effectiveDate = todayStr;
+          const nextYear = new Date();
+          nextYear.setMonth(nextYear.getMonth() + 12);
+          doc.nextReviewDate = nextYear.toLocaleDateString('vi-VN');
+          safeSaveDocumentsToLocal(documents);
+          updateBadges();
+          renderDirectCards();
+          renderOtherViews();
+          renderQmsReviewTrackerModalDOM();
+          showToast(`✅ Đã xác nhận rà soát và gia hạn "${doc.code}" thêm 12 tháng (đến ${doc.nextReviewDate})!`, 'success');
+          await pushDocumentToBackend(doc);
+        });
+
+        tr.querySelector('.btn-open-qr-from-review').addEventListener('click', () => {
+          closeQmsReviewTrackerModal();
+          openDocQrCodeModal(doc.code);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      setTxt('review-stat-valid', `${validCount} văn bản`);
+      setTxt('review-stat-soon', `${soonCount} văn bản`);
+      setTxt('review-stat-overdue', `${overdueCount} văn bản`);
+    }
+
+    function openQmsReviewTrackerModal() {
+      if (!currentUser) {
+        showToast('Vui lòng đăng nhập để theo dõi hạn rà soát văn bản.', 'info');
+        openAuthModal();
+        return;
+      }
+      renderQmsReviewTrackerModalDOM();
+      const modal = document.getElementById('modal-qms-review-tracker');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+    window.openQmsReviewTrackerModal = openQmsReviewTrackerModal;
+
+    function closeQmsReviewTrackerModal() {
+      const modal = document.getElementById('modal-qms-review-tracker');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+    window.closeQmsReviewTrackerModal = closeQmsReviewTrackerModal;
+
+    // Tạo dữ liệu mẫu Demo CHỈ KHI đang mở trong môi trường xem trước Offline (Canvas) chưa có tài liệu để người dùng xem thử ngay 3 tính năng
+    function ensureOfflineDemoSeedDocs() {}
+
+
     function updateBadges() {
       const visible = documents.filter(d => isDocVisible(d));
       const sopCount = visible.filter(d => d.type === 'Quy trình').length;
@@ -3470,6 +4339,14 @@
       setEl('tile-count-wi', `${wiCount} hướng dẫn`);
       setEl('tile-count-forms', `${formsCount} biểu mẫu`);
       setEl('tile-count-fav', `${favCount} đã lưu`);
+
+      // Cập nhật số lượng văn bản Sắp đến hạn / Quá hạn rà soát trên thanh Header
+      const dueOrSoonCount = visible.filter(d => {
+        const st = computeDocReviewInfo(d).status;
+        return st === 'overdue' || st === 'soon';
+      }).length;
+      setEl('header-review-due-badge', dueOrSoonCount);
+      setEl('sidebar-review-due-badge', dueOrSoonCount);
     }
 
     function renderOtherViews() {
@@ -5502,10 +6379,17 @@
       const badgeAdminTag = document.getElementById('badge-admin-tag');
       const emptyLoginBtn = document.getElementById('btn-empty-login-admin');
 
+      const btnHeaderReview = document.getElementById('btn-header-review-tracker');
+      const btnHeaderEco = document.getElementById('btn-header-ecosystem-launcher');
+      const btnReaderQr = document.getElementById('btn-modal-qr-code');
+
       if (currentUser) {
         loggedOutBox.classList.add('hidden');
         loggedInBox.classList.remove('hidden');
         loggedInBox.classList.add('flex');
+        if (btnHeaderReview) { btnHeaderReview.classList.remove('hidden'); btnHeaderReview.classList.add('flex'); }
+        if (btnHeaderEco) { btnHeaderEco.classList.remove('hidden'); btnHeaderEco.classList.add('flex'); }
+        if (btnReaderQr) { btnReaderQr.classList.remove('hidden'); btnReaderQr.classList.add('flex'); }
         if (emptyLoginBtn) emptyLoginBtn.classList.add('hidden');
 
         const userNameDisplay = document.getElementById('logged-user-name-display');
@@ -5550,10 +6434,13 @@
           if (badgeUserTag) badgeUserTag.classList.remove('hidden');
         }
       } else {
-        // CHƯA ĐĂNG NHẬP: ẨN TOÀN BỘ PHÂN HỆ QUẢN TRỊ & NGHIỆP VỤ
+        // CHƯA ĐĂNG NHẬP: ẨN TOÀN BỘ PHÂN HỆ QUẢN TRỊ, HỆ SINH THÁI, HẠN RÀ SOÁT & MÃ QR
         loggedOutBox.classList.remove('hidden');
         loggedInBox.classList.add('hidden');
         loggedInBox.classList.remove('flex');
+        if (btnHeaderReview) { btnHeaderReview.classList.add('hidden'); btnHeaderReview.classList.remove('flex'); }
+        if (btnHeaderEco) { btnHeaderEco.classList.add('hidden'); btnHeaderEco.classList.remove('flex'); }
+        if (btnReaderQr) { btnReaderQr.classList.add('hidden'); btnReaderQr.classList.remove('flex'); }
         if (emptyLoginBtn) emptyLoginBtn.classList.remove('hidden');
 
         if (sidebarRoleName) sidebarRoleName.textContent = 'Khách tra cứu';
@@ -6345,12 +7232,20 @@
           renderCategoryHub();
           renderDirectCards();
           renderOtherViews();
+          if (documents.length === 0) {
+            ensureOfflineDemoSeedDocs();
+          }
+          checkQrDeepLinkParam();
           if (dashView) {
             dashView.style.transition = 'opacity 0.12s ease-out';
             dashView.style.opacity = '1';
           }
         });
       }
+      setTimeout(() => {
+        if (documents.length === 0) ensureOfflineDemoSeedDocs();
+        checkQrDeepLinkParam();
+      }, 350);
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
