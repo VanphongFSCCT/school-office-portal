@@ -1022,7 +1022,7 @@
           <span class="text-lg" id="modal-cat-header-icon">🏷️</span>
           <h3 class="font-bold text-white text-xs sm:text-sm" id="modal-cat-title">Thêm Bộ phận mới</h3>
         </div>
-        <button id="btn-close-modal-cat" type="button" onclick="closeCategoryModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
+        <button id="btn-close-modal-cat" type="button" onclick="closeCategoryModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1 transition cursor-pointer shadow-md shrink-0"><span class="text-sm leading-none">✕</span><span>Đóng</span></button>
       </div>
 
       <input type="hidden" id="inp-cat-mode" value="add">
@@ -1084,7 +1084,7 @@
           <svg class="w-4 h-4 text-[#FFC857]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
           <span>Thông tin tài khoản</span>
         </h3>
-        <button id="btn-close-profile-modal" type="button" onclick="closeProfileModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
+        <button id="btn-close-profile-modal" type="button" onclick="closeProfileModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1 transition cursor-pointer shadow-md shrink-0"><span class="text-sm leading-none">✕</span><span>Đóng</span></button>
       </div>
 
       <div class="flex flex-col items-center text-center space-y-2 py-2">
@@ -1510,14 +1510,14 @@
   </div>
 
   <!-- MODAL ĐĂNG TẢI TÀI LIỆU MỚI (BỐ TRÍ GỌN GÀNG, HỖ TRỢ CUỘN MƯỢT TRÊN MỌI MÀN HÌNH) -->
-  <div id="modal-add-document" onclick="if(event.target === this) closeAddDocModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
-    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-3xl mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-3 max-h-[92vh] flex flex-col overflow-hidden">
+  <div id="modal-add-document" onclick="if(event.target === this) closeAddDocModal()" class="fixed inset-0 z-50 bg-[#03152D]/85 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-[95vw] max-w-4xl mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-3 max-h-[92vh] flex flex-col overflow-hidden">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5 shrink-0 bg-[#071F3D] z-10">
         <div class="flex items-center space-x-2">
           <h3 class="font-bold text-white text-xs sm:text-sm">Đăng tải Tài liệu / Quy trình</h3>
           <span id="multi-doc-total-badge" class="px-2 py-0.5 rounded-full bg-[#102E52] border border-[#FFC857]/40 text-[#FFC857] text-[10.5px] font-mono font-bold">1 mục</span>
         </div>
-        <button id="btn-close-doc-modal" type="button" onclick="closeAddDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
+        <button id="btn-close-doc-modal" type="button" onclick="closeAddDocModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1 transition cursor-pointer shadow-md shrink-0"><span class="text-sm leading-none">✕</span><span>Đóng</span></button>
       </div>
 
       <form id="form-create-doc" class="flex-1 flex flex-col min-h-0 space-y-3 text-xs">
@@ -1562,7 +1562,7 @@
           <span class="text-[#FFC857]">✏️</span>
           <h3 class="font-bold text-white text-xs sm:text-sm">Chỉnh sửa Tài liệu / Quy trình</h3>
         </div>
-        <button id="btn-close-edit-modal" type="button" onclick="closeEditDocModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
+        <button id="btn-close-edit-modal" type="button" onclick="closeEditDocModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1 transition cursor-pointer shadow-md shrink-0"><span class="text-sm leading-none">✕</span><span>Đóng</span></button>
       </div>
       <form id="form-edit-doc" class="space-y-2.5 text-xs">
         <input type="hidden" id="inp-edit-doc-id">
@@ -1679,7 +1679,7 @@
     <div class="bg-[#071F3D] border border-[#B98A33]/40 rounded-2xl w-full max-w-md mx-auto my-auto p-6 shadow-2xl space-y-3.5">
       <div class="flex items-center justify-between border-b border-[#B98A33]/25 pb-2.5">
         <h3 class="font-bold text-white text-xs sm:text-sm">Cấp quyền Tài khoản Mới</h3>
-        <button id="btn-close-create-admin" type="button" onclick="closeCreateAdminModal()" class="text-slate-400 hover:text-white p-1 text-lg cursor-pointer">&times;</button>
+        <button id="btn-close-create-admin" type="button" onclick="closeCreateAdminModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1 transition cursor-pointer shadow-md shrink-0"><span class="text-sm leading-none">✕</span><span>Đóng</span></button>
       </div>
       <div class="space-y-3 text-xs">
         <div>
@@ -1719,7 +1719,7 @@
             <h3 class="font-extrabold text-white text-sm">Mã QR Tài liệu</h3>
           </div>
         </div>
-        <button type="button" onclick="closeDocQrCodeModal()" class="text-slate-400 hover:text-white p-1 text-xl cursor-pointer">&times;</button>
+        <button type="button" onclick="closeDocQrCodeModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1 transition cursor-pointer shadow-md shrink-0"><span class="text-sm leading-none">✕</span><span>Đóng</span></button>
       </div>
 
       <!-- THẺ STANDEE QR CODE CHUẨN IN ẤN -->
@@ -1765,20 +1765,21 @@
   </div>
 
   <!-- ==================== MODAL 2: MENU LIÊN KẾT HỆ SINH THÁI SỐ FSC CẦN THƠ (FSPACE, IT, MUA SẮM...) ==================== -->
-  <div id="modal-fsc-ecosystem" onclick="if(event.target === this) closeFscEcosystemModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    <div class="bg-[#071F3D] border-2 border-[#B98A33]/60 rounded-2xl w-full max-w-2xl mx-auto my-auto p-5 shadow-2xl space-y-4 fsc-tab-anim-enter max-h-[92vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-3">
+  <div id="modal-fsc-ecosystem" onclick="if(event.target === this) closeFscEcosystemModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div class="bg-[#071F3D] border-2 border-[#B98A33]/60 rounded-2xl w-[94vw] max-w-4xl mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-3.5 fsc-tab-anim-enter max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-2.5">
         <div class="flex items-center space-x-2.5">
-          <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-lg">🌐</div>
-          <div>
-            <h3 class="font-extrabold text-white text-sm sm:text-base">Hệ sinh thái Số FSC Cần Thơ</h3>
-          </div>
+          <div class="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-base">🌐</div>
+          <h3 class="font-extrabold text-white text-sm sm:text-base">Hệ sinh thái Số FSC Cần Thơ</h3>
         </div>
         <div class="flex items-center space-x-2">
-          <button type="button" id="btn-toggle-eco-edit" onclick="toggleEcosystemAddForm()" class="px-2.5 py-1 rounded-lg bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-xs font-bold transition cursor-pointer">
-            ➕ Thêm liên kết mới
+          <button type="button" id="btn-toggle-eco-edit" onclick="toggleEcosystemAddForm()" class="px-3 py-1.5 rounded-xl bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-xs font-bold transition cursor-pointer">
+            ➕ Thêm liên kết
           </button>
-          <button type="button" onclick="closeFscEcosystemModal()" class="text-slate-400 hover:text-white p-1 text-xl cursor-pointer">&times;</button>
+          <button type="button" onclick="closeFscEcosystemModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1.5 transition cursor-pointer shadow-md shrink-0" title="Đóng cửa sổ">
+            <span class="text-sm leading-none">✕</span>
+            <span>Đóng</span>
+          </button>
         </div>
       </div>
 
@@ -1822,67 +1823,60 @@
   </div>
 
   <!-- ==================== MODAL 3: BẢNG THEO DÕI & NHẮC HẠN RÀ SOÁT VĂN BẢN ĐỊNH KỲ (QMS LIFECYCLE) ==================== -->
-  <div id="modal-qms-review-tracker" onclick="if(event.target === this) closeQmsReviewTrackerModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    <div class="bg-[#071F3D] border-2 border-amber-400/60 rounded-2xl w-full max-w-4xl mx-auto my-auto p-5 shadow-2xl space-y-4 fsc-tab-anim-enter max-h-[92vh] flex flex-col overflow-hidden">
-      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-3 shrink-0">
+  <div id="modal-qms-review-tracker" onclick="if(event.target === this) closeQmsReviewTrackerModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div class="bg-[#071F3D] border-2 border-amber-400/60 rounded-2xl w-[96vw] max-w-6xl mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-3.5 fsc-tab-anim-enter max-h-[94vh] flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-2.5 shrink-0">
         <div class="flex items-center space-x-2.5">
-          <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-lg">🔔</div>
-          <div>
-            <h3 class="font-extrabold text-white text-sm sm:text-base">Theo dõi Hạn rà soát Văn bản</h3>
-          </div>
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-base">🔔</div>
+          <h3 class="font-extrabold text-white text-sm sm:text-base">Theo dõi Hạn rà soát Văn bản</h3>
         </div>
-        <button type="button" onclick="closeQmsReviewTrackerModal()" class="text-slate-400 hover:text-white p-1 text-xl cursor-pointer">&times;</button>
+        <button type="button" onclick="closeQmsReviewTrackerModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1.5 transition cursor-pointer shadow-md shrink-0" title="Đóng cửa sổ">
+          <span class="text-sm leading-none">✕</span>
+          <span>Đóng</span>
+        </button>
       </div>
 
-      <!-- 3 THẺ THỐNG KÊ TRẠNG THÁI RÀ SOÁT -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0">
-        <div class="p-3 rounded-xl bg-emerald-950/50 border border-emerald-500/40 flex items-center justify-between">
+      <!-- 3 THẺ THỐNG KÊ TRẠNG THÁI RÀ SOÁT (GỌN GÀNG ĐỂ DÀNH KHÔNG GIAN CHO BẢNG DỮ LIỆU) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 shrink-0">
+        <div class="px-3.5 py-2.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 flex items-center justify-between">
           <div>
-            <div class="text-[11px] text-emerald-300 font-bold uppercase">🟢 Trong hạn hiệu lực</div>
-            <div class="text-xl font-black text-white font-mono mt-0.5" id="review-stat-valid">0 văn bản</div>
-            <div class="text-[10.5px] text-emerald-200/80">Còn trên 30 ngày hiệu lực</div>
+            <div class="text-[10.5px] text-emerald-300 font-bold uppercase">🟢 Trong hạn hiệu lực</div>
+            <div class="text-lg font-black text-white font-mono" id="review-stat-valid">0 văn bản</div>
           </div>
-          <span class="text-2xl">✅</span>
+          <span class="text-xl">✅</span>
         </div>
-        <div class="p-3 rounded-xl bg-amber-950/60 border border-amber-400/50 flex items-center justify-between">
+        <div class="px-3.5 py-2.5 rounded-xl bg-amber-950/60 border border-amber-400/50 flex items-center justify-between">
           <div>
-            <div class="text-[11px] text-amber-300 font-bold uppercase">🟡 Sắp đến hạn rà soát</div>
-            <div class="text-xl font-black text-[#FFC857] font-mono mt-0.5" id="review-stat-soon">0 văn bản</div>
-            <div class="text-[10.5px] text-amber-200/80">Còn dưới 30 ngày — Cần chuẩn bị</div>
+            <div class="text-[10.5px] text-amber-300 font-bold uppercase">🟡 Sắp đến hạn (≤ 30 ngày)</div>
+            <div class="text-lg font-black text-[#FFC857] font-mono" id="review-stat-soon">0 văn bản</div>
           </div>
-          <span class="text-2xl">⏳</span>
+          <span class="text-xl">⏳</span>
         </div>
-        <div class="p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 flex items-center justify-between">
+        <div class="px-3.5 py-2.5 rounded-xl bg-rose-950/60 border border-rose-500/50 flex items-center justify-between">
           <div>
-            <div class="text-[11px] text-rose-300 font-bold uppercase">🔴 Đã đến / Quá hạn rà soát</div>
-            <div class="text-xl font-black text-rose-400 font-mono mt-0.5" id="review-stat-overdue">0 văn bản</div>
-            <div class="text-[10.5px] text-rose-200/80">Đã quá chu kỳ 12 tháng</div>
+            <div class="text-[10.5px] text-rose-300 font-bold uppercase">🔴 Đã quá hạn rà soát</div>
+            <div class="text-lg font-black text-rose-400 font-mono" id="review-stat-overdue">0 văn bản</div>
           </div>
-          <span class="text-2xl">⚠️</span>
+          <span class="text-xl">⚠️</span>
         </div>
       </div>
 
-      <!-- BẢNG CHI TIẾT HẠN RÀ SOÁT TỪNG QUY TRÌNH -->
-      <div class="flex-1 overflow-y-auto rounded-xl border border-[#B98A33]/30 bg-[#03152D]/80">
-        <table class="w-full text-left border-collapse text-xs">
-          <thead class="bg-[#102E52] text-[#FFC857] uppercase text-[10.5px] sticky top-0 z-10">
+      <!-- BẢNG CHI TIẾT HẠN RÀ SOÁT TỪNG QUY TRÌNH (RỘNG RÃI, KHÔNG BỊ BÓ HẸP CHỮ) -->
+      <div class="flex-1 overflow-auto rounded-xl border border-[#B98A33]/35 bg-[#03152D]/85 min-h-[320px]">
+        <table class="w-full min-w-[820px] text-left border-collapse text-xs sm:text-[13px]">
+          <thead class="bg-[#102E52] text-[#FFC857] uppercase text-[11px] sticky top-0 z-10 border-b border-[#B98A33]/35">
             <tr>
-              <th class="py-2.5 px-3">Mã tài liệu</th>
-              <th class="py-2.5 px-3">Tên Quy trình / Tài liệu</th>
-              <th class="py-2.5 px-3">Bộ phận</th>
-              <th class="py-2.5 px-3 text-center">Ngày ban hành</th>
-              <th class="py-2.5 px-3 text-center">Hạn rà soát</th>
-              <th class="py-2.5 px-3 text-center">Trạng thái rà soát</th>
-              <th class="py-2.5 px-3 text-right">Thao tác nhanh</th>
+              <th class="py-3 px-3.5 whitespace-nowrap w-40">Mã tài liệu</th>
+              <th class="py-3 px-3.5 min-w-[260px]">Tên Quy trình / Tài liệu</th>
+              <th class="py-3 px-3 whitespace-nowrap w-28">Bộ phận</th>
+              <th class="py-3 px-3 text-center whitespace-nowrap w-28">Ban hành</th>
+              <th class="py-3 px-3 text-center whitespace-nowrap w-28">Hạn rà soát</th>
+              <th class="py-3 px-3 text-center whitespace-nowrap w-40">Trạng thái</th>
+              <th class="py-3 px-3.5 text-right whitespace-nowrap w-44">Thao tác</th>
             </tr>
           </thead>
           <tbody id="qms-review-tracker-tbody" class="divide-y divide-[#B98A33]/20 text-slate-200"></tbody>
         </table>
-      </div>
-
-      <div class="flex items-center justify-between pt-2 border-t border-[#B98A33]/25 text-[11px] text-[#B8C8DC] shrink-0">
-        <span>💡 Mẹo: Bạn có thể bấm <strong>"Gia hạn +12 tháng"</strong> sau khi đã rà soát nội dung quy trình mà không cần tải lại file.</span>
-        <button type="button" onclick="closeQmsReviewTrackerModal()" class="px-4 py-1.5 rounded-xl bg-[#14345B] hover:bg-[#102E52] text-white font-bold cursor-pointer">Đóng bảng</button>
       </div>
     </div>
   </div>
@@ -3716,13 +3710,60 @@
       return `${base}/?doc=${encodeURIComponent(docCode || '')}`;
     }
 
-    // Bộ vẽ Mã QR Vector/Canvas sắc nét trực tiếp trên trình duyệt (kết hợp ảnh QR chuẩn ISO/IEC 18004)
+    // Bộ vẽ Mã QR sắc nét kèm Logo 3D chính thức của Hệ thống ở chính giữa tâm mã QR
+    let _cachedPortalLogoImg = null;
+    function getPortalSystemLogoImage() {
+      if (_cachedPortalLogoImg) return _cachedPortalLogoImg;
+      const iconLink = document.querySelector('link[rel="icon"]');
+      const logoSrc = (iconLink && iconLink.href) ? iconLink.href : '';
+      if (!logoSrc) return null;
+      const img = new Image();
+      img.src = logoSrc;
+      _cachedPortalLogoImg = img;
+      return img;
+    }
+
+    function drawCenterSystemLogoOnQr(ctx, size) {
+      const boxSize = 46;
+      const half = boxSize / 2;
+      const cx = size / 2;
+      const cy = size / 2;
+
+      // Vẽ khung nền trắng bo góc viền vàng sang trọng ở tâm mã QR
+      ctx.save();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(cx - half, cy - half, boxSize, boxSize, 10);
+      } else {
+        ctx.rect(cx - half, cy - half, boxSize, boxSize);
+      }
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#03152D';
+      ctx.stroke();
+
+      // Vẽ Logo 3D của hệ thống vào chính giữa khung
+      const logoImg = getPortalSystemLogoImage();
+      if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+        ctx.drawImage(logoImg, cx - half + 4, cy - half + 4, boxSize - 8, boxSize - 8);
+      } else if (logoImg) {
+        logoImg.onload = () => {
+          ctx.drawImage(logoImg, cx - half + 4, cy - half + 4, boxSize - 8, boxSize - 8);
+        };
+      }
+      ctx.restore();
+    }
+
     function renderQrCodeToCanvas(canvasEl, textUrl, docCodeLabel) {
       if (!canvasEl) return;
       const ctx = canvasEl.getContext('2d');
-      const size = 200;
+      const size = 220;
       canvasEl.width = size;
       canvasEl.height = size;
+
+      // Khởi tạo sẵn ảnh logo hệ thống
+      getPortalSystemLogoImage();
 
       const drawDeterministicQrPattern = () => {
         ctx.fillStyle = '#FFFFFF';
@@ -3759,7 +3800,7 @@
               if ((r + c) % 2 === 0) ctx.fillRect(pad + c * cellSize, pad + r * cellSize, Math.ceil(cellSize), Math.ceil(cellSize));
               continue;
             }
-            if (r >= 10 && r <= 14 && c >= 10 && c <= 14) continue;
+            if (r >= 9 && r <= 15 && c >= 9 && c <= 15) continue;
             seed ^= (r * 31 + c * 17) & 0xff;
             seed = Math.imul(seed, 16777619);
             if ((seed >>> 0) % 100 < 48) {
@@ -3767,40 +3808,21 @@
             }
           }
         }
-        // Logo FSC ở tâm QR
-        ctx.fillStyle = '#03152D';
-        ctx.fillRect(size / 2 - 20, size / 2 - 14, 40, 28);
-        ctx.strokeStyle = '#FFC857';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(size / 2 - 20, size / 2 - 14, 40, 28);
-        ctx.fillStyle = '#FFC857';
-        ctx.font = 'bold 11px monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('FSC', size / 2, size / 2);
+        drawCenterSystemLogoOnQr(ctx, size);
       };
 
       drawDeterministicQrPattern();
 
-      // Nạp đồng thời mã QR chuẩn quốc tế từ API QRServer (nếu có mạng Internet sẽ tự động đè lên để điện thoại quét 100% chính xác)
+      // Nạp mã QR chuẩn quốc tế với mức sửa lỗi cao nhất (ecc=H, cho phép chèn Logo 30% diện tích tâm mà vẫn quét nhạy 100%)
       const qrImg = new Image();
       qrImg.crossOrigin = 'anonymous';
       qrImg.onload = () => {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, size, size);
         ctx.drawImage(qrImg, 8, 8, size - 16, size - 16);
-        ctx.fillStyle = '#03152D';
-        ctx.fillRect(size / 2 - 18, size / 2 - 11, 36, 22);
-        ctx.strokeStyle = '#FFC857';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(size / 2 - 18, size / 2 - 11, 36, 22);
-        ctx.fillStyle = '#FFC857';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('FSC', size / 2, size / 2);
+        drawCenterSystemLogoOnQr(ctx, size);
       };
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=4&data=${encodeURIComponent(textUrl)}`;
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=H&margin=4&data=${encodeURIComponent(textUrl)}`;
     }
 
     function openDocQrCodeModal(docCodeOrId) {
@@ -4244,11 +4266,11 @@
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-[#102E52]/60 transition';
         tr.innerHTML = `
-          <td class="py-2.5 px-3 font-mono font-bold text-[#16A8F4] whitespace-nowrap">${escapeHtmlStr(doc.code)} <span class="text-[10px] text-emerald-300">(v${escapeHtmlStr(doc.version || '1.0')})</span></td>
-          <td class="py-2.5 px-3 font-bold text-white">${escapeHtmlStr(doc.title)}</td>
-          <td class="py-2.5 px-3 text-[#B8C8DC] whitespace-nowrap">${escapeHtmlStr(doc.dept || doc.category)}</td>
-          <td class="py-2.5 px-3 text-center font-mono text-slate-300 whitespace-nowrap">${escapeHtmlStr(doc.effectiveDate || '')}</td>
-          <td class="py-2.5 px-3 text-center font-mono font-bold text-[#FFC857] whitespace-nowrap">${escapeHtmlStr(info.dueDateStr)}</td>
+          <td class="py-3 px-3.5 font-mono font-bold text-[#16A8F4] whitespace-nowrap">${escapeHtmlStr(doc.code)} <span class="text-[10.5px] text-emerald-300">(v${escapeHtmlStr(doc.version || '1.0')})</span></td>
+          <td class="py-3 px-3.5 font-bold text-white leading-snug min-w-[260px]">${escapeHtmlStr(doc.title)}</td>
+          <td class="py-3 px-3 font-semibold text-[#FFC857] whitespace-nowrap">${escapeHtmlStr(doc.dept || doc.category)}</td>
+          <td class="py-3 px-3 text-center font-mono text-slate-300 whitespace-nowrap">${escapeHtmlStr(doc.effectiveDate || '')}</td>
+          <td class="py-3 px-3 text-center font-mono font-bold text-[#FFC857] whitespace-nowrap">${escapeHtmlStr(info.dueDateStr)}</td>
           <td class="py-2.5 px-3 text-center whitespace-nowrap">
             <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border ${info.badgeClass}">
               ${info.status === 'overdue' ? '⚠️ ' : (info.status === 'soon' ? '⏳ ' : '🟢 ')}${info.label}
