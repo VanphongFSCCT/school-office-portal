@@ -341,6 +341,27 @@ export function canRequestAccessDocLevel(req, rawAccessLevel, overrideRole = nul
   return { allowed: true };
 }
 
+
+const IDEMPOTENCY_CACHE = new Map();
+function checkIdempotencyKey(req) {
+  const key = String(req.headers?.["x-idempotency-key"] || req.headers?.["X-Idempotency-Key"] || "").trim();
+  if (!key) return null;
+  const existing = IDEMPOTENCY_CACHE.get(key);
+  if (existing && (Date.now() - existing.ts < 60000)) {
+    return existing.payload;
+  }
+  return null;
+}
+function saveIdempotencyKey(req, payload) {
+  const key = String(req.headers?.["x-idempotency-key"] || req.headers?.["X-Idempotency-Key"] || "").trim();
+  if (!key) return;
+  if (IDEMPOTENCY_CACHE.size > 500) {
+    const oldest = IDEMPOTENCY_CACHE.keys().next().value;
+    if (oldest) IDEMPOTENCY_CACHE.delete(oldest);
+  }
+  IDEMPOTENCY_CACHE.set(key, { ts: Date.now(), payload });
+}
+
 neonConfig.fetchConnectionCache = true;
 let _cachedSqlClient = null;
 let _cachedDbUrl = "";
@@ -547,8 +568,12 @@ export default async function handler(req, res) {
 
       // 2. Kiểm tra L1 Micro-Cache tách biệt theo trạng thái xác thực (bỏ qua 100% khi trình duyệt truyền _t để cập nhật quyền Nội bộ tức thì)
       const isCallerAuthed = isRequestAuthenticated(req);
-      const callerRole = getRequestUserRole(req);
-      const cacheKey = `docs_list_v6_${callerRole}`;
+      const verifiedEarly = getVerifiedSessionFromReq(req);
+      const callerRole = verifiedEarly ? verifiedEarly.role : 'guest';
+      const callerIdScope = verifiedEarly && verifiedEarly.emailHash ? verifiedEarly.emailHash.slice(0, 16) : 'public_guest';
+      const filterCatKey = req.query && req.query.category_id ? sanitizeInputString(req.query.category_id, 40) : 'all';
+      const pageKey = req.query && req.query.page ? `${req.query.page}_${req.query.limit || 50}` : 'full';
+      const cacheKey = `docs_list_v6_${callerRole}_${callerIdScope}_${filterCatKey}_${pageKey}`;
       const bypassCache = Boolean(req.query && req.query._t);
       if (!bypassCache) {
         const cached = getCachedResponse(cacheKey, 1500);
@@ -723,6 +748,11 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const writeAuth = requireDocumentWriteAuth(req, res, ['admin', 'office', 'editor']);
       if (!writeAuth) return;
+      const idempHit = checkIdempotencyKey(req);
+      if (idempHit) {
+        res.setHeader('X-Idempotent-Replay', 'true');
+        return res.status(200).json(idempHit);
+      }
       const body = req.body || {};
 
       if (body.action === 'upload_chunk') {
@@ -935,11 +965,15 @@ export default async function handler(req, res) {
         `;
       } catch (e) {}
       invalidateCache('docs_');
-      return res.status(200).json({
+      const postResult = {
         success: true,
+        dbConfirmed: true,
         encryptedAtRest: true,
+        updatedAt: new Date().toISOString(),
         data: savedRecord
-      });
+      };
+      saveIdempotencyKey(req, postResult);
+      return res.status(200).json(postResult);
     }
 
     if (req.method === 'DELETE') {

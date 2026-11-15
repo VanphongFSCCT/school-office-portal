@@ -3,9 +3,9 @@
 <head>
   <script>
     // Khởi chạy tải dữ liệu Đám mây ngay từ dòng đầu tiên của <head> (trước khi tải hình ảnh/CSS) để trình duyệt mới có sẵn dữ liệu mới nhất ngay khi mở trang!
-    window._earlyConfigFetchPromise = fetch('/api/config?_t=' + Date.now(), { cache: 'no-store' }).catch(function() { return null; });
-    window._earlyDocsFetchPromise = fetch('/api/documents?_t=' + Date.now(), {
-      cache: 'no-store',
+    window._earlyConfigFetchPromise = fetch('/api/config', { credentials: 'same-origin' }).catch(function() { return null; });
+    window._earlyDocsFetchPromise = fetch('/api/documents', {
+      credentials: 'same-origin',
       headers: { 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' }
     }).catch(function() { return null; });
   </script>
@@ -20,10 +20,10 @@
   <meta property="og:title" content="Văn phòng FSC Cần Thơ — Hệ thống Quản lý Tài liệu & Quy trình">
   
   <!-- JSZIP + DOCX-PREVIEW (100% HIGH-FIDELITY WORD RENDERING) + MAMMOTH + SHEETJS (EXCEL) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.1.20/dist/docx-preview.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.1.20/dist/docx-preview.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <style>
     /* CSS cho Chế độ Điền & Chỉnh sửa Biểu mẫu trực tiếp + In ấn chuẩn A4 */
     .editable-doc-canvas:focus {
@@ -161,7 +161,7 @@
   <!-- TAILWIND CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- PDF.JS LIBRARY FOR CUSTOM SPLIT-PANE RESIZABLE PDF VIEWER -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
   <script>
     if (window.pdfjsLib) {
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -2812,17 +2812,32 @@
         download_perm: docObj.downloadPerm || 'allow_all',
         current_file: docObj.currentFile || (docObj.code + '.pdf'),
         file_data: inlineFileStr,
-        version_history: docObj.versionHistory || []
+        version_history: docObj.versionHistory || [],
+        expected_updated_at: docObj.updatedAt || ''
       });
+
+      const idempotencyKey = `fsc-doc-${docObj.code}-${docObj.version || "1.0"}-${Date.now()}`;
 
       try {
         return await enqueueCloudSyncTask(async () => {
           const res = await fetchWithAutoRetry('/api/documents', {
             method: 'POST',
-            headers: getAuthRequestHeaders({ 'Content-Type': 'application/json' }),
+            headers: getAuthRequestHeaders({
+              'Content-Type': 'application/json',
+              'X-Idempotency-Key': idempotencyKey
+            }),
             body: buildMetaBody(isLargeFile ? '' : (fileBlob || ''))
           }, 3);
+          if (res && res.status === 409) {
+            showToast('⚠️ Xung đột cập nhật: Tài liệu này vừa được một cán bộ khác sửa đổi. Đang tải lại bản mới nhất!', 'error');
+            await syncBackendConfigAndData(true);
+            return false;
+          }
           if (!res || !res.ok) return false;
+          try {
+            const rJson = await res.clone().json();
+            if (rJson && rJson.updatedAt) docObj.updatedAt = rJson.updatedAt;
+          } catch (e) {}
 
           if (isLargeFile) {
             const totalChunks = Math.ceil(fileBlob.length / CHUNK_SIZE);
@@ -2857,15 +2872,16 @@
       const headers = getAuthRequestHeaders();
 
       // Ưu tiên số 1: Nhận ngay kết quả từ 2 Promise đã khởi chạy sẵn ở đỉnh thẻ <head> (0ms delay) mà KHÔNG chờ IndexedDB hay /api/users
+      const cfgUrl = isManualRefresh ? ('/api/config?_t=' + Date.now()) : '/api/config';
       const cfgPromise = (!isManualRefresh && window._earlyConfigFetchPromise)
         ? window._earlyConfigFetchPromise
-        : fetch('/api/config?_t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
+        : fetch(cfgUrl, { credentials: 'same-origin' }).catch(() => null);
       window._earlyConfigFetchPromise = null;
 
-      const docsUrl = '/api/documents?_t=' + Date.now();
+      const docsUrl = isManualRefresh ? ('/api/documents?_t=' + Date.now()) : '/api/documents';
       const docsPromise = (!isManualRefresh && !currentUser && window._earlyDocsFetchPromise)
         ? window._earlyDocsFetchPromise
-        : fetch(docsUrl, { cache: 'no-store', headers }).catch(() => null);
+        : fetch(docsUrl, { credentials: 'same-origin', headers }).catch(() => null);
       window._earlyDocsFetchPromise = null;
 
       // Chỉ tải danh sách RBAC users khi tài khoản đang đăng nhập là Quản trị viên (Admin) — bảo vệ Zero-PII tuyệt đối!
@@ -8187,13 +8203,17 @@
       }
 
       window.triggerHomeSearchSuggestions = renderSearchSuggestions;
+      let searchDebounceTimer = null;
       searchInput.addEventListener('input', (e) => {
-        currentSearch = e.target.value.trim();
-        // Tại Trang chủ: giữ nguyên ô tìm kiếm để gõ liên tục và hiển thị danh sách gợi ý tài liệu ngay bên dưới, tuyệt đối không nhảy trang!
-        renderSearchSuggestions(e.target.value);
-        if (selectedCat !== 'all' || specialFilterMode || isViewingAllDocsDirect) {
-          renderDirectCards();
-        }
+        const rawVal = e.target.value;
+        currentSearch = rawVal.trim();
+        if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+          renderSearchSuggestions(rawVal);
+          if (selectedCat !== 'all' || specialFilterMode || isViewingAllDocsDirect) {
+            renderDirectCards();
+          }
+        }, 150);
       });
 
       searchInput.addEventListener('focus', () => {
@@ -8972,23 +8992,20 @@
           renderDirectCards();
           renderOtherViews();
 
-          if (totalSaved === 1) {
-            showToast(`Đã đăng tải thành công: ${docsToSync[0].code} (v${docsToSync[0].version})`, 'success');
-          } else {
-            showToast(`✅ Đã đăng tải cùng lúc ${totalSaved} quy trình / tài liệu riêng biệt!`, 'success');
-          }
-
+          showToast(`⏳ Đang xác nhận lưu ${totalSaved} quy trình trên cơ sở dữ liệu Neon...`, 'info');
           let syncedCount = 0;
           for (const bDoc of docsToSync) {
             const ok = await pushDocumentToBackend(bDoc);
             if (ok) syncedCount++;
           }
-          if (syncedCount > 0) {
+          if (syncedCount === totalSaved) {
             if (totalSaved === 1) {
-              showToast(`☁️ Đã lưu và đồng bộ "${docsToSync[0].code}" lên đám mây cho mọi thiết bị!`, 'success');
+              showToast(`✅ Đã lưu và xác nhận thành công "${docsToSync[0].code}" (v${docsToSync[0].version}) trên CSDL!`, 'success');
             } else {
-              showToast(`☁️ Đã lưu và đồng bộ toàn bộ ${syncedCount}/${totalSaved} quy trình lên đám mây cho mọi thiết bị!`, 'success');
+              showToast(`✅ Đã lưu và xác nhận toàn bộ ${syncedCount}/${totalSaved} quy trình trên CSDL!`, 'success');
             }
+          } else {
+            showToast(`⚠️ Đã xác nhận ${syncedCount}/${totalSaved} quy trình trên CSDL. Vui lòng kiểm tra kết nối mạng hoặc quyền hạn!`, 'error');
           }
         } catch (err) {
           console.error('Submit error:', err);
@@ -9085,11 +9102,12 @@
           renderDirectCards();
           renderOtherViews();
           const isMetaOnlyUpdate = !Boolean(editUploadedFileData) && Boolean(doc.hasCloudFile);
+          showToast(`⏳ Đang xác nhận cập nhật "${doc.code}" trên CSDL...`, 'info');
           const syncedEditOk = await pushDocumentToBackend(doc, oldDocCode, isMetaOnlyUpdate);
           if (syncedEditOk) {
-            showToast(`☁️ Đã cập nhật và đồng bộ "${doc.code}" lên đám mây cho mọi thiết bị!`, 'success');
+            showToast(`✅ Đã cập nhật và xác nhận thành công "${doc.code}" trên CSDL!`, 'success');
           } else {
-            showToast(`Đã lưu thay đổi cho tài liệu ${doc.code}!`, 'success');
+            showToast(`⚠️ Chưa thể xác nhận lưu "${doc.code}" trên CSDL (xung đột phiên bản hoặc mất kết nối)!`, 'error');
           }
         } catch (err) {
           closeEditDocModal();
