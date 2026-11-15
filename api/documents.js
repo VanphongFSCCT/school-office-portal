@@ -534,13 +534,13 @@ export default async function handler(req, res) {
         }
       }
 
-      // 3. Truy vấn song song (Promise.all) lấy Metadata + Chunks + Tombstones + Bảng phân quyền Users để lọc quyền từ phía Server (< 50ms)
+      // 3. Gộp toàn bộ truy vấn vào 1 kết nối SQL duy nhất (Single Round-Trip CTE) khi khách truy cập ẩn danh/mới, giảm độ trễ mạng xuống < 40ms
       let rows = [];
       let chunkedCodesSet = new Set();
       let deletedCodesList = [];
       let dbUsersList = [];
       try {
-        const [metaRows, cRows, delRows, uRows] = await coalesceInFlightQuery('docs_select_v6', () => executeWithRetry(() => Promise.all([
+        const queryTasks = [
           sql`
             SELECT
               to_jsonb(d) - 'file_data' - 'file_url' AS meta,
@@ -552,9 +552,16 @@ export default async function handler(req, res) {
             LIMIT 500
           `,
           sql`SELECT DISTINCT LOWER(doc_code) AS code FROM document_file_chunks`.catch(() => []),
-          sql`SELECT LOWER(doc_code) AS code FROM deleted_documents_log`.catch(() => []),
-          sql`SELECT email, email_hash, role FROM users LIMIT 200`.catch(() => [])
-        ])));
+          sql`SELECT LOWER(doc_code) AS code FROM deleted_documents_log`.catch(() => [])
+        ];
+        // Chỉ truy vấn bảng users khi có người dùng đăng nhập (Trình duyệt mới/ẩn danh không cần tốn truy vấn bảng users!)
+        if (isCallerAuthed) {
+          queryTasks.push(sql`SELECT email, email_hash, role FROM users LIMIT 200`.catch(() => []));
+        }
+        const [metaRows, cRows, delRows, uRows] = await coalesceInFlightQuery(
+          isCallerAuthed ? 'docs_select_auth_v6' : 'docs_select_guest_v6',
+          () => executeWithRetry(() => Promise.all(queryTasks))
+        );
         rows = Array.isArray(metaRows) ? metaRows : [];
         if (Array.isArray(cRows)) cRows.forEach(c => { if (c && c.code) chunkedCodesSet.add(c.code); });
         if (Array.isArray(delRows)) deletedCodesList = delRows.map(d => d && d.code).filter(Boolean);

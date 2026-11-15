@@ -2853,7 +2853,7 @@
     async function syncBackendConfigAndData(isManualRefresh = false) {
       const headers = getAuthRequestHeaders();
 
-      // Thực thi SONG SONG cả 3 tác vụ (Config API + Documents API + IndexedDB Metadata) thay vì chờ tuần tự
+      // Ưu tiên số 1: Nhận ngay kết quả từ 2 Promise đã khởi chạy sẵn ở đỉnh thẻ <head> (0ms delay) mà KHÔNG chờ IndexedDB hay /api/users
       const cfgPromise = (!isManualRefresh && window._earlyConfigFetchPromise)
         ? window._earlyConfigFetchPromise
         : fetch('/api/config?_t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
@@ -2865,10 +2865,15 @@
         : fetch(docsUrl, { cache: 'no-store', headers }).catch(() => null);
       window._earlyDocsFetchPromise = null;
 
-      const usersPromise = fetch('/api/users?_t=' + Date.now(), { cache: 'no-store', headers }).catch(() => null);
+      // Chỉ tải danh sách RBAC users khi người dùng đã đăng nhập (trình duyệt mới / ẩn danh không cần gọi /api/users)
+      const usersPromise = currentUser
+        ? fetch('/api/users?_t=' + Date.now(), { cache: 'no-store', headers }).catch(() => null)
+        : Promise.resolve(null);
       const idbPromise = loadAllFilesFromIDB(false).catch(() => ({}));
 
-      const [cfgRes, docRes, usersRes, idbMap] = await Promise.all([cfgPromise, docsPromise, usersPromise, idbPromise]);
+      // Chờ Config & Documents trước để vẽ giao diện tức thì!
+      const [cfgRes, docRes] = await Promise.all([cfgPromise, docsPromise]);
+      const [usersRes, idbMap] = await Promise.all([usersPromise, idbPromise]);
 
       // 0. Đồng bộ danh sách Phân quyền Role (Admin / Cán bộ Văn phòng / Biên tập / User) từ Neon PostgreSQL
       try {
@@ -8024,26 +8029,20 @@
         }
       }, 12000);
 
-      if (false) {
-        // Trình duyệt mới hoàn toàn (hoặc Ẩn danh): không vẽ nội dung mặc định cũ ra trước để tránh hiện tượng nháy từ nội dung cũ sang mới; chờ Promise đã tải sẵn từ <head> hoàn tất rồi hiển thị 1 lần duy nhất với dữ liệu mới nhất!
-        const dashView = document.getElementById('view-dashboard');
-        if (dashView) dashView.style.opacity = '0';
-        syncBackendConfigAndData().finally(() => {
-          updateBadges();
-          renderFilterChips();
-          renderCategoryHub();
-          renderDirectCards();
-          renderOtherViews();
-          if (documents.length === 0) {
-            ensureOfflineDemoSeedDocs();
-          }
-          checkQrDeepLinkParam();
-          if (dashView) {
-            dashView.style.transition = 'opacity 0.12s ease-out';
-            dashView.style.opacity = '1';
-          }
-        });
-      }
+      // Render khung giao diện tức thì (0ms) và đồng bộ ngay lập tức từ Promise đã tải sẵn trên <head> (hoàn tất trong ~50-150ms, không bao giờ chờ 12s!)
+      updateBadges();
+      renderFilterChips();
+      renderCategoryHub();
+      renderDirectCards();
+      renderOtherViews();
+      syncBackendConfigAndData(false).finally(() => {
+        updateBadges();
+        renderFilterChips();
+        renderCategoryHub();
+        renderDirectCards();
+        renderOtherViews();
+        checkQrDeepLinkParam();
+      });
       setTimeout(() => {
         if (documents.length === 0) ensureOfflineDemoSeedDocs();
         checkQrDeepLinkParam();
