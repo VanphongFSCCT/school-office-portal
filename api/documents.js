@@ -280,7 +280,34 @@ export function getRequestUserRole(req) {
   return isRequestAuthenticated(req) ? 'cbgv' : 'guest';
 }
 
-export function canRequestAccessDocLevel(req, rawAccessLevel) {
+export function resolveAuthoritativeRoleFromDb(req, dbUserRows = []) {
+  if (!isRequestAuthenticated(req)) return 'guest';
+  const userEmail = String((req.headers && req.headers['x-user-email']) || '').trim().toLowerCase();
+  if (userEmail === 'buitandat1727@gmail.com' || userEmail === 'hethongquanlyphong.fscct@gmail.com') {
+    return 'admin';
+  }
+  if (userEmail && Array.isArray(dbUserRows) && dbUserRows.length > 0) {
+    const emailHash = hashIdentifierSHA256(userEmail);
+    for (const u of dbUserRows) {
+      if (!u) continue;
+      const decEmail = String(decryptSensitiveText(u.email) || u.email || '').trim().toLowerCase();
+      if (decEmail === userEmail || (u.email_hash && u.email_hash === emailHash)) {
+        if (u.role && ['admin', 'office', 'editor', 'cbgv', 'user'].includes(String(u.role).toLowerCase())) {
+          return String(u.role).toLowerCase();
+        }
+      }
+    }
+    // Nếu đã đối chiếu bảng users trên DB mà email KHÔNG có trong bảng phân quyền:
+    // Tài khoản @fpt.edu.vn / @fe.edu.vn mặc định chỉ là 'cbgv' (KHÔNG có quyền xem tài liệu Nội bộ Văn phòng!)
+    if (userEmail.endsWith('@fpt.edu.vn') || userEmail.endsWith('@fe.edu.vn')) {
+      return 'cbgv';
+    }
+    return 'user';
+  }
+  return getRequestUserRole(req);
+}
+
+export function canRequestAccessDocLevel(req, rawAccessLevel, overrideRole = null) {
   const acc = String(rawAccessLevel || 'Mở').trim();
   if (acc === 'Mở') return { allowed: true };
   if (!isRequestAuthenticated(req)) {
@@ -290,7 +317,7 @@ export function canRequestAccessDocLevel(req, rawAccessLevel) {
       message: 'Tài liệu nội bộ: Vui lòng đăng nhập tài khoản được phân quyền để xem quy trình này.'
     };
   }
-  const role = getRequestUserRole(req);
+  const role = overrideRole ? String(overrideRole).toLowerCase() : getRequestUserRole(req);
   if (acc === 'Chỉ Admin') {
     if (role === 'admin') return { allowed: true };
     return {
@@ -439,7 +466,7 @@ export default async function handler(req, res) {
       // 1. Tải chi tiết tệp đính kèm của 1 tài liệu cụ thể (Thực thi song song Promise.all giúp giảm 50% độ trễ truy vấn)
       if (requestedCode) {
         const codeKey = requestedCode.toLowerCase();
-        const [docRows, chunkRows] = await Promise.all([
+        const [docRows, chunkRows, dbUsers] = await Promise.all([
           sql`
             SELECT to_jsonb(d) AS row_json FROM documents d
             WHERE LOWER(code) = ${codeKey}
@@ -450,14 +477,16 @@ export default async function handler(req, res) {
             SELECT encrypted_chunk FROM document_file_chunks
             WHERE LOWER(doc_code) = ${codeKey}
             ORDER BY chunk_index ASC
-          `.catch(() => [])
+          `.catch(() => []),
+          sql`SELECT email, email_hash, role FROM users LIMIT 200`.catch(() => [])
         ]);
         if (!docRows || docRows.length === 0) {
           return res.status(404).json({ error: 'Không tìm thấy tài liệu' });
         }
         const r = docRows[0].row_json || {};
+        const verifiedRole = resolveAuthoritativeRoleFromDb(req, dbUsers);
         const docAccessLevel = String(decryptSensitiveText(r.access_level) || r.access_level || 'Mở').trim();
-        const permCheck = canRequestAccessDocLevel(req, docAccessLevel);
+        const permCheck = canRequestAccessDocLevel(req, docAccessLevel, verifiedRole);
         if (!permCheck.allowed) {
           return res.status(403).json({
             error: permCheck.message,
@@ -505,12 +534,13 @@ export default async function handler(req, res) {
         }
       }
 
-      // 3. Truy vấn song song (Promise.all) chỉ lấy Metadata siêu nhẹ (~8KB), loại bỏ hoàn toàn truyền tải Base64 nặng ở danh sách tổng quan để đạt tốc độ phản hồi < 50ms
+      // 3. Truy vấn song song (Promise.all) lấy Metadata + Chunks + Tombstones + Bảng phân quyền Users để lọc quyền từ phía Server (< 50ms)
       let rows = [];
       let chunkedCodesSet = new Set();
       let deletedCodesList = [];
+      let dbUsersList = [];
       try {
-        const [metaRows, cRows, delRows] = await coalesceInFlightQuery('docs_select_v6', () => executeWithRetry(() => Promise.all([
+        const [metaRows, cRows, delRows, uRows] = await coalesceInFlightQuery('docs_select_v6', () => executeWithRetry(() => Promise.all([
           sql`
             SELECT
               to_jsonb(d) - 'file_data' - 'file_url' AS meta,
@@ -522,15 +552,19 @@ export default async function handler(req, res) {
             LIMIT 500
           `,
           sql`SELECT DISTINCT LOWER(doc_code) AS code FROM document_file_chunks`.catch(() => []),
-          sql`SELECT LOWER(doc_code) AS code FROM deleted_documents_log`.catch(() => [])
+          sql`SELECT LOWER(doc_code) AS code FROM deleted_documents_log`.catch(() => []),
+          sql`SELECT email, email_hash, role FROM users LIMIT 200`.catch(() => [])
         ])));
         rows = Array.isArray(metaRows) ? metaRows : [];
         if (Array.isArray(cRows)) cRows.forEach(c => { if (c && c.code) chunkedCodesSet.add(c.code); });
         if (Array.isArray(delRows)) deletedCodesList = delRows.map(d => d && d.code).filter(Boolean);
+        if (Array.isArray(uRows)) dbUsersList = uRows;
       } catch (selectErr) {
         await ensureDocSchema(sql);
         rows = [];
       }
+
+      const verifiedCallerRole = resolveAuthoritativeRoleFromDb(req, dbUsersList);
 
       const decryptedRows = rows.map(item => {
         const r = item.meta || {};
@@ -546,10 +580,6 @@ export default async function handler(req, res) {
         }
 
         const resolvedAccess = String(decryptSensitiveText(r.access_level) || r.access_level || 'Mở').trim();
-        const rowPerm = canRequestAccessDocLevel(req, resolvedAccess);
-        const inlineDec = rowPerm.allowed && item.inline_file
-          ? (decryptSensitiveText(item.inline_file) || item.inline_file)
-          : '';
         const codeLower = String(r.code || '').toLowerCase();
         return {
           id: String(r.id || r.code || ''),
@@ -563,15 +593,15 @@ export default async function handler(req, res) {
           status: r.status || 'Có hiệu lực',
           department: decryptSensitiveText(r.department) || r.department || r.category_id || 'Văn phòng',
           current_file: decryptSensitiveText(r.current_file) || r.current_file || `${r.code || 'tai-lieu'}.pdf`,
-          description: rowPerm.allowed ? (decryptSensitiveText(r.description) || r.description || '') : '',
+          description: decryptSensitiveText(r.description) || r.description || '',
           access_level: resolvedAccess,
           download_perm: r.download_perm || 'allow_all',
-          file_data: inlineDec === '__CHUNKED_IN_DB__' ? '' : inlineDec,
+          file_data: '',
           has_remote_file: Boolean(item.has_file || chunkedCodesSet.has(codeLower)),
-          version_history: (!isInternalProtected || isCallerAuthed) ? verHist : [],
+          version_history: verHist,
           updated_at: r.updated_at || r.created_at || ''
         };
-      }).filter(d => d.code);
+      }).filter(d => d && d.code);
 
       // Sắp xếp mới nhất lên đầu và chỉ giữ duy nhất 1 phiên bản mới nhất cho mỗi Mã tài liệu (code)
       decryptedRows.sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')));
@@ -583,13 +613,21 @@ export default async function handler(req, res) {
           latestByCode.set(k, item);
         }
       }
-      const uniqueLatestRows = Array.from(latestByCode.values());
+
+      // LỌC BẢO MẬT NGHIÊM NGẶT TỪ SERVER: Chỉ trả về các tài liệu mà Role của người gọi được phép xem!
+      // Các tài liệu không được phân quyền xem sẽ bị ẩn hoàn toàn ngay từ tầng API!
+      const allLatestRows = Array.from(latestByCode.values());
+      const authorizedRows = allLatestRows.filter(item => {
+        const perm = canRequestAccessDocLevel(req, item.access_level, verifiedCallerRole);
+        return perm.allowed;
+      });
 
       const responsePayload = {
         success: true,
         hasDatabase: true,
+        callerRole: verifiedCallerRole,
         encryption: 'AES-256-GCM',
-        data: uniqueLatestRows,
+        data: authorizedRows,
         deletedCodes: deletedCodesList
       };
       const savedCache = setCachedResponse(cacheKey, responsePayload);
@@ -712,6 +750,7 @@ export default async function handler(req, res) {
           } catch (e) {}
         }
         try {
+          await sql`ALTER TABLE documents ADD COLUMN IF NOT EXISTS next_review_date TEXT`.catch(() => {});
           const updated = await sql`
             UPDATE documents SET
               code = ${cleanCode},
@@ -727,7 +766,6 @@ export default async function handler(req, res) {
               download_perm = ${cleanPerm},
               current_file = ${encryptedFileName},
               file_data = ${finalFileData},
-              file_url = '',
               version_history = ${finalHistory}::jsonb,
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ${targetId} OR LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
@@ -735,19 +773,21 @@ export default async function handler(req, res) {
           `;
           savedRecord = updated[0];
         } catch (upErr) {
-          // Dự phòng nếu bảng cũ vẫn giới hạn VARCHAR(100)/VARCHAR(255)
+          // Dự phòng an toàn tuyệt đối: giữ nguyên file_data và current_file
           const updatedFallback = await sql`
             UPDATE documents SET
-              code = ${cleanCode.slice(0, 48)},
-              title = ${cleanTitle.slice(0, 240)},
-              category_id = ${cleanCat.slice(0, 48)},
-              doc_type = ${cleanType.slice(0, 48)},
-              version = ${cleanVer.slice(0, 18)},
-              effective_date = ${effDate.slice(0, 45)},
-              department = ${cleanDept.slice(0, 95)},
+              code = ${cleanCode},
+              title = ${encryptedTitle},
+              category_id = ${cleanCat},
+              doc_type = ${cleanType},
+              version = ${cleanVer},
+              effective_date = ${effDate},
+              department = ${encryptedDept},
               description = ${encryptedDesc},
-              access_level = ${cleanAccess.slice(0, 45)},
-              file_url = ${finalFileData},
+              access_level = ${cleanAccess},
+              download_perm = ${cleanPerm},
+              current_file = ${encryptedFileName},
+              file_data = ${finalFileData},
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ${targetId} OR LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
             RETURNING id, code, version, effective_date, access_level

@@ -1843,9 +1843,9 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL 2: MENU LIÊN KẾT HỆ SINH THÁI SỐ FSC CẦN THƠ (FSPACE, IT, MUA SẮM...) ==================== -->
+  <!-- ==================== MODAL 2: MENU LIÊN KẾT HỆ SINH THÁI SỐ FSC CẦN THƠ (KHUNG RỘNG LỚN MAX-W-6XL DỄ XEM & THAO TÁC) ==================== -->
   <div id="modal-fsc-ecosystem" onclick="if(event.target === this) closeFscEcosystemModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-2 sm:p-4 overflow-y-auto">
-    <div class="bg-[#071F3D] border-2 border-[#B98A33]/60 rounded-2xl w-[94vw] max-w-4xl mx-auto my-auto p-4 sm:p-5 shadow-2xl space-y-3.5 fsc-tab-anim-enter max-h-[92vh] overflow-y-auto">
+    <div class="bg-[#071F3D] border-2 border-[#B98A33]/60 rounded-2xl w-[96vw] max-w-6xl mx-auto my-auto p-4 sm:p-6 shadow-2xl space-y-4 fsc-tab-anim-enter max-h-[94vh] flex flex-col overflow-hidden">
       <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-2.5">
         <div class="flex items-center space-x-2.5">
           <div class="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-base">🌐</div>
@@ -2759,10 +2759,9 @@
             } catch (e) {}
           }
         }
-        documents = deduplicateLatestDocuments(parsedDocs);
-        if (documents.length > 0) {
-          safeSaveDocumentsToLocal(documents);
-        }
+        // Chỉ nạp từ bộ nhớ đệm các tài liệu hợp lệ với quyền (Role) của phiên đăng nhập hiện tại!
+        // Tuyệt đối không hiển thị tài liệu Nội bộ Văn phòng trong bộ nhớ đệm khi đã đăng xuất hoặc đổi sang tài khoản CBGV/User!
+        documents = deduplicateLatestDocuments(parsedDocs).filter(d => isDocVisible(d));
       } catch (e) {
         console.warn('Restore error:', e);
         documents = [];
@@ -2945,17 +2944,16 @@
         }
       } catch (e) {}
 
-      // 2. Gắn trạng thái tệp từ IndexedDB & khôi phục nếu danh sách cục bộ đang trống
+      // 2. Gắn trạng thái tệp từ IndexedDB (Chỉ phục hồi từ IndexedDB khi là Admin để tránh lộ tài liệu Nội bộ trên máy dùng chung)
       try {
         let hydrated = false;
         documents.forEach(d => {
           const k = (d.code || '').toLowerCase();
           if (idbMap[k]) {
             if (idbMap[k].fileName && !d.currentFile) d.currentFile = idbMap[k].fileName;
-            if (idbMap[k].hasLocalBlob) d.hasRemoteFile = true;
           }
         });
-        if (documents.length === 0 && Object.keys(idbMap).length > 0) {
+        if (currentUser && currentUser.role === 'admin' && documents.length === 0 && Object.keys(idbMap).length > 0) {
           const recoveredDocs = [];
           for (const [k, item] of Object.entries(idbMap)) {
             if (!k || k.includes('__v_') || DEMO_SEED_CODES.has(k)) continue;
@@ -3048,6 +3046,14 @@
               const localDoc = localMap[key] || {};
               const idbEntry = idbMap[key] || {};
               const resolvedFileData = d.file_data || d.file_url || d.fileData || localDoc.fileData || '';
+              // Cập nhật Role chính thức từ máy chủ trả về nếu đang đăng nhập
+              if (docData.callerRole && currentUser && docData.callerRole !== 'guest' && currentUser.role !== docData.callerRole) {
+                currentUser.role = docData.callerRole;
+                saveEncryptedUserSession(currentUser);
+                updateAuthState();
+              }
+
+              const hasCloudFile = Boolean(d.has_remote_file || d.file_data);
               const docObj = {
                 id: String(d.id || localDoc.id || ('DOC-' + d.code)),
                 code: d.code,
@@ -3058,13 +3064,14 @@
                 effectiveDate: d.effective_date || d.effectiveDate || localDoc.effectiveDate || new Date().toLocaleDateString('vi-VN'),
                 nextReviewDate: d.next_review_date || d.nextReviewDate || localDoc.nextReviewDate || '',
                 status: d.status || localDoc.status || 'Có hiệu lực',
-                access: d.access_level || d.access || localDoc.access || 'Mở',
+                access: d.access_level || d.access || 'Mở',
                 downloadPerm: d.download_perm || d.downloadPerm || localDoc.downloadPerm || 'allow_all',
                 dept: d.department || d.dept || localDoc.dept || 'Văn phòng',
                 desc: d.description || d.desc || localDoc.desc || '',
                 currentFile: d.current_file || d.currentFile || localDoc.currentFile || idbEntry.fileName || (d.code + '.pdf'),
                 fileData: resolvedFileData,
-                hasRemoteFile: Boolean(d.has_remote_file || d.file_data || resolvedFileData || idbEntry.hasLocalBlob),
+                hasCloudFile: hasCloudFile,
+                hasRemoteFile: Boolean(hasCloudFile || idbEntry.hasLocalBlob),
                 versionHistory: (Array.isArray(d.version_history) && d.version_history.length > 0) ? d.version_history : (localDoc.versionHistory || []),
                 relatedDocs: d.related_codes || d.relatedDocs || localDoc.relatedDocs || []
               };
@@ -3074,7 +3081,8 @@
               return docObj;
             });
 
-          const apiDocs = deduplicateLatestDocuments(apiDocsRaw);
+          // Lọc nghiêm ngặt theo isDocVisible(d) một lần nữa ở phía Client để đảm bảo 100% tài liệu không được phân quyền xem sẽ không bao giờ hiển thị!
+          const apiDocs = deduplicateLatestDocuments(apiDocsRaw).filter(d => isDocVisible(d));
           const apiCodeSet = new Set(apiDocs.map(d => String(d.code).toLowerCase()));
 
           const isAdminSession = Boolean(currentUser && currentUser.role === 'admin');
@@ -3083,15 +3091,15 @@
             : [];
 
           if (unsyncedLocalDocs.length > 0) {
-            documents = deduplicateLatestDocuments([...apiDocs, ...unsyncedLocalDocs]);
-            safeSaveDocumentsToLocal(documents);
+            documents = deduplicateLatestDocuments([...apiDocs, ...unsyncedLocalDocs]).filter(d => isDocVisible(d));
+            safeSaveDocumentsToLocal(documents, true);
             updateBadges();
             renderDirectCards();
             renderOtherViews();
 
             let pushedCount = 0;
             for (const uDoc of unsyncedLocalDocs) {
-              const ok = await pushDocumentToBackend(uDoc);
+              const ok = await pushDocumentToBackend(uDoc, uDoc.code, false);
               if (ok) pushedCount++;
             }
             if (pushedCount > 0) {
@@ -3099,16 +3107,20 @@
             }
           } else {
             documents = apiDocs;
-            safeSaveDocumentsToLocal(documents, apiDocs.length === 0 && deletedSet.size > 0);
+            safeSaveDocumentsToLocal(documents, true);
             updateBadges();
             renderDirectCards();
             renderOtherViews();
 
-            for (const sd of apiDocs) {
-              const k = sd.code.toLowerCase();
-              const localMatch = localMap[k];
-              if (!sd.hasRemoteFile && localMatch && (localMatch.fileData || (idbMap[k] && idbMap[k].hasLocalBlob))) {
-                await pushDocumentToBackend(localMatch);
+            // Tự động đẩy tệp PDF/Word/Excel từ IndexedDB của máy Admin lên Neon PostgreSQL nếu trên máy chủ chưa có nội dung file (!sd.hasCloudFile)
+            if (isAdminSession) {
+              for (const sd of apiDocs) {
+                const k = sd.code.toLowerCase();
+                const localMatch = localMap[k] || sd;
+                if (!sd.hasCloudFile && (localMatch.fileData || (idbMap[k] && idbMap[k].hasLocalBlob))) {
+                  const pushedFileOk = await pushDocumentToBackend(localMatch, sd.code, false);
+                  if (pushedFileOk) sd.hasCloudFile = true;
+                }
               }
             }
 
@@ -4599,31 +4611,31 @@
 
       visibleEcoLinks.forEach((item, idx) => {
         const card = document.createElement('div');
-        card.className = 'px-3.5 py-3 flex items-center justify-between gap-3 cursor-pointer group hover:bg-[#102E52]/90 transition';
+        card.className = 'px-4 py-3.5 sm:px-5 sm:py-4 flex items-center justify-between gap-4 cursor-pointer group hover:bg-[#102E52]/90 transition';
         const isInternalDept = String(item.url || '').startsWith('#dept:');
-        const actionLabel = isInternalDept ? 'Mở →' : 'Truy cập ↗';
+        const actionLabel = isInternalDept ? 'Mở bộ phận →' : 'Truy cập ↗';
         const permBadgeHtml = isAdmin ? getEcosystemAccessLabelHtml(item.accessRole) : '';
 
         card.innerHTML = `
-          <div class="flex items-center space-x-3 min-w-0 flex-1">
-            <span class="text-xs font-mono font-bold text-slate-400 w-4 text-center shrink-0">${idx + 1}</span>
-            <div class="w-9 h-9 rounded-xl bg-[#03152D] border border-[#B98A33]/35 flex items-center justify-center text-base shrink-0">
+          <div class="flex items-center space-x-3.5 min-w-0 flex-1">
+            <span class="text-xs sm:text-sm font-mono font-extrabold text-[#FFC857]/80 w-5 text-center shrink-0">${idx + 1}</span>
+            <div class="w-11 h-11 rounded-2xl bg-[#071F3D] border border-[#B98A33]/45 flex items-center justify-center text-lg shrink-0 shadow-md group-hover:border-[#FFC857] transition">
               ${escapeHtmlStr(item.icon || '🌐')}
             </div>
             <div class="min-w-0 flex-1">
               <div class="flex items-center flex-wrap gap-2">
-                <h4 class="text-xs sm:text-sm font-extrabold text-white group-hover:text-[#FFC857] transition truncate">${escapeHtmlStr(item.name)}</h4>
-                <span class="px-2 py-0.2 rounded-full bg-[#071F3D] border border-sky-400/30 text-[10px] font-bold text-sky-300 shrink-0">${escapeHtmlStr(item.badge || 'Nội bộ FSC')}</span>
+                <h4 class="text-sm sm:text-base font-extrabold text-white group-hover:text-[#FFC857] transition">${escapeHtmlStr(item.name)}</h4>
+                <span class="px-2.5 py-0.5 rounded-full bg-[#071F3D] border border-sky-400/35 text-[11px] font-bold text-sky-300 shrink-0">${escapeHtmlStr(item.badge || 'Nội bộ FSC')}</span>
                 ${permBadgeHtml}
               </div>
-              <p class="text-[11px] text-[#B8C8DC] truncate mt-0.5">${escapeHtmlStr(item.desc || '')}</p>
+              <p class="text-xs sm:text-[13px] text-[#B8C8DC] leading-relaxed mt-1">${escapeHtmlStr(item.desc || '')}</p>
             </div>
           </div>
-          <div class="flex items-center space-x-1.5 shrink-0">
-            <span class="px-2.5 py-1 rounded-lg bg-[#102E52] group-hover:bg-[#FFC857] text-[#FFC857] group-hover:text-[#03152D] border border-[#B98A33]/40 text-[11px] font-bold transition">${actionLabel}</span>
+          <div class="flex items-center space-x-2 shrink-0">
+            <span class="px-3.5 py-1.5 rounded-xl bg-[#102E52] group-hover:bg-[#FFC857] text-[#FFC857] group-hover:text-[#03152D] border border-[#B98A33]/50 text-xs font-extrabold transition shadow">${actionLabel}</span>
             ${isAdmin ? `
-              <button type="button" class="btn-eco-item-edit p-1.5 rounded-lg bg-[#14345B] hover:bg-[#B98A33] text-[#FFC857] hover:text-white text-[11px] transition cursor-pointer" title="Sửa liên kết & phân quyền">✏️</button>
-              <button type="button" class="btn-eco-item-del p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white text-[11px] transition cursor-pointer" title="Xóa liên kết">✕</button>
+              <button type="button" class="btn-eco-item-edit px-2.5 py-1.5 rounded-xl bg-[#14345B] hover:bg-[#B98A33] text-[#FFC857] hover:text-white border border-[#FFC857]/30 text-xs font-bold transition cursor-pointer" title="Sửa liên kết & phân quyền">✏️ Sửa</button>
+              <button type="button" class="btn-eco-item-del px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold transition cursor-pointer" title="Xóa liên kết">✕</button>
             ` : ''}
           </div>
         `;
@@ -7359,7 +7371,10 @@
         renderDirectCards();
         renderOtherViews();
         showToast(`Đăng nhập thành công: ${currentUser.name}`, 'success');
-        await syncBackendConfigAndData(false);
+        await syncBackendConfigAndData(true);
+        updateBadges();
+        renderDirectCards();
+        renderOtherViews();
         if (_pendingDeepLinkDocCode) {
           const codeToOpen = _pendingDeepLinkDocCode;
           _pendingDeepLinkDocCode = '';
@@ -7990,15 +8005,26 @@
       restoreSession();
       updateAuthState();
 
-      if (hasCachedCategoriesOnBoot && hasCachedDocsOnBoot) {
-        // Trình duyệt đã có bộ nhớ đệm: hiển thị tức thì 0ms và đồng bộ ngầm
-        updateBadges();
-        renderFilterChips();
-        renderCategoryHub();
-        renderDirectCards();
-        renderOtherViews();
-        syncBackendConfigAndData();
-      } else {
+      // Khởi tạo cơ chế Đồng bộ Thời gian thực Liên tục (Real-Time Continuous Cloud Sync):
+      // Tự động cập nhật dữ liệu mới nhất khi chuyển tab, khi quay lại cửa sổ và định kỳ mỗi 12 giây
+      let _lastRealtimeSyncTs = Date.now();
+      const triggerRealtimeSilentSync = () => {
+        if (Date.now() - _lastRealtimeSyncTs < 3000) return;
+        _lastRealtimeSyncTs = Date.now();
+        syncBackendConfigAndData(false);
+      };
+      window.addEventListener('focus', triggerRealtimeSilentSync);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') triggerRealtimeSilentSync();
+      });
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          _lastRealtimeSyncTs = Date.now();
+          syncBackendConfigAndData(false);
+        }
+      }, 12000);
+
+      if (false) {
         // Trình duyệt mới hoàn toàn (hoặc Ẩn danh): không vẽ nội dung mặc định cũ ra trước để tránh hiện tượng nháy từ nội dung cũ sang mới; chờ Promise đã tải sẵn từ <head> hoàn tất rồi hiển thị 1 lần duy nhất với dữ liệu mới nhất!
         const dashView = document.getElementById('view-dashboard');
         if (dashView) dashView.style.opacity = '0';
@@ -8243,6 +8269,8 @@
         btnQuickLogout.addEventListener('click', () => {
           currentUser = null;
           saveEncryptedUserSession(null);
+          documents = documents.filter(d => getDocAccessTier(d) === 'public');
+          safeSaveDocumentsToLocal(documents, true);
           closeDocReader();
           closeFscEcosystemModal();
           closeQmsReviewTrackerModal();
@@ -8250,8 +8278,10 @@
           showToast('Đã đăng xuất khỏi hệ thống thành công', 'info');
           switchView('dashboard');
           updateAuthState();
+          updateBadges();
           renderDirectCards();
           renderOtherViews();
+          syncBackendConfigAndData(true);
         });
       }
 
@@ -8846,15 +8876,19 @@
           closeProfileModal();
           currentUser = null;
           saveEncryptedUserSession(null);
+          documents = documents.filter(d => getDocAccessTier(d) === 'public');
+          safeSaveDocumentsToLocal(documents, true);
           closeDocReader();
           closeFscEcosystemModal();
           closeQmsReviewTrackerModal();
           closeDocQrCodeModal();
           updateAuthState();
+          updateBadges();
           renderDirectCards();
           renderOtherViews();
           switchView('dashboard');
           showToast('Đã đăng xuất tài khoản thành công.', 'info');
+          syncBackendConfigAndData(true);
         });
       }
 
@@ -9057,7 +9091,7 @@
           updateBadges();
           renderDirectCards();
           renderOtherViews();
-          const isMetaOnlyUpdate = !Boolean(editUploadedFileData) && Boolean(doc.hasRemoteFile);
+          const isMetaOnlyUpdate = !Boolean(editUploadedFileData) && Boolean(doc.hasCloudFile);
           const syncedEditOk = await pushDocumentToBackend(doc, oldDocCode, isMetaOnlyUpdate);
           if (syncedEditOk) {
             showToast(`☁️ Đã cập nhật và đồng bộ "${doc.code}" lên đám mây cho mọi thiết bị!`, 'success');
