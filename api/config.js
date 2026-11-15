@@ -274,18 +274,32 @@ export default async function handler(req, res) {
       }
 
       if (req.method === 'POST') {
-        const { categories } = req.body || {};
-        if (!Array.isArray(categories)) {
-          return res.status(400).json({ error: 'Dữ liệu danh mục bộ phận không hợp lệ.' });
+        const { categories, ecosystemLinks } = req.body || {};
+        if (!Array.isArray(categories) && !Array.isArray(ecosystemLinks)) {
+          return res.status(400).json({ error: 'Dữ liệu cấu hình không hợp lệ.' });
         }
-        const cipherCats = encryptSensitiveText(JSON.stringify(categories));
-        await executeWithRetry(() => sql`
-          INSERT INTO portal_settings (setting_key, encrypted_value, updated_at)
-          VALUES ('portal_categories_v6', ${cipherCats}, CURRENT_TIMESTAMP)
-          ON CONFLICT (setting_key) DO UPDATE SET
-            encrypted_value = EXCLUDED.encrypted_value,
-            updated_at = CURRENT_TIMESTAMP
-        `);
+        const tasks = [];
+        if (Array.isArray(categories)) {
+          const cipherCats = encryptSensitiveText(JSON.stringify(categories));
+          tasks.push(executeWithRetry(() => sql`
+            INSERT INTO portal_settings (setting_key, encrypted_value, updated_at)
+            VALUES ('portal_categories_v6', ${cipherCats}, CURRENT_TIMESTAMP)
+            ON CONFLICT (setting_key) DO UPDATE SET
+              encrypted_value = EXCLUDED.encrypted_value,
+              updated_at = CURRENT_TIMESTAMP
+          `));
+        }
+        if (Array.isArray(ecosystemLinks)) {
+          const cipherEco = encryptSensitiveText(JSON.stringify(ecosystemLinks));
+          tasks.push(executeWithRetry(() => sql`
+            INSERT INTO portal_settings (setting_key, encrypted_value, updated_at)
+            VALUES ('portal_ecosystem_links_v6', ${cipherEco}, CURRENT_TIMESTAMP)
+            ON CONFLICT (setting_key) DO UPDATE SET
+              encrypted_value = EXCLUDED.encrypted_value,
+              updated_at = CURRENT_TIMESTAMP
+          `));
+        }
+        await Promise.all(tasks);
         invalidateCache('portal_cfg_');
         invalidateCache('docs_');
         return res.status(200).json({ success: true, encryptedAtRest: true });
@@ -294,20 +308,29 @@ export default async function handler(req, res) {
       if (req.method === 'GET') {
         const bypassCache = Boolean(req.query && req.query._t);
         if (!bypassCache) {
-          const cached = getCachedResponse('portal_cfg_v6', 30000);
+          const cached = getCachedResponse('portal_cfg_v6', 1500);
           if (cached) {
             return res.status(200).json(cached.data);
           }
         }
         const payload = await coalesceInFlightQuery('cfg_fetch_v6', async () => {
           const rows = await executeWithRetry(() => sql`
-            SELECT encrypted_value FROM portal_settings WHERE setting_key = 'portal_categories_v6' LIMIT 1
+            SELECT setting_key, encrypted_value
+            FROM portal_settings
+            WHERE setting_key IN ('portal_categories_v6', 'portal_ecosystem_links_v6')
           `);
           let savedCategories = null;
-          if (rows.length > 0 && rows[0].encrypted_value) {
+          let savedEcosystemLinks = null;
+          for (const row of (rows || [])) {
+            if (!row || !row.encrypted_value) continue;
             try {
-              const dec = decryptSensitiveText(rows[0].encrypted_value);
-              savedCategories = JSON.parse(dec);
+              const dec = decryptSensitiveText(row.encrypted_value);
+              const parsed = JSON.parse(dec);
+              if (row.setting_key === 'portal_categories_v6' && Array.isArray(parsed)) {
+                savedCategories = parsed;
+              } else if (row.setting_key === 'portal_ecosystem_links_v6' && Array.isArray(parsed)) {
+                savedEcosystemLinks = parsed;
+              }
             } catch (e) {}
           }
           return {
@@ -316,6 +339,7 @@ export default async function handler(req, res) {
             googleClientId: process.env.GOOGLE_CLIENT_ID || '',
             hasDatabase: true,
             categories: Array.isArray(savedCategories) ? savedCategories : null,
+            ecosystemLinks: Array.isArray(savedEcosystemLinks) ? savedEcosystemLinks : null,
             securityProtocol: 'Zero-Trust AES-256-GCM + Zero-PII OIDC v6.5',
             organization: 'Văn phòng - FSC Cần Thơ',
             allowedDomain: 'fpt.edu.vn'

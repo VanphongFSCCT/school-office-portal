@@ -1729,26 +1729,16 @@
         <button type="button" onclick="closeDocQrCodeModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/25 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 font-extrabold text-xs flex items-center space-x-1 transition cursor-pointer shadow-md shrink-0"><span class="text-sm leading-none">✕</span><span>Đóng</span></button>
       </div>
 
-      <!-- THẺ STANDEE QR CODE NỀN TRẮNG TỐI ƯU IN TRẮNG ĐEN & IN MÀU -->
-      <div id="qr-printable-card-area" class="bg-white text-slate-950 rounded-2xl overflow-hidden border-2 border-slate-300 shadow-xl text-center p-4 sm:p-5 space-y-3">
-        <!-- Logo School Office Portal chữ đậm trên nền trắng (không dùng nền xanh đậm để in trắng đen rõ nét) -->
-        <div class="pb-3 border-b-2 border-slate-900 flex items-center justify-center">
-          <img id="qr-card-banner-logo" src="data:image/png;base64,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" alt="School Office Portal" class="h-12 sm:h-14 w-auto object-contain mx-auto">
-        </div>
-
-        <h4 id="qr-card-doc-title" class="text-base sm:text-lg font-black text-slate-950 leading-snug px-2 pt-1">
-          Quy trình Cấp mới và Thu hồi Tài khoản Hệ thống
+      <!-- THẺ STANDEE QR CODE NỀN TRẮNG TỐI GIẢN (KHÔNG HEADER TRÊN/DƯỚI, LOGO KÈM CHỮ SCHOOL OFFICE PORTAL CHÈN GIỮA MÃ QR) -->
+      <div id="qr-printable-card-area" class="bg-white text-slate-950 rounded-2xl overflow-hidden border-2 border-slate-300 shadow-xl text-center p-5 sm:p-6 space-y-4">
+        <h4 id="qr-card-doc-title" class="text-base sm:text-lg font-black text-slate-950 leading-snug px-2">
+          Xử lý sự cố hệ thống mạng
         </h4>
 
-        <div class="flex justify-center py-1">
+        <div class="flex justify-center">
           <div class="p-3 bg-white rounded-2xl border-2 border-slate-900 shadow-sm inline-block">
-            <canvas id="qr-code-canvas" width="1000" height="1000" class="w-52 h-52 sm:w-56 sm:h-56 mx-auto block"></canvas>
+            <canvas id="qr-code-canvas" width="1000" height="1000" class="w-56 h-56 sm:w-64 sm:h-64 mx-auto block"></canvas>
           </div>
-        </div>
-
-        <div class="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-white border-2 border-slate-900 text-[11.5px] font-extrabold text-slate-950">
-          <span>📷</span>
-          <span>Quét mã QR bằng Camera hoặc Zalo để xem trực tuyến</span>
         </div>
       </div>
 
@@ -2216,7 +2206,8 @@
         'school_portal_categories_v3',
         'school_portal_categories_v4',
         'school_portal_user',
-        'fsc_initial_db_migrated_v6'
+        'fsc_initial_db_migrated_v6',
+        'fsc_ecosystem_links_v6'
       ];
       for (const k of obsoleteLocalKeys) {
         try { localStorage.removeItem(k); } catch (e) {}
@@ -2834,6 +2825,17 @@
               renderOtherViews();
               updateCatDropdowns();
             }
+          } else if (currentUser && currentUser.role === 'admin' && Array.isArray(CATEGORIES) && CATEGORIES.length > 0) {
+            saveCategories();
+          }
+
+          if (Array.isArray(cfg.ecosystemLinks) && cfg.ecosystemLinks.length > 0) {
+            ecosystemLinks = normalizeEcosystemLinksList(cfg.ecosystemLinks);
+            FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v7', ecosystemLinks);
+            renderEcosystemGridDOM();
+          } else if ( Array.isArray(ecosystemLinks) && ecosystemLinks.length > 0 ) {
+            // Khởi tạo đồng bộ danh sách Hệ sinh thái mới nhất lên cơ sở dữ liệu đám mây để mọi thiết bị đều nhận đồng nhất
+            saveEcosystemLinksToCloud();
           }
         }
       } catch (e) {}
@@ -2969,9 +2971,10 @@
           const apiDocs = deduplicateLatestDocuments(apiDocsRaw);
           const apiCodeSet = new Set(apiDocs.map(d => String(d.code).toLowerCase()));
 
-          const unsyncedLocalDocs = documents.filter(
-            ld => ld && ld.code && !apiCodeSet.has(ld.code.toLowerCase()) && !deletedSet.has(ld.code.toLowerCase()) && !DEMO_SEED_CODES.has(ld.code.toLowerCase())
-          );
+          const isAdminSession = Boolean(currentUser && currentUser.role === 'admin');
+          const unsyncedLocalDocs = isAdminSession
+            ? documents.filter(ld => ld && ld.code && !apiCodeSet.has(ld.code.toLowerCase()) && !deletedSet.has(ld.code.toLowerCase()))
+            : [];
 
           if (unsyncedLocalDocs.length > 0) {
             documents = deduplicateLatestDocuments([...apiDocs, ...unsyncedLocalDocs]);
@@ -3870,67 +3873,67 @@
       return PRINT_DARK_TEXT_BANNER_LOGO_B64;
     }
 
-    // Bộ vẽ Mã QR 1000x1000px tỉ lệ chuẩn 1:1 kèm Logo 3D độ phân giải cao (trích xuất từ ảnh gốc 1951x806px & icon 320x320px)
+    // Bộ vẽ Mã QR 1000x1000px tỉ lệ chuẩn 1:1 kèm Logo đầy đủ chữ "SCHOOL OFFICE PORTAL" sắc nét ở chính giữa tâm mã QR
     let _cachedPortalLogoImg = null;
     function getPortalSystemLogoImage() {
       if (_cachedPortalLogoImg) return _cachedPortalLogoImg;
-      const iconLink = document.querySelector('link[rel="icon"]');
-      const logoSrc = (iconLink && iconLink.href) ? iconLink.href : '';
-      if (!logoSrc) return null;
       const img = new Image();
-      img.src = logoSrc;
+      img.src = PRINT_DARK_TEXT_BANNER_LOGO_B64;
       _cachedPortalLogoImg = img;
       return img;
     }
 
     function drawCenterSystemLogoOnQr(ctx, size) {
-      const boxSize = Math.round(size * 0.21);
-      const half = Math.round(boxSize / 2);
+      // Khung bo tròn chữ nhật ở tâm mã QR (320x128px trên nền 1000x1000px = 4.1% diện tích, đảm bảo ECC=H 30% quét nhạy tức thì)
+      const boxW = Math.round(size * 0.32);
+      const boxH = Math.round(size * 0.128);
       const cx = Math.round(size / 2);
       const cy = Math.round(size / 2);
-      const radius = Math.round(size * 0.036);
-      const pad = Math.round(size * 0.018);
+      const x0 = cx - Math.round(boxW / 2);
+      const y0 = cy - Math.round(boxH / 2);
+      const radius = Math.round(size * 0.022);
+      const padX = Math.round(size * 0.014);
+      const padY = Math.round(size * 0.012);
 
       ctx.save();
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      // Vẽ khung nền trắng bo góc viền đậm sắc nét ở tâm mã QR
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
       if (ctx.roundRect) {
-        ctx.roundRect(cx - half, cy - half, boxSize, boxSize, radius);
+        ctx.roundRect(x0, y0, boxW, boxH, radius);
       } else {
-        ctx.rect(cx - half, cy - half, boxSize, boxSize);
+        ctx.rect(x0, y0, boxW, boxH);
       }
       ctx.fill();
-      ctx.lineWidth = Math.max(4, Math.round(size * 0.008));
+      ctx.lineWidth = Math.max(4, Math.round(size * 0.005));
       ctx.strokeStyle = '#0f172a';
       ctx.stroke();
 
-      // Ưu tiên lấy icon 320x320px sắc nét hoặc cắt trực tiếp khối 3D S-cube (490x601px) từ ảnh gốc 1951x806px trên Sidebar
       const logoImg = getPortalSystemLogoImage();
-      const sidebarMasterImg = document.querySelector('#btn-sidebar-brand img');
-      const targetX = cx - half + pad;
-      const targetY = cy - half + pad;
-      const targetDim = boxSize - pad * 2;
+      const availW = boxW - padX * 2;
+      const availH = boxH - padY * 2;
 
-      if (logoImg && logoImg.complete && logoImg.naturalWidth >= 200) {
-        ctx.drawImage(logoImg, targetX, targetY, targetDim, targetDim);
-      } else if (sidebarMasterImg && sidebarMasterImg.complete && sidebarMasterImg.naturalWidth >= 1000) {
-        // Cắt chính xác khối 3D S-cube từ ảnh gốc 1951x806px và căn giữa hoàn hảo
-        const sW = 490, sH = 601, sX = 139, sY = 124;
-        const aspect = sW / sH;
-        const drawW = Math.round(targetDim * aspect);
-        const drawH = targetDim;
-        const offsetX = targetX + Math.round((targetDim - drawW) / 2);
-        ctx.drawImage(sidebarMasterImg, sX, sY, sW, sH, offsetX, targetY, drawW, drawH);
+      const drawLogoInsideBadge = (imgObj) => {
+        const natW = imgObj.naturalWidth || 640;
+        const natH = imgObj.naturalHeight || 229;
+        const scale = Math.min(availW / natW, availH / natH);
+        const drawW = Math.round(natW * scale);
+        const drawH = Math.round(natH * scale);
+        const dx = cx - Math.round(drawW / 2);
+        const dy = cy - Math.round(drawH / 2);
+        ctx.drawImage(imgObj, dx, dy, drawW, drawH);
+      };
+
+      if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+        drawLogoInsideBadge(logoImg);
       } else if (logoImg) {
         logoImg.onload = () => {
           ctx.save();
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(logoImg, targetX, targetY, targetDim, targetDim);
+          drawLogoInsideBadge(logoImg);
           ctx.restore();
         };
       }
@@ -3940,7 +3943,7 @@
     function renderQrCodeToCanvas(canvasEl, textUrl, docCodeLabel) {
       if (!canvasEl) return;
       const ctx = canvasEl.getContext('2d');
-      const size = 1000; // Khớp 1:1 tuyệt đối với ảnh 1000x1000px để không bị nội suy làm mờ cạnh
+      const size = 1000;
       canvasEl.width = size;
       canvasEl.height = size;
 
@@ -3984,7 +3987,7 @@
               if ((r + c) % 2 === 0) ctx.fillRect(realPad + c * cellSize, realPad + r * cellSize, cellSize, cellSize);
               continue;
             }
-            if (r >= 11 && r <= 17 && c >= 11 && c <= 17) continue;
+            if (r >= 11 && r <= 17 && c >= 9 && c <= 19) continue;
             seed ^= (r * 31 + c * 17) & 0xff;
             seed = Math.imul(seed, 16777619);
             if ((seed >>> 0) % 100 < 48) {
@@ -4026,11 +4029,9 @@
       currentQrDoc = doc;
       const directUrl = getDocDirectUrl(doc.code);
       const titleEl = document.getElementById('qr-card-doc-title');
-      const bannerLogoEl = document.getElementById('qr-card-banner-logo');
       const canvasEl = document.getElementById('qr-code-canvas');
 
       if (titleEl) titleEl.textContent = doc.title;
-      if (bannerLogoEl) bannerLogoEl.src = getSchoolOfficePortalBannerLogoSrc();
 
       hideQrPaperSizeChooser();
       renderQrCodeToCanvas(canvasEl, directUrl, doc.code);
@@ -4042,14 +4043,6 @@
       }
     }
     window.openDocQrCodeModal = openDocQrCodeModal;
-
-    function demoOpenFirstDocQrCode() {
-      if (documents.length === 0) ensureOfflineDemoSeedDocs();
-      if (documents.length > 0) {
-        openDocQrCodeModal(documents[0].code);
-      }
-    }
-    window.demoOpenFirstDocQrCode = demoOpenFirstDocQrCode;
 
     function closeDocQrCodeModal() {
       hideQrPaperSizeChooser();
@@ -4080,7 +4073,6 @@
       const canvasEl = document.getElementById('qr-code-canvas');
       if (!canvasEl || !currentQrDoc) return;
       try {
-        // Vẽ đè lại Logo 3D độ phân giải cao lần cuối trước khi xuất PNG để đảm bảo 100% sắc nét
         const ctx = canvasEl.getContext('2d');
         drawCenterSystemLogoOnQr(ctx, canvasEl.width || 1000);
         const dataUrl = canvasEl.toDataURL('image/png');
@@ -4112,18 +4104,18 @@
       } catch (e) {
         imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&ecc=H&margin=2&data=${encodeURIComponent(getDocDirectUrl(currentQrDoc.code))}`;
       }
-      const portalLogoSrc = getSchoolOfficePortalBannerLogoSrc();
 
-      // Thiết kế dàn trang phủ toàn bộ khổ giấy A4 hoặc A5 trên nền trắng tinh khiết, viền đen sắc nét, tối ưu tuyệt đối cho cả máy in trắng đen và máy in màu
+      // @page { margin: 0mm !important; } triệt tiêu 100% Header trên (ngày giờ, tiêu đề) và Footer dưới (URL, số trang) của trình duyệt khi in!
+      // Bố cục trên trang in: Không có Header trên và không có Footer dưới, chỉ hiển thị Tên Quy trình và Mã QR lớn có Logo School Office Portal ở giữa.
       const printHtml = `<!DOCTYPE html>
       <html lang="vi">
       <head>
         <meta charset="utf-8">
-        <title>Thẻ QR (${paperSize}) - ${escapeHtmlStr(currentQrDoc.title)}</title>
+        <title>&nbsp;</title>
         <style>
           @page {
             size: ${paperSize} portrait;
-            margin: ${isA4 ? '10mm' : '8mm'};
+            margin: 0mm !important;
           }
           * {
             box-sizing: border-box;
@@ -4131,58 +4123,35 @@
             print-color-adjust: exact !important;
           }
           html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
+            width: ${isA4 ? '210mm' : '148mm'};
+            height: ${isA4 ? '297mm' : '210mm'};
+            margin: 0 !important;
+            padding: ${isA4 ? '12mm' : '9mm'} !important;
             background: #FFFFFF;
             color: #000000;
             font-family: 'Be Vietnam Pro', 'Segoe UI', Roboto, Arial, sans-serif;
             text-align: center;
+            overflow: hidden;
           }
           .page-sheet {
             width: 100%;
-            min-height: ${isA4 ? '275mm' : '192mm'};
+            height: 100%;
             border: ${isA4 ? '3px' : '2.5px'} solid #000000;
             border-radius: ${isA4 ? '24px' : '18px'};
-            padding: ${isA4 ? '14mm 14mm 12mm' : '9mm 9mm 8mm'};
+            padding: ${isA4 ? '16mm 14mm' : '10mm 9mm'};
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             background: #FFFFFF;
           }
-          .header-zone {
-            width: 100%;
-            padding-bottom: ${isA4 ? '8mm' : '5mm'};
-            border-bottom: 2px solid #000000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-          .portal-logo {
-            height: ${isA4 ? '86px' : '60px'};
-            width: auto;
-            max-width: 90%;
-            object-fit: contain;
-            display: block;
-          }
-          .main-zone {
-            flex: 1;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: ${isA4 ? '8mm 0' : '5mm 0'};
-          }
           .doc-title {
-            font-size: ${isA4 ? '28pt' : '19pt'};
+            font-size: ${isA4 ? '30pt' : '21pt'};
             font-weight: 900;
-            line-height: 1.3;
+            line-height: 1.32;
             color: #000000;
-            margin: 0 auto ${isA4 ? '12mm' : '7mm'} auto;
-            max-width: 95%;
+            margin: 0 auto ${isA4 ? '14mm' : '9mm'} auto;
+            max-width: 94%;
           }
           .qr-frame {
             display: inline-block;
@@ -4192,40 +4161,17 @@
             border-radius: ${isA4 ? '24px' : '18px'};
           }
           .qr-img {
-            width: ${isA4 ? '122mm' : '84mm'};
-            height: ${isA4 ? '122mm' : '84mm'};
+            width: ${isA4 ? '138mm' : '96mm'};
+            height: ${isA4 ? '138mm' : '96mm'};
             display: block;
-          }
-          .footer-zone {
-            width: 100%;
-            padding-top: ${isA4 ? '6mm' : '4mm'};
-            border-top: 1.5px dashed #334155;
-          }
-          .scan-guide {
-            display: inline-block;
-            font-size: ${isA4 ? '15pt' : '11pt'};
-            font-weight: 800;
-            color: #000000;
-            background: #FFFFFF;
-            border: 2px solid #000000;
-            border-radius: 999px;
-            padding: ${isA4 ? '10px 26px' : '7px 18px'};
           }
         </style>
       </head>
       <body>
         <div class="page-sheet">
-          <div class="header-zone">
-            <img class="portal-logo" src="${portalLogoSrc}" alt="School Office Portal">
-          </div>
-          <div class="main-zone">
-            <div class="doc-title">${escapeHtmlStr(currentQrDoc.title)}</div>
-            <div class="qr-frame">
-              <img class="qr-img" src="${imgSrc}" alt="QR Code">
-            </div>
-          </div>
-          <div class="footer-zone">
-            <span class="scan-guide">📷 Quét mã QR bằng Camera hoặc Zalo để xem trực tuyến</span>
+          <div class="doc-title">${escapeHtmlStr(currentQrDoc.title)}</div>
+          <div class="qr-frame">
+            <img class="qr-img" src="${imgSrc}" alt="QR Code">
           </div>
         </div>
       </body>
@@ -4240,11 +4186,11 @@
     const DEFAULT_ECOSYSTEM_LINKS = [
       {
         id: 'eco-fspace',
-        name: 'Hệ thống Quản lý Phòng – FSpace',
+        name: 'Hệ thống Quản lý Phòng',
         badge: 'Phòng chức năng',
         icon: '🏛️',
-        url: 'https://fspace-fsc.vercel.app',
-        desc: 'Đặt phòng họp, phòng Lab STEM và Hội trường Beta.'
+        url: 'https://booking.vuth.io.vn/',
+        desc: 'Đặt phòng họp, phòng học và Hội trường Beta.'
       },
       {
         id: 'eco-it-helpdesk',
@@ -4271,7 +4217,7 @@
         desc: 'Thủ tục tạm ứng, thanh quyết toán và định mức tài chính.'
       },
       {
-        id: 'eco-health-safety',
+        id: 'eco-medical',
         name: 'Y tế & An toàn Bán trú',
         badge: 'Y tế & ATVSTP',
         icon: '🏥',
@@ -4288,16 +4234,51 @@
       }
     ];
 
+    function normalizeEcosystemLinksList(rawList) {
+      if (!Array.isArray(rawList) || rawList.length === 0) {
+        return JSON.parse(JSON.stringify(DEFAULT_ECOSYSTEM_LINKS));
+      }
+      return rawList.map(item => {
+        if (!item) return null;
+        // Tự động nâng cấp liên kết FSpace cũ sang địa chỉ chính thức mới https://booking.vuth.io.vn/
+        if (
+          item.id === 'eco-fspace' ||
+          String(item.url || '').includes('fspace-fsc.vercel.app') ||
+          String(item.name || '').includes('FSpace')
+        ) {
+          return {
+            ...item,
+            id: item.id || 'eco-fspace',
+            name: (item.name && !item.name.includes('FSpace')) ? item.name : 'Hệ thống Quản lý Phòng',
+            badge: item.badge || 'Phòng chức năng',
+            icon: item.icon || '🏛️',
+            url: (!item.url || item.url.includes('fspace-fsc.vercel.app')) ? 'https://booking.vuth.io.vn/' : item.url,
+            desc: (!item.desc || item.desc.includes('Lab STEM')) ? 'Đặt phòng họp, phòng học và Hội trường Beta.' : item.desc
+          };
+        }
+        return item;
+      }).filter(Boolean);
+    }
+
     let ecosystemLinks = [];
     try {
-      const savedEco = FscCryptoVault.getDecryptedLocalItem('fsc_ecosystem_links_v6');
-      if (Array.isArray(savedEco) && savedEco.length > 0) {
-        ecosystemLinks = savedEco;
-      } else {
-        ecosystemLinks = JSON.parse(JSON.stringify(DEFAULT_ECOSYSTEM_LINKS));
-      }
+      const savedEco = FscCryptoVault.getDecryptedLocalItem('fsc_ecosystem_links_v7') || FscCryptoVault.getDecryptedLocalItem('fsc_ecosystem_links_v6');
+      ecosystemLinks = normalizeEcosystemLinksList(savedEco);
+      FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v7', ecosystemLinks);
     } catch (e) {
       ecosystemLinks = JSON.parse(JSON.stringify(DEFAULT_ECOSYSTEM_LINKS));
+    }
+
+    function saveEcosystemLinksToCloud() {
+      ecosystemLinks = normalizeEcosystemLinksList(ecosystemLinks);
+      FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v7', ecosystemLinks);
+      enqueueCloudSyncTask(async () => {
+        await fetchWithAutoRetry('/api/config', {
+          method: 'POST',
+          headers: getAuthRequestHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ ecosystemLinks })
+        }, 3);
+      });
     }
 
     function renderEcosystemGridDOM() {
@@ -4315,12 +4296,12 @@
         card.innerHTML = `
           <div class="flex items-center space-x-3 min-w-0 flex-1">
             <span class="text-xs font-mono font-bold text-slate-400 w-4 text-center shrink-0">${idx + 1}</span>
-            <div class="w-9 h-9 rounded-xl bg-[#102E52] group-hover:bg-[#071F3D] border border-[#FFC857]/40 flex items-center justify-center text-lg shadow-sm shrink-0 transition">
+            <div class="w-9 h-9 rounded-xl bg-[#03152D] border border-[#B98A33]/35 flex items-center justify-center text-base shrink-0">
               ${escapeHtmlStr(item.icon || '🌐')}
             </div>
             <div class="min-w-0 flex-1">
-              <div class="flex items-center space-x-2 flex-wrap gap-y-0.5">
-                <h4 class="font-extrabold text-white group-hover:text-[#FFC857] text-xs sm:text-sm truncate transition">${escapeHtmlStr(item.name)}</h4>
+              <div class="flex items-center flex-wrap gap-2">
+                <h4 class="text-xs sm:text-sm font-extrabold text-white group-hover:text-[#FFC857] transition truncate">${escapeHtmlStr(item.name)}</h4>
                 <span class="px-2 py-0.2 rounded-full bg-[#071F3D] border border-sky-400/30 text-[10px] font-bold text-sky-300 shrink-0">${escapeHtmlStr(item.badge || 'Nội bộ FSC')}</span>
               </div>
               <p class="text-[11px] text-[#B8C8DC] truncate mt-0.5">${escapeHtmlStr(item.desc || '')}</p>
@@ -4329,19 +4310,20 @@
           <div class="flex items-center space-x-1.5 shrink-0">
             <span class="px-2.5 py-1 rounded-lg bg-[#102E52] group-hover:bg-[#FFC857] text-[#FFC857] group-hover:text-[#03152D] border border-[#B98A33]/40 text-[11px] font-bold transition">${actionLabel}</span>
             ${isAdmin ? `
-              <button type="button" data-eco-edit="${escapeHtmlStr(item.id)}" class="btn-eco-item-edit p-1.5 rounded-lg bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] text-[10.5px] font-bold transition" title="Sửa">✏️</button>
-              <button type="button" data-eco-del="${escapeHtmlStr(item.id)}" class="btn-eco-item-del p-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-700 text-rose-300 hover:text-white text-[10.5px] font-bold transition" title="Xóa">✕</button>
+              <button type="button" class="btn-eco-item-edit p-1.5 rounded-lg bg-[#14345B] hover:bg-[#B98A33] text-[#FFC857] hover:text-white text-[11px] transition" title="Sửa liên kết">✏️</button>
+              <button type="button" class="btn-eco-item-del p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white text-[11px] transition" title="Xóa liên kết">✕</button>
             ` : ''}
           </div>
         `;
 
         card.addEventListener('click', (e) => {
           if (e.target.closest('.btn-eco-item-edit') || e.target.closest('.btn-eco-item-del')) return;
+          closeFscEcosystemModal();
           if (isInternalDept) {
-            const deptName = item.url.slice(6);
-            closeFscEcosystemModal();
-            openCategoryDrilldown(deptName);
-          } else if (item.url) {
+            const deptName = String(item.url).replace('#dept:', '').trim();
+            openCategoryWorkspace(deptName);
+            showToast(`📂 Đã chuyển đến bộ phận ${deptName}`, 'info');
+          } else {
             window.open(item.url, '_blank', 'noopener,noreferrer');
           }
         });
@@ -4350,13 +4332,13 @@
         if (editBtn) {
           editBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            toggleEcosystemAddForm(true);
             document.getElementById('eco-edit-id').value = item.id;
             document.getElementById('eco-inp-icon').value = item.icon || '🌐';
             document.getElementById('eco-inp-name').value = item.name || '';
             document.getElementById('eco-inp-url').value = item.url || '';
             document.getElementById('eco-inp-badge').value = item.badge || '';
             document.getElementById('eco-inp-desc').value = item.desc || '';
-            toggleEcosystemAddForm(true);
           });
         }
 
@@ -4365,9 +4347,9 @@
           delBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             ecosystemLinks = ecosystemLinks.filter(x => x.id !== item.id);
-            FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v6', ecosystemLinks);
+            saveEcosystemLinksToCloud();
             renderEcosystemGridDOM();
-            showToast('Đã xóa liên kết khỏi menu Hệ sinh thái.', 'info');
+            showToast('☁️ Đã xóa liên kết và đồng bộ Hệ sinh thái cho mọi người dùng!', 'info');
           });
         }
 
@@ -4411,13 +4393,19 @@
     window.closeFscEcosystemModal = closeFscEcosystemModal;
 
     function toggleEcosystemAddForm(forceShow = null) {
-      const box = document.getElementById('ecosystem-add-form-box');
-      if (!box) return;
-      const shouldShow = forceShow !== null ? forceShow : box.classList.contains('hidden');
-      if (shouldShow) {
-        box.classList.remove('hidden');
+      const formBox = document.getElementById('ecosystem-admin-add-form');
+      if (!formBox) return;
+      const willShow = forceShow !== null ? forceShow : formBox.classList.contains('hidden');
+      if (willShow) {
+        formBox.classList.remove('hidden');
+        document.getElementById('eco-edit-id').value = '';
+        document.getElementById('eco-inp-icon').value = '🌐';
+        document.getElementById('eco-inp-name').value = '';
+        document.getElementById('eco-inp-url').value = '';
+        document.getElementById('eco-inp-badge').value = '';
+        document.getElementById('eco-inp-desc').value = '';
       } else {
-        box.classList.add('hidden');
+        formBox.classList.add('hidden');
         document.getElementById('eco-edit-id').value = '';
       }
     }
@@ -4452,10 +4440,10 @@
         });
       }
 
-      FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v6', ecosystemLinks);
+      saveEcosystemLinksToCloud();
       toggleEcosystemAddForm(false);
       renderEcosystemGridDOM();
-      showToast(`Đã lưu liên kết "${name}" vào Hệ sinh thái FSC!`, 'success');
+      showToast(`☁️ Đã lưu và đồng bộ "${name}" lên đám mây cho toàn bộ người dùng!`, 'success');
     }
     window.saveEcosystemLinkItem = saveEcosystemLinkItem;
 
@@ -6048,6 +6036,8 @@
     window.resetLiveFormToDefault = resetLiveFormToDefault;
 
     function executeCleanPrintHtml(fullHtmlDoc) {
+      const prevDocTitle = document.title;
+      document.title = ' ';
       let printFrame = document.getElementById('fsc-clean-print-iframe');
       if (printFrame) printFrame.remove();
       printFrame = document.createElement('iframe');
@@ -6069,6 +6059,7 @@
         try {
           printFrame.contentWindow.focus();
           printFrame.contentWindow.print();
+            setTimeout(() => { document.title = prevDocTitle; }, 800);
         } catch (e) {
           const w = window.open('', '_blank', 'width=900,height=800');
           if (w) {
