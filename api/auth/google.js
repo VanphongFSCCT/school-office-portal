@@ -344,7 +344,9 @@ export default async function handler(req, res) {
     const sessionToken = signUserSessionToken({ emailHash, role });
     const displayLabel = role === 'admin'
       ? 'Quản trị viên FSC'
-      : (role === 'editor' ? 'Cán bộ Biên tập FSC' : 'Cán bộ / Giảng viên FPT');
+      : (role === 'office'
+        ? 'Cán bộ Văn phòng FSC'
+        : (role === 'editor' ? 'Chuyên viên Văn phòng FSC' : 'Cán bộ / Giảng viên FPT'));
 
     return res.status(200).json({
       success: true,

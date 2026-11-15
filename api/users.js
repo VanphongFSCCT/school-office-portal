@@ -289,10 +289,13 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-      const cached = getCachedResponse('users_list_v6', 20000);
-      if (cached) {
-        res.setHeader('ETag', cached.etag);
-        return res.status(200).json(cached.data);
+      const bypassCache = Boolean(req.query && req.query._t);
+      if (!bypassCache) {
+        const cached = getCachedResponse('users_list_v6', 1500);
+        if (cached) {
+          res.setHeader('ETag', cached.etag);
+          return res.status(200).json(cached.data);
+        }
       }
 
       const payload = await coalesceInFlightQuery('users_fetch_v6', async () => {
@@ -322,7 +325,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Định dạng email không hợp lệ' });
       }
 
-      const allowedRoles = ['admin', 'editor', 'user'];
+      const allowedRoles = ['admin', 'office', 'editor', 'user'];
       const safeRole = allowedRoles.includes(role) ? role : 'user';
 
       const emailHash = hashIdentifierSHA256(cleanEmail);

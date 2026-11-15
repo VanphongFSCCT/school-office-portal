@@ -261,6 +261,57 @@ export function isRequestAuthenticated(req) {
   return false;
 }
 
+export function getRequestUserRole(req) {
+  if (!req || !req.headers) return 'guest';
+  const userEmail = String(req.headers['x-user-email'] || '').trim().toLowerCase();
+  if (userEmail === 'buitandat1727@gmail.com' || userEmail === 'hethongquanlyphong.fscct@gmail.com') {
+    return 'admin';
+  }
+  const headerRole = String(req.headers['x-user-role'] || '').trim().toLowerCase();
+  if (['admin', 'office', 'editor', 'user'].includes(headerRole)) {
+    return headerRole;
+  }
+  const authHeader = String(req.headers['authorization'] || '').trim();
+  if (authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7).trim();
+    const verified = verifyUserSessionToken(token);
+    if (verified && verified.role) return String(verified.role).toLowerCase();
+  }
+  return isRequestAuthenticated(req) ? 'user' : 'guest';
+}
+
+export function canRequestAccessDocLevel(req, rawAccessLevel) {
+  const acc = String(rawAccessLevel || 'Mở').trim();
+  if (acc === 'Mở') return { allowed: true };
+  if (!isRequestAuthenticated(req)) {
+    return {
+      allowed: false,
+      reason: 'requiresAuth',
+      message: 'Tài liệu nội bộ: Vui lòng đăng nhập tài khoản hệ thống để xem quy trình này.'
+    };
+  }
+  const role = getRequestUserRole(req);
+  if (acc === 'Nội bộ Văn phòng') {
+    if (role === 'admin' || role === 'office' || role === 'editor') {
+      return { allowed: true };
+    }
+    return {
+      allowed: false,
+      reason: 'requiresOfficeRole',
+      message: 'Tài liệu lưu hành riêng cho Văn phòng: Chỉ tài khoản thuộc Văn phòng (Cán bộ Văn phòng / Admin) mới có quyền xem tài liệu này.'
+    };
+  }
+  if (acc === 'Chỉ Admin') {
+    if (role === 'admin') return { allowed: true };
+    return {
+      allowed: false,
+      reason: 'requiresAdminRole',
+      message: 'Tài liệu bảo mật Quản trị: Chỉ Quản trị viên (Admin) mới có quyền xem tài liệu này.'
+    };
+  }
+  return { allowed: true };
+}
+
 neonConfig.fetchConnectionCache = true;
 
 let isDocSchemaReady = false;
@@ -318,6 +369,7 @@ async function ensureDocSchema(sql) {
         ALTER TABLE documents ADD COLUMN IF NOT EXISTS doc_type TEXT DEFAULT 'Quy trình';
         ALTER TABLE documents ADD COLUMN IF NOT EXISTS version TEXT DEFAULT '1.0';
         ALTER TABLE documents ADD COLUMN IF NOT EXISTS effective_date TEXT;
+        ALTER TABLE documents ADD COLUMN IF NOT EXISTS next_review_date TEXT;
         ALTER TABLE documents ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Có hiệu lực';
         ALTER TABLE documents ADD COLUMN IF NOT EXISTS department TEXT DEFAULT 'Văn phòng';
         ALTER TABLE documents ADD COLUMN IF NOT EXISTS description TEXT;
@@ -394,11 +446,14 @@ export default async function handler(req, res) {
         }
         const r = docRows[0].row_json || {};
         const docAccessLevel = String(decryptSensitiveText(r.access_level) || r.access_level || 'Mở').trim();
-        if (docAccessLevel === 'Nội bộ' && !isRequestAuthenticated(req)) {
+        const permCheck = canRequestAccessDocLevel(req, docAccessLevel);
+        if (!permCheck.allowed) {
           return res.status(403).json({
-            error: 'Tài liệu nội bộ: Vui lòng đăng nhập tài khoản hệ thống để xem quy trình này.',
-            requiresAuth: true,
-            access_level: 'Nội bộ',
+            error: permCheck.message,
+            requiresAuth: permCheck.reason === 'requiresAuth',
+            requiresOfficeRole: permCheck.reason === 'requiresOfficeRole',
+            requiresAdminRole: permCheck.reason === 'requiresAdminRole',
+            access_level: docAccessLevel,
             code: r.code,
             title: decryptSensitiveText(r.title) || r.title || r.code
           });
@@ -423,7 +478,8 @@ export default async function handler(req, res) {
 
       // 2. Kiểm tra L1 Micro-Cache tách biệt theo trạng thái xác thực (bỏ qua 100% khi trình duyệt truyền _t để cập nhật quyền Nội bộ tức thì)
       const isCallerAuthed = isRequestAuthenticated(req);
-      const cacheKey = isCallerAuthed ? "docs_list_v6_auth" : "docs_list_v6_guest";
+      const callerRole = getRequestUserRole(req);
+      const cacheKey = `docs_list_v6_${callerRole}`;
       const bypassCache = Boolean(req.query && req.query._t);
       if (!bypassCache) {
         const cached = getCachedResponse(cacheKey, 1500);
@@ -479,8 +535,8 @@ export default async function handler(req, res) {
         }
 
         const resolvedAccess = String(decryptSensitiveText(r.access_level) || r.access_level || 'Mở').trim();
-        const isInternalProtected = (resolvedAccess === 'Nội bộ');
-        const inlineDec = (!isInternalProtected || isCallerAuthed) && item.inline_file
+        const rowPerm = canRequestAccessDocLevel(req, resolvedAccess);
+        const inlineDec = rowPerm.allowed && item.inline_file
           ? (decryptSensitiveText(item.inline_file) || item.inline_file)
           : '';
         const codeLower = String(r.code || '').toLowerCase();
@@ -492,10 +548,11 @@ export default async function handler(req, res) {
           doc_type: r.doc_type || r.type || 'Quy trình',
           version: r.version || '1.0',
           effective_date: r.effective_date || '',
+          next_review_date: r.next_review_date || '',
           status: r.status || 'Có hiệu lực',
           department: decryptSensitiveText(r.department) || r.department || r.category_id || 'Văn phòng',
           current_file: decryptSensitiveText(r.current_file) || r.current_file || `${r.code || 'tai-lieu'}.pdf`,
-          description: (!isInternalProtected || isCallerAuthed) ? (decryptSensitiveText(r.description) || r.description || '') : '',
+          description: rowPerm.allowed ? (decryptSensitiveText(r.description) || r.description || '') : '',
           access_level: resolvedAccess,
           download_perm: r.download_perm || 'allow_all',
           file_data: inlineDec === '__CHUNKED_IN_DB__' ? '' : inlineDec,
@@ -566,7 +623,7 @@ export default async function handler(req, res) {
 
       const {
         id, old_code, code, title, category_id, doc_type, version,
-        effective_date, department, description, access_level,
+        effective_date, next_review_date, department, description, access_level,
         download_perm, current_file, file_data, version_history
       } = body;
 
@@ -582,7 +639,8 @@ export default async function handler(req, res) {
       const cleanType = sanitizeInputString(doc_type || 'Quy trình', 120);
       const cleanVer = sanitizeInputString(version || '1.0', 40);
       const cleanDept = sanitizeInputString(department || cleanCat, 200);
-      const cleanAccess = ['Mở', 'Nội bộ'].includes(access_level) ? access_level : 'Mở';
+      const cleanAccess = ['Mở', 'Nội bộ', 'Nội bộ Văn phòng', 'Chỉ Admin'].includes(access_level) ? access_level : 'Mở';
+      const nextRevDate = sanitizeInputString(next_review_date || '', 40);
       const cleanPerm = ['allow_all', 'view_only', 'admin_only'].includes(download_perm) ? download_perm : 'allow_all';
       const cleanFileName = sanitizeInputString(current_file || `${cleanCode}.pdf`, 350);
       const effDate = sanitizeInputString(effective_date || new Date().toLocaleDateString('vi-VN'), 40);
@@ -651,6 +709,7 @@ export default async function handler(req, res) {
               doc_type = ${cleanType},
               version = ${cleanVer},
               effective_date = ${effDate},
+              next_review_date = ${nextRevDate},
               department = ${encryptedDept},
               description = ${encryptedDesc},
               access_level = ${cleanAccess},
@@ -688,12 +747,12 @@ export default async function handler(req, res) {
         try {
           const inserted = await sql`
             INSERT INTO documents (
-              id, code, title, category_id, doc_type, version, effective_date,
+              id, code, title, category_id, doc_type, version, effective_date, next_review_date,
               department, description, access_level, download_perm, current_file, file_data, version_history
             )
             VALUES (
               ${cleanId}, ${cleanCode}, ${encryptedTitle}, ${cleanCat}, ${cleanType}, ${cleanVer},
-              ${effDate}, ${encryptedDept}, ${encryptedDesc}, ${cleanAccess},
+              ${effDate}, ${nextRevDate}, ${encryptedDept}, ${encryptedDesc}, ${cleanAccess},
               ${cleanPerm}, ${encryptedFileName}, ${encryptedFileData}, ${historyJson}::jsonb
             )
             RETURNING id, code, version, effective_date
