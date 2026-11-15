@@ -248,6 +248,26 @@ export function verifyUserSessionToken(token) {
 
 neonConfig.fetchConnectionCache = true;
 
+const AUTH_FAIL_TRACKER = new Map();
+const MAX_AUTH_FAIL_PER_MIN = 15;
+function checkAuthFailRateLimit(ip) {
+  const now = Date.now();
+  const rec = AUTH_FAIL_TRACKER.get(ip) || { count: 0, resetAt: now + 60000 };
+  if (now > rec.resetAt) { rec.count = 0; rec.resetAt = now + 60000; }
+  if (rec.count >= MAX_AUTH_FAIL_PER_MIN) return false;
+  return true;
+}
+function recordAuthFail(ip) {
+  const now = Date.now();
+  const rec = AUTH_FAIL_TRACKER.get(ip) || { count: 0, resetAt: now + 60000 };
+  if (now > rec.resetAt) { rec.count = 0; rec.resetAt = now + 60000; }
+  rec.count += 1;
+  AUTH_FAIL_TRACKER.set(ip, rec);
+}
+function buildSessionCookieHeader(token, maxAgeSec = 28800) {
+  return `fsc_session_token=${encodeURIComponent(token || "")}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAgeSec}`;
+}
+
 export default async function handler(req, res) {
   const guard = applyZeroTrustSecurityGuard(req, res);
   if (!guard.allowed) return;
