@@ -330,7 +330,7 @@ export default async function handler(req, res) {
     }
 
     if (!role && (domain === 'fpt.edu.vn' || domain === 'fe.edu.vn')) {
-      role = 'user';
+      role = 'cbgv';
     }
 
     if (!role) {
@@ -343,10 +343,12 @@ export default async function handler(req, res) {
     payload = null;
     const sessionToken = signUserSessionToken({ emailHash, role });
     const displayLabel = role === 'admin'
-      ? 'Quản trị viên FSC'
+      ? 'Quản trị viên (Admin)'
       : (role === 'office'
         ? 'Cán bộ Văn phòng FSC'
-        : (role === 'editor' ? 'Chuyên viên Văn phòng FSC' : 'Cán bộ / Giảng viên FPT'));
+        : (role === 'editor'
+          ? 'Biên tập Văn phòng FSC'
+          : (role === 'cbgv' ? 'CBGV Trường FPT' : 'Người dùng (User)')));
 
     return res.status(200).json({
       success: true,

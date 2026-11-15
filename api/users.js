@@ -325,7 +325,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Định dạng email không hợp lệ' });
       }
 
-      const allowedRoles = ['admin', 'office', 'editor', 'user'];
+      const allowedRoles = ['admin', 'office', 'editor', 'cbgv', 'user'];
       const safeRole = allowedRoles.includes(role) ? role : 'user';
 
       const emailHash = hashIdentifierSHA256(cleanEmail);

@@ -268,7 +268,7 @@ export function getRequestUserRole(req) {
     return 'admin';
   }
   const headerRole = String(req.headers['x-user-role'] || '').trim().toLowerCase();
-  if (['admin', 'office', 'editor', 'user'].includes(headerRole)) {
+  if (['admin', 'office', 'editor', 'cbgv', 'user'].includes(headerRole)) {
     return headerRole;
   }
   const authHeader = String(req.headers['authorization'] || '').trim();
@@ -277,7 +277,7 @@ export function getRequestUserRole(req) {
     const verified = verifyUserSessionToken(token);
     if (verified && verified.role) return String(verified.role).toLowerCase();
   }
-  return isRequestAuthenticated(req) ? 'user' : 'guest';
+  return isRequestAuthenticated(req) ? 'cbgv' : 'guest';
 }
 
 export function canRequestAccessDocLevel(req, rawAccessLevel) {
@@ -287,26 +287,37 @@ export function canRequestAccessDocLevel(req, rawAccessLevel) {
     return {
       allowed: false,
       reason: 'requiresAuth',
-      message: 'Tài liệu nội bộ: Vui lòng đăng nhập tài khoản hệ thống để xem quy trình này.'
+      message: 'Tài liệu nội bộ: Vui lòng đăng nhập tài khoản được phân quyền để xem quy trình này.'
     };
   }
   const role = getRequestUserRole(req);
-  if (acc === 'Nội bộ Văn phòng') {
-    if (role === 'admin' || role === 'office' || role === 'editor') {
-      return { allowed: true };
-    }
-    return {
-      allowed: false,
-      reason: 'requiresOfficeRole',
-      message: 'Tài liệu lưu hành riêng cho Văn phòng: Chỉ tài khoản thuộc Văn phòng (Cán bộ Văn phòng / Admin) mới có quyền xem tài liệu này.'
-    };
-  }
   if (acc === 'Chỉ Admin') {
     if (role === 'admin') return { allowed: true };
     return {
       allowed: false,
       reason: 'requiresAdminRole',
       message: 'Tài liệu bảo mật Quản trị: Chỉ Quản trị viên (Admin) mới có quyền xem tài liệu này.'
+    };
+  }
+  // Cả "Nội bộ" và "Nội bộ Văn phòng" đều là Tài liệu Nội bộ của Văn phòng -> Chỉ tài khoản đã được Admin phân quyền Role Văn phòng ('office', 'editor') hoặc 'admin' mới được xem!
+  if (acc === 'Nội bộ' || acc === 'Nội bộ Văn phòng') {
+    if (role === 'admin' || role === 'office' || role === 'editor') {
+      return { allowed: true };
+    }
+    return {
+      allowed: false,
+      reason: 'requiresOfficeRole',
+      message: 'Tài liệu Nội bộ Văn phòng: Chỉ các tài khoản được Admin phân quyền thuộc Văn phòng mới có quyền xem tài liệu này.'
+    };
+  }
+  if (acc === 'CBGV') {
+    if (role === 'admin' || role === 'office' || role === 'editor' || role === 'cbgv') {
+      return { allowed: true };
+    }
+    return {
+      allowed: false,
+      reason: 'requiresCbgvRole',
+      message: 'Tài liệu dành cho CBGV trường: Tài khoản của bạn chưa được phân quyền xem tài liệu này.'
     };
   }
   return { allowed: true };
@@ -639,7 +650,7 @@ export default async function handler(req, res) {
       const cleanType = sanitizeInputString(doc_type || 'Quy trình', 120);
       const cleanVer = sanitizeInputString(version || '1.0', 40);
       const cleanDept = sanitizeInputString(department || cleanCat, 200);
-      const cleanAccess = ['Mở', 'Nội bộ', 'Nội bộ Văn phòng', 'Chỉ Admin'].includes(access_level) ? access_level : 'Mở';
+      const cleanAccess = ['Mở', 'CBGV', 'Nội bộ', 'Nội bộ Văn phòng', 'Chỉ Admin'].includes(access_level) ? access_level : 'Mở';
       const nextRevDate = sanitizeInputString(next_review_date || '', 40);
       const cleanPerm = ['allow_all', 'view_only', 'admin_only'].includes(download_perm) ? download_perm : 'allow_all';
       const cleanFileName = sanitizeInputString(current_file || `${cleanCode}.pdf`, 350);
