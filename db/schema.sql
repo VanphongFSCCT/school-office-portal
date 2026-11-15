@@ -37,3 +37,7 @@ CREATE TABLE IF NOT EXISTS document_file_chunks (
     encrypted_chunk TEXT NOT NULL,
     PRIMARY KEY (doc_code, chunk_index)
 );
+
+CREATE INDEX IF NOT EXISTS idx_documents_lower_code ON documents (LOWER(code));
+CREATE INDEX IF NOT EXISTS idx_documents_updated_at ON documents (updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chunks_lower_doc_code ON document_file_chunks (LOWER(doc_code));

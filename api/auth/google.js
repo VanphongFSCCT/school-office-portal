@@ -282,18 +282,26 @@ export default async function handler(req, res) {
       if (parts.length !== 3) {
         return res.status(400).json({ error: 'Cấu trúc JWT OIDC không hợp lệ' });
       }
-      payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'));
+      // Xác thực chữ ký số thực tế với máy chủ Google OAuth2 (chống giả mạo JWT tự ký)
+      let verifiedInfo = null;
+      try {
+        const tiRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+        if (tiRes.ok) {
+          verifiedInfo = await tiRes.json();
+        }
+      } catch (e) {}
 
-      const validIssuers = ['https://accounts.google.com', 'accounts.google.com'];
-      if (!payload.iss || !validIssuers.includes(payload.iss)) {
-        return res.status(401).json({ error: 'Token không được cấp bởi Google (Invalid Issuer).' });
+      if (!verifiedInfo || !verifiedInfo.email) {
+        return res.status(401).json({ error: 'Chữ ký Google ID Token không hợp lệ hoặc đã hết hạn.' });
       }
-      if (payload.exp && Number(payload.exp) * 1000 < Date.now()) {
-        return res.status(401).json({ error: 'Phiên xác thực Google đã hết hạn.' });
+      const expectedClientId = process.env.GOOGLE_CLIENT_ID || '';
+      if (expectedClientId && verifiedInfo.aud && verifiedInfo.aud !== expectedClientId) {
+        return res.status(401).json({ error: 'Google Token không thuộc ứng dụng này (Invalid Audience).' });
       }
-      if (payload.email_verified === false) {
+      if (verifiedInfo.email_verified === false || verifiedInfo.email_verified === 'false') {
         return res.status(401).json({ error: 'Tài khoản Google chưa xác minh email.' });
       }
+      payload = verifiedInfo;
     } else {
       return res.status(400).json({ error: 'Thiếu thông tin xác thực Google hợp lệ.' });
     }

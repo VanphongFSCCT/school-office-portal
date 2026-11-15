@@ -246,6 +246,27 @@ export function verifyUserSessionToken(token) {
   }
 }
 
+
+function requireSessionAuth(req, res, allowedRoles = ['admin']) {
+  const authHeader = String((req.headers && req.headers['authorization']) || '').trim();
+  if (!authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Yêu cầu đăng nhập và cung cấp Token xác thực hợp lệ.' });
+    return null;
+  }
+  const token = authHeader.slice(7).trim();
+  const verified = verifyUserSessionToken(token);
+  if (!verified) {
+    res.status(401).json({ error: 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn.' });
+    return null;
+  }
+  const role = String(verified.role || 'user').toLowerCase();
+  if (Array.isArray(allowedRoles) && allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+    res.status(403).json({ error: 'Từ chối truy cập: Bạn không có quyền Quản trị viên để thực hiện thao tác này.' });
+    return null;
+  }
+  return verified;
+}
+
 neonConfig.fetchConnectionCache = true;
 let isSettingsSchemaReady = false;
 
@@ -274,6 +295,8 @@ export default async function handler(req, res) {
       }
 
       if (req.method === 'POST') {
+        const authSession = requireSessionAuth(req, res, ['admin']);
+        if (!authSession) return;
         const { categories, ecosystemLinks } = req.body || {};
         if (!Array.isArray(categories) && !Array.isArray(ecosystemLinks)) {
           return res.status(400).json({ error: 'Dữ liệu cấu hình không hợp lệ.' });

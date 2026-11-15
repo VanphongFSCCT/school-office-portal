@@ -246,65 +246,56 @@ export function verifyUserSessionToken(token) {
   }
 }
 
-export function isRequestAuthenticated(req) {
-  if (!req || !req.headers) return false;
+export function getVerifiedSessionFromReq(req) {
+  if (!req || !req.headers) return null;
   const authHeader = String(req.headers['authorization'] || '').trim();
-  if (authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7).trim();
-    const verified = verifyUserSessionToken(token);
-    if (verified) return true;
-  }
-  const userEmail = String(req.headers['x-user-email'] || '').trim().toLowerCase();
-  if (userEmail && userEmail.includes('@') && userEmail !== '@fpt.edu.vn') {
-    return true;
-  }
-  return false;
+  if (!authHeader.startsWith('Bearer ')) return null;
+  const token = authHeader.slice(7).trim();
+  return verifyUserSessionToken(token);
+}
+
+export function isRequestAuthenticated(req) {
+  return Boolean(getVerifiedSessionFromReq(req));
 }
 
 export function getRequestUserRole(req) {
-  if (!req || !req.headers) return 'guest';
-  const userEmail = String(req.headers['x-user-email'] || '').trim().toLowerCase();
-  if (userEmail === 'buitandat1727@gmail.com' || userEmail === 'hethongquanlyphong.fscct@gmail.com') {
-    return 'admin';
-  }
-  const headerRole = String(req.headers['x-user-role'] || '').trim().toLowerCase();
-  if (['admin', 'office', 'editor', 'cbgv', 'user'].includes(headerRole)) {
-    return headerRole;
-  }
-  const authHeader = String(req.headers['authorization'] || '').trim();
-  if (authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7).trim();
-    const verified = verifyUserSessionToken(token);
-    if (verified && verified.role) return String(verified.role).toLowerCase();
-  }
-  return isRequestAuthenticated(req) ? 'cbgv' : 'guest';
+  const verified = getVerifiedSessionFromReq(req);
+  if (!verified) return 'guest';
+  const r = String(verified.role || 'user').trim().toLowerCase();
+  return ['admin', 'office', 'editor', 'cbgv', 'user'].includes(r) ? r : 'user';
 }
 
 export function resolveAuthoritativeRoleFromDb(req, dbUserRows = []) {
-  if (!isRequestAuthenticated(req)) return 'guest';
-  const userEmail = String((req.headers && req.headers['x-user-email']) || '').trim().toLowerCase();
-  if (userEmail === 'buitandat1727@gmail.com' || userEmail === 'hethongquanlyphong.fscct@gmail.com') {
-    return 'admin';
-  }
-  if (userEmail && Array.isArray(dbUserRows) && dbUserRows.length > 0) {
-    const emailHash = hashIdentifierSHA256(userEmail);
+  const verified = getVerifiedSessionFromReq(req);
+  if (!verified) return 'guest';
+  const tokenRole = String(verified.role || 'user').trim().toLowerCase();
+  const tokenEmailHash = String(verified.emailHash || '').trim();
+  if (tokenEmailHash && Array.isArray(dbUserRows) && dbUserRows.length > 0) {
     for (const u of dbUserRows) {
       if (!u) continue;
-      const decEmail = String(decryptSensitiveText(u.email) || u.email || '').trim().toLowerCase();
-      if (decEmail === userEmail || (u.email_hash && u.email_hash === emailHash)) {
+      const uHash = u.email_hash || (u.email ? hashIdentifierSHA256(decryptSensitiveText(u.email) || u.email) : '');
+      if (uHash && uHash === tokenEmailHash) {
         if (u.role && ['admin', 'office', 'editor', 'cbgv', 'user'].includes(String(u.role).toLowerCase())) {
           return String(u.role).toLowerCase();
         }
       }
     }
-    // Nếu đã đối chiếu bảng users trên DB mà email KHÔNG có trong bảng phân quyền:
-    // Tài khoản @fpt.edu.vn / @fe.edu.vn mặc định chỉ là 'cbgv' (KHÔNG có quyền xem tài liệu Nội bộ Văn phòng!)
-    if (userEmail.endsWith('@fpt.edu.vn') || userEmail.endsWith('@fe.edu.vn')) {
-      return 'cbgv';
-    }
-    return 'user';
   }
-  return getRequestUserRole(req);
+  return ['admin', 'office', 'editor', 'cbgv', 'user'].includes(tokenRole) ? tokenRole : 'user';
+}
+
+function requireDocumentWriteAuth(req, res, allowedRoles = ['admin']) {
+  const verified = getVerifiedSessionFromReq(req);
+  if (!verified) {
+    res.status(401).json({ error: 'Yêu cầu đăng nhập và cung cấp Token xác thực hợp lệ.' });
+    return null;
+  }
+  const role = String(verified.role || 'user').toLowerCase();
+  if (Array.isArray(allowedRoles) && allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+    res.status(403).json({ error: 'Từ chối truy cập: Tài khoản không đủ quyền thực hiện thao tác này.' });
+    return null;
+  }
+  return verified;
 }
 
 export function canRequestAccessDocLevel(req, rawAccessLevel, overrideRole = null) {
@@ -430,6 +421,19 @@ async function ensureDocSchema(sql) {
         BEGIN ALTER TABLE documents ALTER COLUMN access_level TYPE TEXT; EXCEPTION WHEN OTHERS THEN NULL; END;
         BEGIN ALTER TABLE documents ALTER COLUMN department TYPE TEXT; EXCEPTION WHEN OTHERS THEN NULL; END;
         BEGIN ALTER TABLE documents ALTER COLUMN current_file TYPE TEXT; EXCEPTION WHEN OTHERS THEN NULL; END;
+
+        CREATE TABLE IF NOT EXISTS audit_logs (
+          id SERIAL PRIMARY KEY,
+          action VARCHAR(60) NOT NULL,
+          target_code TEXT,
+          actor_hash VARCHAR(64),
+          actor_role VARCHAR(30),
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_documents_lower_code ON documents (LOWER(code));
+        CREATE INDEX IF NOT EXISTS idx_documents_updated_at ON documents (updated_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_chunks_lower_doc_code ON document_file_chunks (LOWER(doc_code));
       END $$;
     `;
     isDocSchemaReady = true;
@@ -647,6 +651,8 @@ export default async function handler(req, res) {
     await ensureDocSchema(sql);
 
     if (req.method === 'POST') {
+      const writeAuth = requireDocumentWriteAuth(req, res, ['admin', 'office', 'editor']);
+      if (!writeAuth) return;
       const body = req.body || {};
 
       if (body.action === 'upload_chunk') {
@@ -841,6 +847,12 @@ export default async function handler(req, res) {
         } catch (e) {}
       }
 
+      try {
+        await sql`
+          INSERT INTO audit_logs (action, target_code, actor_hash, actor_role)
+          VALUES ('UPSERT_DOC', ${cleanCode}, ${writeAuth.emailHash || ''}, ${writeAuth.role || 'admin'})
+        `;
+      } catch (e) {}
       invalidateCache('docs_');
       return res.status(200).json({
         success: true,
@@ -850,6 +862,8 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
+      const deleteAuth = requireDocumentWriteAuth(req, res, ['admin']);
+      if (!deleteAuth) return;
       const { id, purge } = req.query || {};
       if (purge === 'all') {
         try { await sql`DELETE FROM document_history`; } catch (e) {}
@@ -859,6 +873,12 @@ export default async function handler(req, res) {
           await sql`
             INSERT INTO deleted_documents_log (doc_code) VALUES ('__purge_all__')
             ON CONFLICT (doc_code) DO UPDATE SET deleted_at = CURRENT_TIMESTAMP
+          `;
+        } catch (e) {}
+        try {
+          await sql`
+            INSERT INTO audit_logs (action, target_code, actor_hash, actor_role)
+            VALUES ('PURGE_ALL_DOCS', '__all__', ${deleteAuth.emailHash || ''}, ${deleteAuth.role || 'admin'})
           `;
         } catch (e) {}
         invalidateCache('docs_');
@@ -872,6 +892,12 @@ export default async function handler(req, res) {
         await sql`
           INSERT INTO deleted_documents_log (doc_code) VALUES (${cleanId.toLowerCase()})
           ON CONFLICT (doc_code) DO UPDATE SET deleted_at = CURRENT_TIMESTAMP
+        `;
+      } catch (e) {}
+      try {
+        await sql`
+          INSERT INTO audit_logs (action, target_code, actor_hash, actor_role)
+          VALUES ('DELETE_DOC', ${cleanId}, ${deleteAuth.emailHash || ''}, ${deleteAuth.role || 'admin'})
         `;
       } catch (e) {}
       invalidateCache('docs_');

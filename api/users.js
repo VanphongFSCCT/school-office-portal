@@ -246,6 +246,27 @@ export function verifyUserSessionToken(token) {
   }
 }
 
+
+function requireSessionAuth(req, res, allowedRoles = ['admin']) {
+  const authHeader = String((req.headers && req.headers['authorization']) || '').trim();
+  if (!authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Yêu cầu đăng nhập và cung cấp Token xác thực hợp lệ.' });
+    return null;
+  }
+  const token = authHeader.slice(7).trim();
+  const verified = verifyUserSessionToken(token);
+  if (!verified) {
+    res.status(401).json({ error: 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn.' });
+    return null;
+  }
+  const role = String(verified.role || 'user').toLowerCase();
+  if (Array.isArray(allowedRoles) && allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+    res.status(403).json({ error: 'Từ chối truy cập: Bạn không có quyền Quản trị viên để thực hiện thao tác này.' });
+    return null;
+  }
+  return verified;
+}
+
 neonConfig.fetchConnectionCache = true;
 let isUserSchemaReady = false;
 
@@ -284,11 +305,14 @@ export default async function handler(req, res) {
         await sql`ALTER TABLE users ALTER COLUMN email TYPE TEXT`;
         await sql`ALTER TABLE users ALTER COLUMN full_name TYPE TEXT`;
         await sql`ALTER TABLE users ALTER COLUMN department TYPE TEXT`;
+        await sql`CREATE INDEX IF NOT EXISTS idx_users_email_hash ON users (email_hash)`;
       } catch (e) {}
       isUserSchemaReady = true;
     }
 
     if (req.method === 'GET') {
+      const authSession = requireSessionAuth(req, res, ['admin']);
+      if (!authSession) return;
       const bypassCache = Boolean(req.query && req.query._t);
       if (!bypassCache) {
         const cached = getCachedResponse('users_list_v6', 1500);
@@ -318,6 +342,8 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
+      const authSession = requireSessionAuth(req, res, ['admin']);
+      if (!authSession) return;
       const { email, name, role, department } = req.body || {};
       if (!email) return res.status(400).json({ error: 'Thiếu email phân quyền' });
       const cleanEmail = sanitizeInputString(email, 150).toLowerCase();
@@ -365,6 +391,8 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
+      const authSession = requireSessionAuth(req, res, ['admin']);
+      if (!authSession) return;
       const { email } = req.query || {};
       const cleanEmail = sanitizeInputString(email || '', 150).toLowerCase();
       const rootProtected = [
