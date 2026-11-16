@@ -366,6 +366,11 @@ export default async function handler(req, res) {
       } catch (dbErr) {}
     }
 
+    if (role === 'blocked' || role === 'revoked' || role === 'disabled') {
+      return res.status(403).json({
+        error: 'Tài khoản của bạn đang bị Quản trị viên tạm khóa quyền truy cập hệ thống.'
+      });
+    }
     if (!role && (domain === 'fpt.edu.vn' || domain === 'fe.edu.vn')) {
       role = 'cbgv';
     }

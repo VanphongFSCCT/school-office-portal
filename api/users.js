@@ -330,13 +330,45 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const authSession = requireSessionAuth(req, res, ['admin']);
       if (!authSession) return;
-      const bypassCache = Boolean(req.query && req.query._t);
+      const includeAudit = Boolean(req.query && req.query.include_audit === '1');
+      const bypassCache = Boolean(req.query && req.query._t) || includeAudit;
       if (!bypassCache) {
         const cached = getCachedResponse('users_list_v6', 1500);
         if (cached) {
           res.setHeader('ETag', cached.etag);
           return res.status(200).json(cached.data);
         }
+      }
+      if (includeAudit) {
+        const tStart = Date.now();
+        const [usersRows, auditRows, docCountRows] = await Promise.all([
+          executeWithRetry(() => sql`SELECT email, email_hash, full_name, role, department, updated_at FROM users ORDER BY id ASC LIMIT 200`),
+          sql`SELECT id, action, target_code, actor_hash, actor_role, created_at FROM audit_logs ORDER BY id DESC LIMIT 50`.catch(() => []),
+          sql`SELECT COUNT(*)::int AS cnt FROM documents`.catch(() => [{ cnt: 0 }])
+        ]);
+        const dbLatencyMs = Date.now() - tStart;
+        const decryptedUsers = (usersRows || []).map(u => ({
+          email: decryptSensitiveText(u.email) || u.email,
+          emailHash: u.email_hash || hashIdentifierSHA256(u.email),
+          name: decryptSensitiveText(u.full_name) || u.full_name,
+          role: u.role,
+          department: decryptSensitiveText(u.department) || u.department || 'Văn phòng',
+          updatedAt: u.updated_at
+        }));
+        return res.status(200).json({
+          success: true,
+          data: decryptedUsers,
+          auditLogs: auditRows || [],
+          health: {
+            status: 'HEALTHY',
+            dbLatencyMs,
+            region: process.env.VERCEL_REGION || 'sin1',
+            totalDocumentsInDb: (docCountRows && docCountRows[0] && docCountRows[0].cnt) || 0,
+            totalRbacUsersInDb: decryptedUsers.length,
+            auditRetentionPolicy: 'Max 2,000 rows / 90 days',
+            checkedAt: new Date().toISOString()
+          }
+        });
       }
 
       const payload = await coalesceInFlightQuery('users_fetch_v6', async () => {
@@ -368,7 +400,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Định dạng email không hợp lệ' });
       }
 
-      const allowedRoles = ['admin', 'office', 'editor', 'cbgv', 'user'];
+      const allowedRoles = ['admin', 'office', 'editor', 'cbgv', 'user', 'blocked'];
       const safeRole = allowedRoles.includes(role) ? role : 'user';
 
       const emailHash = hashIdentifierSHA256(cleanEmail);
@@ -396,6 +428,18 @@ export default async function handler(req, res) {
         `;
       });
 
+      try {
+        const actionTag = safeRole === 'blocked' ? 'LOCK_ACCOUNT' : ('SET_ROLE_' + safeRole.toUpperCase());
+        await sql`
+          WITH pruned AS (
+            DELETE FROM audit_logs
+            WHERE created_at < NOW() - INTERVAL '90 days'
+               OR id <= (SELECT COALESCE(MAX(id), 0) - 2000 FROM audit_logs)
+          )
+          INSERT INTO audit_logs (action, target_code, actor_hash, actor_role)
+          VALUES (${actionTag}, ${emailHash.slice(0, 16)}, ${authSession.emailHash || ''}, ${authSession.role || 'admin'})
+        `;
+      } catch (e) {}
       invalidateCache('users_');
       return res.status(200).json({
         success: true,
@@ -425,6 +469,12 @@ export default async function handler(req, res) {
       }
       const emailHash = hashIdentifierSHA256(cleanEmail);
       await executeWithRetry(() => sql`DELETE FROM users WHERE email = ${cleanEmail} OR email_hash = ${emailHash}`);
+      try {
+        await sql`
+          INSERT INTO audit_logs (action, target_code, actor_hash, actor_role)
+          VALUES ('REVOKE_USER', ${emailHash.slice(0, 16)}, ${authSession.emailHash || ''}, ${authSession.role || 'admin'})
+        `;
+      } catch (e) {}
       invalidateCache('users_');
       return res.status(200).json({ success: true });
     }

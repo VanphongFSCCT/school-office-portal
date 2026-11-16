@@ -939,6 +939,10 @@
               <p class="text-xs text-[#B8C8DC]">Quản lý danh sách email Google được phép truy cập và quản trị hệ thống</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="exportDocumentsExcelReport()" class="px-3 py-2 rounded-lg bg-amber-950/90 hover:bg-amber-800 text-[#FFC857] hover:text-white border border-[#FFC857]/40 text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer" title="Xuất báo cáo danh mục quy trình & hạn rà soát ra file Excel (.xlsx) trực tiếp trên trình duyệt">
+                <span>📊</span>
+                <span>Xuất Báo cáo (.xlsx)</span>
+              </button>
               <button type="button" onclick="exportPortalSystemBackup()" class="px-3 py-2 rounded-lg bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border border-emerald-500/40 text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer" title="Tải xuống tệp sao lưu toàn bộ cấu hình, phân quyền và tài liệu (.json)">
                 <span>⬇️</span>
                 <span>Sao lưu (.json)</span>
@@ -984,6 +988,71 @@
                 <span class="px-2 py-0.5 rounded bg-sky-500/20 text-[10px]">Mặc định @fpt.edu.vn</span>
               </div>
               <p class="text-[11px] text-[#B8C8DC] leading-relaxed">Chỉ xem được tài liệu <strong>Nội bộ Trường</strong> &amp; Mở. <strong>Không xem được</strong> tài liệu Nội bộ Văn phòng.</p>
+            </div>
+          </div>
+
+          
+          <!-- TRUNG TÂM GIÁM SÁT QUẢN TRỊ: THỐNG KÊ, SỨC KHỎE HỆ THỐNG & NHẬT KÝ HOẠT ĐỘNG (AUDIT LOG) -->
+          <div class="card-enterprise rounded-2xl p-4 space-y-3 border border-[#FFC857]/35">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#B98A33]/25">
+              <div>
+                <h3 class="font-bold text-white text-xs sm:text-sm flex items-center space-x-2">
+                  <span>🛡️</span>
+                  <span>Trung tâm Giám sát Quản trị, Sức khỏe Hệ thống &amp; Nhật ký Hoạt động (Audit Log)</span>
+                </h3>
+                <p class="text-[11px] text-[#B8C8DC]">Thống kê tức thì trên bộ nhớ trình duyệt (0 truy vấn ngầm) • Tự động giới hạn nhật ký tối đa 2.000 dòng / 90 ngày</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="runAdminSystemHealthAndAudit()" id="btn-run-health-audit" class="px-3 py-1.5 rounded-xl bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/50 font-extrabold text-xs transition cursor-pointer flex items-center space-x-1.5 shadow-sm">
+                  <span>🩺</span>
+                  <span>Kiểm tra Sức khỏe &amp; Tải Nhật ký Audit</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 4 Thẻ Chỉ số Quản trị (Tính từ RAM, không tốn Compute Neon) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+              <div class="p-3 rounded-xl bg-[#03152D]/90 border border-[#B98A33]/30">
+                <div class="text-[11px] text-[#B8C8DC]">Tổng Quy trình / Văn bản</div>
+                <div class="text-base font-extrabold text-white font-mono mt-0.5" id="admin-stat-total-docs">0</div>
+                <div class="text-[10px] text-emerald-400 mt-0.5" id="admin-stat-review-summary">Đang đồng bộ...</div>
+              </div>
+              <div class="p-3 rounded-xl bg-[#03152D]/90 border border-purple-500/30">
+                <div class="text-[11px] text-[#B8C8DC]">Phân bổ theo Mức truy cập</div>
+                <div class="text-xs font-bold text-purple-300 font-mono mt-1" id="admin-stat-access-breakdown">Mở: 0 | CBGV: 0 | Nội bộ VP: 0</div>
+              </div>
+              <div class="p-3 rounded-xl bg-[#03152D]/90 border border-sky-500/30">
+                <div class="text-[11px] text-[#B8C8DC]">Tài khoản Phân quyền / Khóa</div>
+                <div class="text-base font-extrabold text-sky-300 font-mono mt-0.5" id="admin-stat-users-summary">0 tài khoản</div>
+                <div class="text-[10px] text-rose-300 mt-0.5" id="admin-stat-locked-users">0 tài khoản đang khóa</div>
+              </div>
+              <div class="p-3 rounded-xl bg-[#03152D]/90 border border-emerald-500/30">
+                <div class="text-[11px] text-[#B8C8DC]">Sức khỏe Neon DB &amp; Vùng</div>
+                <div class="text-xs font-extrabold text-emerald-400 font-mono mt-1" id="admin-stat-health-status">Sẵn sàng (AES-256-GCM • sin1)</div>
+                <div class="text-[10px] text-[#B8C8DC] mt-0.5" id="admin-stat-health-latency">Bấm nút Kiểm tra để đo độ trễ DB</div>
+              </div>
+            </div>
+
+            <!-- Khung hiển thị Bảng Nhật ký Hoạt động (Audit Log) khi Admin bấm kiểm tra -->
+            <div id="admin-audit-log-panel" class="hidden pt-2 space-y-2">
+              <div class="flex items-center justify-between text-[11px] text-[#FFC857] font-bold">
+                <span>📋 50 Hoạt động Quản trị &amp; Cập nhật Dữ liệu gần nhất (Zero-PII SHA-256 Actor Hash)</span>
+                <button type="button" onclick="document.getElementById('admin-audit-log-panel').classList.add('hidden')" class="text-rose-300 hover:text-white underline cursor-pointer">Thu gọn</button>
+              </div>
+              <div class="overflow-x-auto max-h-56 overflow-y-auto rounded-xl border border-[#B98A33]/25 bg-[#03152D]/90">
+                <table class="w-full text-left text-[11px]">
+                  <thead class="sticky top-0 bg-[#071F3D] text-[#FFC857] border-b border-[#B98A33]/25">
+                    <tr>
+                      <th class="py-2 px-2.5">Thời gian</th>
+                      <th class="py-2 px-2.5">Hành động</th>
+                      <th class="py-2 px-2.5">Đối tượng (Mã VB / Mã băm TK)</th>
+                      <th class="py-2 px-2.5">Vai trò thực hiện</th>
+                      <th class="py-2 px-2.5">Định danh ẩn danh (SHA-256)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-audit-log-tbody" class="divide-y divide-[#B98A33]/15 text-slate-200 font-mono"></tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -5148,6 +5217,7 @@
           });
         }
 
+        if (typeof window.refreshAdminDashboardMetrics === 'function') window.refreshAdminDashboardMetrics();
         const adminUsersTable = document.getElementById('admin-users-table-body');
         if (adminUsersTable) {
           adminUsersTable.innerHTML = '';
@@ -5159,7 +5229,7 @@
                 ? '<span class="text-purple-300 font-bold">Nội bộ Văn phòng + CBGV + Mở</span>'
                 : (u.role === 'cbgv'
                   ? '<span class="text-sky-300">Chỉ tài liệu CBGV &amp; Mở (Ẩn Nội bộ Văn phòng)</span>'
-                  : '<span class="text-slate-300">Chỉ tài liệu Công khai (Mở)</span>'));
+                  : (u.role === 'blocked' ? '<span class="text-rose-400 font-extrabold">🔒 ĐÃ TẠM KHÓA (Chặn đăng nhập &amp; thu hồi phiên)</span>' : '<span class="text-slate-300">Chỉ tài liệu Công khai (Mở)</span>')));
 
             const roleControlHtml = isRoot
               ? `<span class="px-2.5 py-1 rounded-lg bg-[#FFC857] text-[#03152D] font-extrabold text-[11px]">👑 Quản trị viên gốc</span>`
@@ -5168,6 +5238,7 @@
                   <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>👑 Admin (Quản trị viên)</option>
                   <option value="cbgv" ${u.role === 'cbgv' ? 'selected' : ''}>🎓 CBGV (Chỉ xem tài liệu CBGV & Mở)</option>
                   <option value="user" ${u.role === 'user' ? 'selected' : ''}>👤 User (Chỉ xem tài liệu Mở)</option>
+                  <option value="blocked" ${u.role === 'blocked' ? 'selected' : ''}>🔒 Tạm khóa tài khoản (Chặn truy cập)</option>
                 </select>`;
 
             const tr = document.createElement('tr');
@@ -5199,7 +5270,7 @@
       }
       renderOtherViews();
       renderDirectCards();
-      const roleLabel = newRole === 'admin' ? 'Admin (Quản trị viên)' : (newRole === 'office' ? 'Văn phòng (Xem Nội bộ VP)' : (newRole === 'cbgv' ? 'CBGV Trường' : 'User cơ bản'));
+      const roleLabel = newRole === 'admin' ? 'Admin (Quản trị viên)' : (newRole === 'office' ? 'Văn phòng (Xem Nội bộ VP)' : (newRole === 'cbgv' ? 'CBGV Trường' : (newRole === 'blocked' ? '🔒 Tạm khóa truy cập' : 'User cơ bản')));
       showToast(`✅ Đã cập nhật quyền của ${target.email} thành "${roleLabel}"!`, 'success');
       try {
         await fetch('/api/users', {
@@ -9137,6 +9208,153 @@
 
       // btn-modal-download-file handled via onclick="triggerDocumentDownload()"
     });
+
+    
+    window.refreshAdminDashboardMetrics = function() {
+      try {
+        const totalEl = document.getElementById('admin-stat-total-docs');
+        if (!totalEl) return;
+        const allDocs = Array.isArray(documents) ? documents : [];
+        let pubCnt = 0, cbgvCnt = 0, officeCnt = 0, adminCnt = 0;
+        let dueSoonCnt = 0, overdueCnt = 0;
+        allDocs.forEach(d => {
+          const acc = String(d.access || 'Mở').trim();
+          if (acc === 'Chỉ Admin') adminCnt++;
+          else if (acc === 'Nội bộ' || acc === 'Nội bộ Văn phòng') officeCnt++;
+          else if (acc === 'CBGV') cbgvCnt++;
+          else pubCnt++;
+          if (typeof computeDocReviewInfo === 'function') {
+            const rev = computeDocReviewInfo(d);
+            if (rev && rev.status === 'overdue') overdueCnt++;
+            else if (rev && rev.status === 'soon') dueSoonCnt++;
+          }
+        });
+        totalEl.textContent = `${allDocs.length} văn bản`;
+        const revEl = document.getElementById('admin-stat-review-summary');
+        if (revEl) {
+          revEl.textContent = (overdueCnt > 0 || dueSoonCnt > 0)
+            ? `⚠️ ${overdueCnt} quá hạn • ${dueSoonCnt} sắp đến hạn rà soát`
+            : '✅ 100% văn bản trong hạn hiệu lực';
+        }
+        const accEl = document.getElementById('admin-stat-access-breakdown');
+        if (accEl) {
+          accEl.textContent = `Mở: ${pubCnt} | CBGV: ${cbgvCnt} | Nội bộ VP: ${officeCnt} | Admin: ${adminCnt}`;
+        }
+        const uList = Array.isArray(rbacUsers) ? rbacUsers : [];
+        const lockedCnt = uList.filter(u => u && u.role === 'blocked').length;
+        const uSumEl = document.getElementById('admin-stat-users-summary');
+        if (uSumEl) uSumEl.textContent = `${uList.length} tài khoản phân quyền`;
+        const uLockEl = document.getElementById('admin-stat-locked-users');
+        if (uLockEl) {
+          uLockEl.textContent = lockedCnt > 0 ? `🔒 ${lockedCnt} tài khoản đang bị tạm khóa` : '✅ Không có tài khoản bị khóa';
+        }
+      } catch (e) {}
+    };
+
+    window.runAdminSystemHealthAndAudit = async function() {
+      if (!currentUser || currentUser.role !== 'admin') {
+        showToast('Chỉ Quản trị viên (Admin) mới có quyền kiểm tra sức khỏe hệ thống và xem Audit Log.', 'error');
+        return;
+      }
+      const btn = document.getElementById('btn-run-health-audit');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="inline-block animate-spin">⏳</span><span>Đang đo độ trễ &amp; tải Audit Log...</span>';
+      }
+      try {
+        const t0 = performance.now();
+        const res = await fetch('/api/users?include_audit=1&_t=' + Date.now(), {
+          credentials: 'same-origin',
+          headers: getAuthRequestHeaders()
+        });
+        const totalRoundTripMs = Math.round(performance.now() - t0);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const h = data.health || {};
+        const statusEl = document.getElementById('admin-stat-health-status');
+        const latEl = document.getElementById('admin-stat-health-latency');
+        if (statusEl) {
+          statusEl.textContent = `✅ ${h.status || 'HEALTHY'} • Vùng: ${h.region || 'sin1'}`;
+        }
+        if (latEl) {
+          latEl.textContent = `Độ trễ DB: ${h.dbLatencyMs || 0}ms | Tổng API: ${totalRoundTripMs}ms | DB Docs: ${h.totalDocumentsInDb ?? documents.length}`;
+        }
+        const panel = document.getElementById('admin-audit-log-panel');
+        const tbody = document.getElementById('admin-audit-log-tbody');
+        if (panel && tbody) {
+          panel.classList.remove('hidden');
+          const logs = Array.isArray(data.auditLogs) ? data.auditLogs : [];
+          if (logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="py-3 px-2.5 text-center text-slate-400">Chưa có bản ghi nhật ký hoạt động nào trong CSDL.</td></tr>';
+          } else {
+            tbody.innerHTML = logs.map(item => {
+              const ts = item.created_at ? new Date(item.created_at).toLocaleString('vi-VN') : '';
+              const act = String(item.action || '');
+              const badgeClass = act.includes('DELETE') || act.includes('PURGE') || act.includes('REVOKE') || act.includes('LOCK')
+                ? 'bg-rose-950/90 text-rose-300 border-rose-500/40'
+                : 'bg-emerald-950/90 text-emerald-300 border-emerald-500/40';
+              return `<tr class="hover:bg-[#102E52]/50">
+                <td class="py-1.5 px-2.5 text-slate-300">${escapeHtmlStr(ts)}</td>
+                <td class="py-1.5 px-2.5"><span class="px-2 py-0.5 rounded border text-[10px] font-bold ${badgeClass}">${escapeHtmlStr(act)}</span></td>
+                <td class="py-1.5 px-2.5 text-[#FFC857] font-bold">${escapeHtmlStr(item.target_code || '-')}</td>
+                <td class="py-1.5 px-2.5 text-cyan-300">${escapeHtmlStr(item.actor_role || 'admin')}</td>
+                <td class="py-1.5 px-2.5 text-slate-400">${escapeHtmlStr((item.actor_hash || 'system').slice(0, 16))}...</td>
+              </tr>`;
+            }).join('');
+          }
+        }
+        showToast(`🩺 Hệ thống hoạt động tốt (Độ trễ DB: ${h.dbLatencyMs || totalRoundTripMs}ms, đã tải ${(data.auditLogs || []).length} dòng Audit Log)!`, 'success');
+      } catch (err) {
+        showToast('Không thể tải dữ liệu kiểm tra sức khỏe từ máy chủ.', 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>🩺</span><span>Kiểm tra Sức khỏe &amp; Tải Nhật ký Audit</span>';
+        }
+      }
+    };
+
+    window.exportDocumentsExcelReport = function() {
+      if (!currentUser || !['admin', 'office', 'editor'].includes(currentUser.role)) {
+        showToast('Chỉ Quản trị viên hoặc Cán bộ Văn phòng mới có quyền xuất báo cáo danh mục tài liệu.', 'error');
+        return;
+      }
+      if (typeof XLSX === 'undefined') {
+        showToast('Thư viện xuất Excel đang tải, vui lòng thử lại sau 1 giây.', 'info');
+        return;
+      }
+      try {
+        const rows = (Array.isArray(documents) ? documents : []).map((d, idx) => {
+          const rev = typeof computeDocReviewInfo === 'function' ? computeDocReviewInfo(d) : { dueDateStr: '', label: 'Có hiệu lực' };
+          return {
+            'STT': idx + 1,
+            'Mã văn bản': d.code || '',
+            'Tên quy trình / tài liệu': d.title || '',
+            'Bộ phận': d.category || d.dept || '',
+            'Định dạng': d.type || 'Quy trình',
+            'Phiên bản': d.version || '1.0',
+            'Ngày ban hành': d.effectiveDate || '',
+            'Hạn rà soát': d.nextReviewDate || rev.dueDateStr || '',
+            'Trạng thái rà soát': rev.label || d.status || 'Có hiệu lực',
+            'Phân quyền xem': d.access || 'Mở',
+            'Quyền tải xuống': d.downloadPerm === 'view_only' ? 'Chỉ xem trực tuyến' : (d.downloadPerm === 'admin_only' ? 'Chỉ Admin tải' : 'Cho phép tải về'),
+            'Tệp đính kèm': d.currentFile || ''
+          };
+        });
+        const ws = XLSX.utils.json_to_sheet(rows);
+        ws['!cols'] = [
+          { wch: 6 }, { wch: 18 }, { wch: 42 }, { wch: 18 }, { wch: 20 },
+          { wch: 10 }, { wch: 14 }, { wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 30 }
+        ];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Danh_muc_Tai_lieu_FSC');
+        const dateTag = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Bao_cao_Danh_muc_Tai_lieu_VPFSC_${dateTag}.xlsx`);
+        showToast(`📊 Đã xuất báo cáo Excel (${rows.length} văn bản) trực tiếp trên trình duyệt!`, 'success');
+      } catch (e) {
+        showToast('Lỗi khi xuất báo cáo Excel: ' + e.message, 'error');
+      }
+    };
 
     window.exportPortalSystemBackup = async function() {
       if (!currentUser || currentUser.role !== 'admin') {

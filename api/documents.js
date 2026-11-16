@@ -968,6 +968,11 @@ export default async function handler(req, res) {
 
       try {
         await sql`
+          WITH pruned AS (
+            DELETE FROM audit_logs
+            WHERE created_at < NOW() - INTERVAL '90 days'
+               OR id <= (SELECT COALESCE(MAX(id), 0) - 2000 FROM audit_logs)
+          )
           INSERT INTO audit_logs (action, target_code, actor_hash, actor_role)
           VALUES ('UPSERT_DOC', ${cleanCode}, ${writeAuth.emailHash || ''}, ${writeAuth.role || 'admin'})
         `;
