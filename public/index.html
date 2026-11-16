@@ -2996,7 +2996,7 @@
       const [cfgRes, docRes] = await Promise.all([cfgPromise, docsPromise]);
       const [usersRes, idbMap] = await Promise.all([usersPromise, idbPromise]);
 
-      // 0. Đồng bộ danh sách Phân quyền Role (Admin / Cán bộ Văn phòng / Biên tập / User) từ Neon PostgreSQL
+      // 0. Đồng bộ danh sách Phân quyền Role (Admin / Cán bộ Văn phòng / Biên tập / User) từ Neon PostgreSQL (Có bảo vệ chống mất tài khoản vừa tạo & tự động đồng bộ bù)
       try {
         if (usersRes && usersRes.ok) {
           const uJson = await usersRes.json();
@@ -3005,7 +3005,37 @@
               { email: 'buitandat1727@gmail.com', name: 'Bùi Tấn Đạt (Quản trị viên)', role: 'admin' },
               { email: 'hethongquanlyphong.fscct@gmail.com', name: 'Hệ thống Quản lý Phòng', role: 'admin' }
             ];
-            const mergedRbac = [...uJson.data];
+            let revokedSet = new Set();
+            try {
+              const rawRev = localStorage.getItem('school_portal_revoked_rbac_emails');
+              if (rawRev) {
+                const parsedRev = JSON.parse(rawRev);
+                if (Array.isArray(parsedRev)) parsedRev.forEach(e => revokedSet.add(String(e || '').toLowerCase().trim()));
+              }
+            } catch (e) {}
+
+            const serverList = uJson.data.filter(u => u && u.email && !revokedSet.has(u.email.toLowerCase().trim()));
+            const serverMap = new Map();
+            serverList.forEach(u => serverMap.set(u.email.toLowerCase().trim(), u));
+
+            // Giữ lại mọi tài khoản đã cấp quyền ở trình duyệt Admin mà chưa kịp có trên Server, đồng thời đẩy bù lên Neon DB!
+            const localUnsynced = [];
+            (Array.isArray(rbacUsers) ? rbacUsers : []).forEach(locU => {
+              if (!locU || !locU.email) return;
+              const em = locU.email.toLowerCase().trim();
+              if (revokedSet.has(em)) return;
+              if (!serverMap.has(em)) {
+                serverMap.set(em, locU);
+                if (!ROOT_ADMIN_EMAILS.includes(em)) {
+                  localUnsynced.push(locU);
+                }
+              } else if (Date.now() - (window._lastRbacLocalSaveTs || 0) < 30000) {
+                // Nếu Admin vừa mới đổi quyền tài khoản này trong vòng 30 giây, ưu tiên giữ quyền mới của Admin
+                serverMap.set(em, locU);
+              }
+            });
+
+            const mergedRbac = Array.from(serverMap.values());
             defaults.forEach(def => {
               const ex = mergedRbac.find(u => u && u.email && u.email.toLowerCase() === def.email.toLowerCase());
               if (ex) ex.role = 'admin';
@@ -3013,6 +3043,18 @@
             });
             rbacUsers = mergedRbac;
             localStorage.setItem('school_portal_rbac_users', FscCryptoVault.encryptSync(JSON.stringify(rbacUsers)));
+
+            // Tự động đẩy bù các tài khoản mới tạo lên CSDL Neon nếu trước đó chưa được lưu trên DB
+            if (localUnsynced.length > 0 && currentUser && currentUser.role === 'admin') {
+              localUnsynced.forEach(uToPush => {
+                fetch('/api/users', {
+                  method: 'POST',
+                  credentials: 'same-origin',
+                  headers: getAuthRequestHeaders({ 'Content-Type': 'application/json' }),
+                  body: JSON.stringify({ email: uToPush.email, name: uToPush.name, role: uToPush.role })
+                }).catch(() => {});
+              });
+            }
             if (currentUser && currentUser.email) {
               const myEmail = currentUser.email.toLowerCase();
               const matched = rbacUsers.find(u => u && u.email && u.email.toLowerCase() === myEmail);
@@ -5446,9 +5488,25 @@
       }
     }
 
+    window._lastRbacLocalSaveTs = 0;
+    function markRbacEmailRevoked(emailStr, isRevoked = true) {
+      try {
+        const clean = String(emailStr || '').toLowerCase().trim();
+        if (!clean) return;
+        const raw = localStorage.getItem('school_portal_revoked_rbac_emails');
+        const list = raw ? JSON.parse(raw) : [];
+        const set = new Set(Array.isArray(list) ? list : []);
+        if (isRevoked) set.add(clean);
+        else set.delete(clean);
+        localStorage.setItem('school_portal_revoked_rbac_emails', JSON.stringify(Array.from(set)));
+      } catch (e) {}
+    }
+
     window.changeRbacUserRole = async function(idx, newRole) {
       const target = rbacUsers[idx];
       if (!target || ROOT_ADMIN_EMAILS.includes(String(target.email || '').toLowerCase())) return;
+      window._lastRbacLocalSaveTs = Date.now();
+      markRbacEmailRevoked(target.email, false);
       target.role = newRole;
       localStorage.setItem('school_portal_rbac_users', FscCryptoVault.encryptSync(JSON.stringify(rbacUsers)));
       if (currentUser && currentUser.email && currentUser.email.toLowerCase() === target.email.toLowerCase()) {
@@ -5470,8 +5528,10 @@
     };
 
     window.removeRbacUser = async function(idx) {
-      if (idx <= 1) return;
       const target = rbacUsers[idx];
+      if (!target || ROOT_ADMIN_EMAILS.includes(String(target.email || '').toLowerCase())) return;
+      window._lastRbacLocalSaveTs = Date.now();
+      markRbacEmailRevoked(target.email, true);
       rbacUsers.splice(idx, 1);
       localStorage.setItem('school_portal_rbac_users', FscCryptoVault.encryptSync(JSON.stringify(rbacUsers)));
       try {
@@ -8597,6 +8657,8 @@
           return;
         }
 
+        window._lastRbacLocalSaveTs = Date.now();
+        markRbacEmailRevoked(email, false);
         const existIdx = rbacUsers.findIndex(u => u && u.email && u.email.toLowerCase() === email);
         if (existIdx !== -1) {
           rbacUsers[existIdx].role = role;
@@ -8611,11 +8673,15 @@
           updateAuthState();
         }
         try {
-          await fetch('/api/users', {
+          const saveUserRes = await fetchWithAutoRetry('/api/users', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: getAuthRequestHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ email, name, role })
-          });
+          }, 3);
+          if (!saveUserRes || !saveUserRes.ok) {
+            console.warn('POST /api/users warning:', saveUserRes ? saveUserRes.status : 'network');
+          }
         } catch (e) {}
 
         createAdminModal.classList.add('hidden');

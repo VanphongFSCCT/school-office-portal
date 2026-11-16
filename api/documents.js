@@ -222,7 +222,11 @@ export function signUserSessionToken(userObj) {
   const issuedAt = Date.now();
   const expiresAt = issuedAt + 8 * 3600 * 1000;
   const payload = {
-    emailHash: hashIdentifierSHA256(userObj.email || userObj.emailHash || 'anonymous'),
+    emailHash: userObj.email
+      ? hashIdentifierSHA256(userObj.email)
+      : (typeof userObj.emailHash === 'string' && /^[a-f0-9]{64}$/i.test(userObj.emailHash)
+        ? userObj.emailHash.toLowerCase()
+        : hashIdentifierSHA256(userObj.emailHash || 'anonymous')),
     role: userObj.role || 'user',
     iat: issuedAt,
     exp: expiresAt
@@ -270,10 +274,10 @@ export function getRequestUserRole(req) {
 }
 
 const ROOT_ADMIN_HASHES = new Set([
-  'ccdb5dafa0edf5c24a32d50160062d6db46cc999ff7a0980e9feb8268584f804',
-  '7d0e4f53e0fb4502f51ed94502d866e4d919a41bf9715baea6df68413eaf561f',
-  '32c25b6b26b234ca9b4f17caee7a167bba98d69d248d28ed5f764d7054e03a67',
-  '8817361be3bcd5b7cd133fb4e8b763b6adfa969b8edd36e0d93e46c07af83909'
+  hashIdentifierSHA256('buitandat1727@gmail.com'),
+  hashIdentifierSHA256('hethongquanlyphong.fscct@gmail.com'),
+  hashIdentifierSHA256('vp_fsc@fpt.edu.vn'),
+  hashIdentifierSHA256('datbt4@fe.edu.vn')
 ]);
 
 export function resolveAuthoritativeRoleFromDb(req, dbUserRows = []) {

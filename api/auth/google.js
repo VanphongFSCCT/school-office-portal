@@ -222,7 +222,11 @@ export function signUserSessionToken(userObj) {
   const issuedAt = Date.now();
   const expiresAt = issuedAt + 8 * 3600 * 1000;
   const payload = {
-    emailHash: hashIdentifierSHA256(userObj.email || userObj.emailHash || 'anonymous'),
+    emailHash: userObj.email
+      ? hashIdentifierSHA256(userObj.email)
+      : (typeof userObj.emailHash === 'string' && /^[a-f0-9]{64}$/i.test(userObj.emailHash)
+        ? userObj.emailHash.toLowerCase()
+        : hashIdentifierSHA256(userObj.emailHash || 'anonymous')),
     role: userObj.role || 'user',
     iat: issuedAt,
     exp: expiresAt
