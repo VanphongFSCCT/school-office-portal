@@ -3187,6 +3187,11 @@
         }
 
         if (docData.success && Array.isArray(docData.data)) {
+          if (docData.callerRole && currentUser && docData.callerRole !== 'guest' && currentUser.role !== docData.callerRole) {
+            currentUser.role = docData.callerRole;
+            saveEncryptedUserSession(currentUser);
+            updateAuthState();
+          }
           const deletedSet = new Set((docData.deletedCodes || []).map(c => String(c).toLowerCase()));
           const isPurgedAll = deletedSet.has('__purge_all__') && docData.data.length === 0;
 
@@ -3220,12 +3225,7 @@
               const localDoc = localMap[key] || {};
               const idbEntry = idbMap[key] || {};
               const resolvedFileData = d.file_data || d.file_url || d.fileData || localDoc.fileData || '';
-              // Cập nhật Role chính thức từ máy chủ trả về nếu đang đăng nhập
-              if (docData.callerRole && currentUser && docData.callerRole !== 'guest' && currentUser.role !== docData.callerRole) {
-                currentUser.role = docData.callerRole;
-                saveEncryptedUserSession(currentUser);
-                updateAuthState();
-              }
+              // Đã chuyển đồng bộ callerRole ra ngoài vòng lặp map
 
               const hasCloudFile = Boolean(d.has_remote_file || d.file_data);
               const docObj = {
@@ -3379,9 +3379,14 @@
       if (ROOT_ADMIN_EMAILS.includes(email)) return 'admin';
       const matched = rbacUsers.find(u => u && u.email && u.email.toLowerCase() === email);
       if (matched && matched.role) return String(matched.role).toLowerCase();
-      // Nếu tài khoản @fpt.edu.vn / @fe.edu.vn đăng nhập nhưng CHƯA được Admin phân quyền trong bảng RBAC -> Mặc định là 'cbgv' (KHÔNG có quyền xem tài liệu Nội bộ Văn phòng!)
+      // Ưu tiên giữ nguyên Role chính thức ('office', 'editor', 'admin', 'cbgv', 'user', 'blocked') mà Server (/api/auth/google hoặc /api/documents) đã xác thực từ bảng users trên Neon DB!
+      const explicitRole = String(userObj.role || '').trim().toLowerCase();
+      if (['admin', 'office', 'editor', 'cbgv', 'user', 'blocked'].includes(explicitRole)) {
+        return explicitRole;
+      }
+      // Chỉ khi chưa có role từ Server mới mặc định @fpt.edu.vn / @fe.edu.vn là 'cbgv'
       if (email.endsWith('@fpt.edu.vn') || email.endsWith('@fe.edu.vn')) return 'cbgv';
-      return String(userObj.role || 'user').toLowerCase();
+      return 'user';
     }
 
     function isDocVisible(doc) {
@@ -7664,19 +7669,17 @@
         }
 
         const isRootAdmin = ROOT_ADMIN_EMAILS.includes(email);
-        const matchedRbac = rbacUsers.find(u => u.email.toLowerCase() === email);
+        const matchedRbac = rbacUsers.find(u => u && u.email && u.email.toLowerCase() === email);
         const isFpt = email.endsWith('@fpt.edu.vn') || email.endsWith('@fe.edu.vn') || profile.hd === 'fpt.edu.vn' || profile.hd === 'fe.edu.vn';
-
-        if (!isRootAdmin && !matchedRbac && !isFpt) {
-          showToast(`Từ chối truy cập: Tài khoản ${email} không thuộc miền @fpt.edu.vn và chưa được Quản trị viên cấp quyền.`, 'error');
-          return;
-        }
 
         let serverRole = null;
         let serverSessionToken = '';
+        let serverRejected = false;
+        let serverRejectMsg = '';
         try {
           const authRes = await fetch('/api/auth/google', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
               'Content-Type': 'application/json',
               'X-FSC-Security-Token': 'FSC-ZeroTrust-v6'
@@ -7692,10 +7695,27 @@
               serverRole = authData.user.role;
               serverSessionToken = authData.user.sessionToken || '';
             }
+          } else if (authRes.status === 403) {
+            serverRejected = true;
+            const errJson = await authRes.json().catch(() => ({}));
+            serverRejectMsg = errJson.error || '';
           }
         } catch (e) {}
 
-        const resolvedRole = isRootAdmin ? 'admin' : (matchedRbac ? matchedRbac.role : (serverRole && serverRole !== 'user' ? serverRole : (isFpt ? 'cbgv' : 'user')));
+        if (serverRejected && !isRootAdmin && !matchedRbac) {
+          showToast(serverRejectMsg || `Từ chối truy cập: Tài khoản ${email} không có quyền truy cập hệ thống.`, 'error');
+          return;
+        }
+        if (!isRootAdmin && !matchedRbac && !serverRole && !isFpt) {
+          showToast(`Từ chối truy cập: Tài khoản ${email} không thuộc miền @fpt.edu.vn và chưa được Quản trị viên cấp quyền.`, 'error');
+          return;
+        }
+
+        const resolvedRole = isRootAdmin
+          ? 'admin'
+          : (serverRole
+            ? serverRole
+            : (matchedRbac ? matchedRbac.role : (isFpt ? 'cbgv' : 'user')));
         currentUser = {
           email: email,
           emailHash: hashClientIdentifier(email),
@@ -7813,23 +7833,18 @@
 
         const email = (payload.email || '').toLowerCase();
         const isRootAdmin = ROOT_ADMIN_EMAILS.includes(email);
-        const matchedRbac = rbacUsers.find(u => u.email.toLowerCase() === email);
+        const matchedRbac = rbacUsers.find(u => u && u.email && u.email.toLowerCase() === email);
         const isFpt = email.endsWith('@fpt.edu.vn') || email.endsWith('@fe.edu.vn') || payload.hd === 'fpt.edu.vn' || payload.hd === 'fe.edu.vn';
 
-        if (!isRootAdmin && !matchedRbac && !isFpt) {
-          if (errorAlert) {
-            errorAlert.textContent = `Từ chối truy cập: Tài khoản ${email} không thuộc miền @fpt.edu.vn và chưa được Quản trị viên cấp quyền.`;
-            errorAlert.classList.remove('hidden');
-          }
-          return;
-        }
-
-        // Gửi ID Token lên máy chủ /api/auth/google để xác thực chữ ký OIDC & nhận Session Token ký số HMAC-SHA256
+        // Gửi ID Token lên máy chủ /api/auth/google trước để kiểm tra bảng users trên Neon DB
         let serverRole = null;
         let serverSessionToken = '';
+        let serverRejected = false;
+        let serverRejectMsg = '';
         try {
           const authRes = await fetch('/api/auth/google', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
               'Content-Type': 'application/json',
               'X-FSC-Security-Token': 'FSC-ZeroTrust-v6'
@@ -7842,10 +7857,33 @@
               serverRole = authData.user.role;
               serverSessionToken = authData.user.sessionToken || '';
             }
+          } else if (authRes.status === 403) {
+            serverRejected = true;
+            const errJson = await authRes.json().catch(() => ({}));
+            serverRejectMsg = errJson.error || '';
           }
         } catch (e) {}
 
-        const resolvedRole = isRootAdmin ? 'admin' : (matchedRbac ? matchedRbac.role : (serverRole && serverRole !== 'user' ? serverRole : (isFpt ? 'cbgv' : 'user')));
+        if (serverRejected && !isRootAdmin && !matchedRbac) {
+          if (errorAlert) {
+            errorAlert.textContent = serverRejectMsg || `Từ chối truy cập: Tài khoản ${email} không có quyền truy cập.`;
+            errorAlert.classList.remove('hidden');
+          }
+          return;
+        }
+        if (!isRootAdmin && !matchedRbac && !serverRole && !isFpt) {
+          if (errorAlert) {
+            errorAlert.textContent = `Từ chối truy cập: Tài khoản ${email} không thuộc miền @fpt.edu.vn và chưa được Quản trị viên cấp quyền.`;
+            errorAlert.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const resolvedRole = isRootAdmin
+          ? 'admin'
+          : (serverRole
+            ? serverRole
+            : (matchedRbac ? matchedRbac.role : (isFpt ? 'cbgv' : 'user')));
         currentUser = {
           email: email,
           emailHash: hashClientIdentifier(email),

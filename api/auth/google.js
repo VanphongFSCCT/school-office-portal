@@ -371,12 +371,16 @@ export default async function handler(req, res) {
       try {
         const sql = getAuthSqlClient(databaseUrl);
         const rows = await executeWithRetry(() => sql`
-          SELECT role FROM users
-          WHERE email_hash = ${emailHash} OR LOWER(email) = ${email}
-          LIMIT 1
+          SELECT email, email_hash, role FROM users LIMIT 200
         `, 2);
-        if (rows.length > 0 && rows[0].role) {
-          role = rows[0].role;
+        for (const r of (rows || [])) {
+          if (!r) continue;
+          const decEm = String(decryptSensitiveText(r.email) || r.email || '').trim().toLowerCase();
+          const rHash = String(r.email_hash || '').trim().toLowerCase();
+          if ((rHash && rHash === emailHash.toLowerCase()) || (decEm && decEm === email)) {
+            if (r.role) role = String(r.role).trim().toLowerCase();
+            break;
+          }
         }
       } catch (dbErr) {}
     }
