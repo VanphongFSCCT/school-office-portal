@@ -152,6 +152,29 @@
       color: #0f172a;
     }
 
+
+    #fsc-ecosystem-grid {
+      overflow-y: auto !important;
+      max-height: calc(90vh - 110px) !important;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    #fsc-ecosystem-grid::-webkit-scrollbar {
+      width: 8px;
+    }
+    #fsc-ecosystem-grid::-webkit-scrollbar-track {
+      background: rgba(3, 21, 45, 0.85);
+      border-radius: 8px;
+    }
+    #fsc-ecosystem-grid::-webkit-scrollbar-thumb {
+      background: rgba(255, 200, 87, 0.55);
+      border-radius: 8px;
+      border: 1px solid rgba(185, 138, 51, 0.4);
+    }
+    #fsc-ecosystem-grid::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 200, 87, 0.9);
+    }
+
   </style>
   <!-- GOOGLE FONTS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1924,10 +1947,11 @@
   <!-- ==================== MODAL 2: MENU LIÊN KẾT HỆ SINH THÁI SỐ FSC CẦN THƠ (KHUNG RỘNG LỚN MAX-W-6XL DỄ XEM & THAO TÁC) ==================== -->
   <div id="modal-fsc-ecosystem" onclick="if(event.target === this) closeFscEcosystemModal()" class="fixed inset-0 z-[72] bg-[#03152D]/85 backdrop-blur-md hidden items-center justify-center p-2 sm:p-4 overflow-y-auto">
     <div class="bg-[#071F3D] border-2 border-[#B98A33]/60 rounded-2xl w-[96vw] max-w-6xl mx-auto my-auto p-4 sm:p-6 shadow-2xl space-y-4 fsc-tab-anim-enter max-h-[94vh] flex flex-col overflow-hidden">
-      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-2.5">
+      <div class="flex items-center justify-between border-b border-[#B98A33]/30 pb-2.5 shrink-0">
         <div class="flex items-center space-x-2.5">
           <div class="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-base">🌐</div>
           <h3 class="font-extrabold text-white text-sm sm:text-base">Hệ sinh thái Số FSC Cần Thơ</h3>
+          <span id="fsc-eco-count-badge" class="px-2.5 py-0.5 rounded-full bg-[#102E52] border border-[#FFC857]/40 text-[#FFC857] text-xs font-extrabold font-mono">0 mục</span>
         </div>
         <div class="flex items-center space-x-2">
           <button type="button" id="btn-toggle-eco-edit" onclick="toggleEcosystemAddForm()" class="px-3 py-1.5 rounded-xl bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-xs font-bold transition cursor-pointer">
@@ -1941,7 +1965,7 @@
       </div>
 
       <!-- FORM THÊM / CẬP NHẬT LIÊN KẾT HỆ SINH THÁI (DÀNH CHO ADMIN & CÓ PHÂN QUYỀN ROLE XEM) -->
-      <div id="ecosystem-add-form-box" class="hidden p-3.5 rounded-xl bg-[#03152D] border border-[#FFC857]/60 space-y-2.5 text-xs fsc-tab-anim-enter">
+      <div id="ecosystem-add-form-box" class="hidden p-3.5 rounded-xl bg-[#03152D] border border-[#FFC857]/60 space-y-2.5 text-xs fsc-tab-anim-enter shrink-0">
         <div class="flex items-center justify-between">
           <div class="font-extrabold text-[#FFC857]">⚙️ Thêm / Cập nhật Liên kết Hệ sinh thái FSC Cần Thơ</div>
           <button type="button" onclick="toggleEcosystemAddForm(false)" class="text-slate-400 hover:text-white text-xs font-bold cursor-pointer">✕ Đóng khung nhập</button>
@@ -1986,7 +2010,7 @@
       </div>
 
       <!-- LƯỚI CÁC ỨNG DỤNG TRONG HỆ SINH THÁI FSC -->
-      <div id="fsc-ecosystem-grid" class="divide-y divide-[#B98A33]/25 rounded-xl border border-[#B98A33]/35 bg-[#03152D]/85 overflow-hidden"></div>
+      <div id="fsc-ecosystem-grid" class="divide-y divide-[#B98A33]/25 rounded-xl border border-[#B98A33]/35 bg-[#03152D]/85 flex-1 min-h-0 overflow-y-auto"></div>
     </div>
   </div>
 
@@ -3027,8 +3051,14 @@
           }
 
           if (Array.isArray(cfg.ecosystemLinks) && cfg.ecosystemLinks.length > 0) {
-            ecosystemLinks = normalizeEcosystemLinksList(cfg.ecosystemLinks);
-            FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v7', ecosystemLinks);
+            const cloudList = normalizeEcosystemLinksList(cfg.ecosystemLinks);
+            // Nếu Admin vừa mới thêm/sửa liên kết cục bộ trong vòng 45 giây, ưu tiên giữ danh sách mới của Admin và đẩy đồng bộ lên Cloud
+            if (currentUser && currentUser.role === 'admin' && (Date.now() - (window._lastEcoLocalSaveTs || 0) < 45000)) {
+              saveEcosystemLinksToCloud();
+            } else {
+              ecosystemLinks = cloudList;
+              FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v7', ecosystemLinks);
+            }
             renderEcosystemGridDOM();
           } else if ( Array.isArray(ecosystemLinks) && ecosystemLinks.length > 0 ) {
             // Khởi tạo đồng bộ danh sách Hệ sinh thái mới nhất lên cơ sở dữ liệu đám mây để mọi thiết bị đều nhận đồng nhất
@@ -4651,15 +4681,20 @@
       ecosystemLinks = JSON.parse(JSON.stringify(DEFAULT_ECOSYSTEM_LINKS));
     }
 
-    function saveEcosystemLinksToCloud() {
+    window._lastEcoLocalSaveTs = 0;
+    async function saveEcosystemLinksToCloud() {
+      window._lastEcoLocalSaveTs = Date.now();
       ecosystemLinks = normalizeEcosystemLinksList(ecosystemLinks);
       FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v7', ecosystemLinks);
-      enqueueCloudSyncTask(async () => {
-        await fetchWithAutoRetry('/api/config', {
+      FscCryptoVault.setEncryptedLocalItem('fsc_ecosystem_links_v6', ecosystemLinks);
+      return await enqueueCloudSyncTask(async () => {
+        const res = await fetchWithAutoRetry('/api/config', {
           method: 'POST',
+          credentials: 'same-origin',
           headers: getAuthRequestHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ ecosystemLinks })
         }, 3);
+        return Boolean(res && res.ok);
       });
     }
 
@@ -4696,6 +4731,8 @@
       const isAdmin = Boolean(currentUser && currentUser.role === 'admin');
 
       const visibleEcoLinks = ecosystemLinks.filter(item => canUserViewEcosystemLink(item, currentUser));
+      const countBadgeEl = document.getElementById('fsc-eco-count-badge');
+      if (countBadgeEl) countBadgeEl.textContent = `${visibleEcoLinks.length} mục`;
 
       if (visibleEcoLinks.length === 0) {
         grid.innerHTML = '<div class="py-8 text-center text-xs text-slate-400">Chưa có liên kết hệ sinh thái nào thuộc phạm vi phân quyền của tài khoản bạn.</div>';
@@ -4813,6 +4850,57 @@
     }
     window.closeFscEcosystemModal = closeFscEcosystemModal;
 
+    if (!window._fscGlobalEscBound) {
+      window._fscGlobalEscBound = true;
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+          const ecoModal = document.getElementById('modal-fsc-ecosystem');
+          if (ecoModal && !ecoModal.classList.contains('hidden')) {
+            e.preventDefault();
+            closeFscEcosystemModal();
+            return;
+          }
+          const revModal = document.getElementById('modal-qms-review-tracker');
+          if (revModal && !revModal.classList.contains('hidden')) {
+            e.preventDefault();
+            closeQmsReviewTrackerModal();
+            return;
+          }
+          const qrModal = document.getElementById('modal-doc-qrcode');
+          if (qrModal && !qrModal.classList.contains('hidden')) {
+            e.preventDefault();
+            closeDocQrCodeModal();
+            return;
+          }
+          const addDocModal = document.getElementById('modal-add-document');
+          if (addDocModal && !addDocModal.classList.contains('hidden')) {
+            e.preventDefault();
+            closeAddDocModal();
+            return;
+          }
+          const editDocModal = document.getElementById('modal-edit-document');
+          if (editDocModal && !editDocModal.classList.contains('hidden')) {
+            e.preventDefault();
+            closeEditDocModal();
+            return;
+          }
+          const catModal = document.getElementById('modal-category');
+          if (catModal && !catModal.classList.contains('hidden')) {
+            e.preventDefault();
+            closeCategoryModal();
+            return;
+          }
+          const profModal = document.getElementById('modal-user-profile-details');
+          if (profModal && !profModal.classList.contains('hidden')) {
+            e.preventDefault();
+            closeProfileModal();
+            return;
+          }
+        }
+      });
+    }
+
+
     function toggleEcosystemAddForm(forceShow = null) {
       const formBox = document.getElementById('ecosystem-add-form-box');
       if (!formBox) return;
@@ -4868,10 +4956,19 @@
         });
       }
 
+      const isNewAdd = !Boolean(editId);
       saveEcosystemLinksToCloud();
       toggleEcosystemAddForm(false);
       renderEcosystemGridDOM();
-      showToast(`☁️ Đã lưu và đồng bộ liên kết "${name}" cho hệ thống!`, 'success');
+      if (isNewAdd) {
+        const gridEl = document.getElementById('fsc-ecosystem-grid');
+        if (gridEl) {
+          setTimeout(() => {
+            gridEl.scrollTo({ top: gridEl.scrollHeight, behavior: 'smooth' });
+          }, 50);
+        }
+      }
+      showToast(`☁️ Đã lưu và đồng bộ liên kết "${name}" (Tổng: ${ecosystemLinks.length} mục)!`, 'success');
     }
     window.saveEcosystemLinkItem = saveEcosystemLinkItem;
 
