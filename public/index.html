@@ -8353,6 +8353,12 @@
         btnQuickLogout.addEventListener('click', () => {
           currentUser = null;
           saveEncryptedUserSession(null);
+          fetch('/api/auth/google', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-FSC-Security-Token': 'FSC-ZeroTrust-v6' },
+            body: JSON.stringify({ action: 'logout' })
+          }).catch(() => {});
           documents = documents.filter(d => getDocAccessTier(d) === 'public');
           safeSaveDocumentsToLocal(documents, true);
           closeDocReader();

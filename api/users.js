@@ -248,7 +248,11 @@ export function verifyUserSessionToken(token) {
 
 
 function requireSessionAuth(req, res, allowedRoles = ['admin']) {
-  const authHeader = String((req.headers && req.headers['authorization']) || '').trim();
+  let authHeader = String((req.headers && (req.headers['authorization'] || req.headers['Authorization'])) || '').trim();
+  if (!authHeader && req.headers && req.headers.cookie) {
+    const m = String(req.headers.cookie).match(/(?:^|;\s*)fsc_session_token=([^;]+)/);
+    if (m && m[1]) authHeader = 'Bearer ' + decodeURIComponent(m[1].trim());
+  }
   if (!authHeader.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Yêu cầu đăng nhập và cung cấp Token xác thực hợp lệ.' });
     return null;
@@ -265,6 +269,35 @@ function requireSessionAuth(req, res, allowedRoles = ['admin']) {
     return null;
   }
   return verified;
+}
+
+
+const ROOT_ADMIN_HASHES = new Set([
+  'ccdb5dafa0edf5c24a32d50160062d6db46cc999ff7a0980e9feb8268584f804',
+  '7d0e4f53e0fb4502f51ed94502d866e4d919a41bf9715baea6df68413eaf561f',
+  '32c25b6b26b234ca9b4f17caee7a167bba98d69d248d28ed5f764d7054e03a67',
+  '8817361be3bcd5b7cd133fb4e8b763b6adfa969b8edd36e0d93e46c07af83909'
+]);
+async function verifyLiveAdminInDb(sql, session, allowedRoles = ['admin']) {
+  if (!session || !session.emailHash) return { allowed: false, status: 401, error: 'Phiên đăng nhập không hợp lệ.' };
+  const emailHash = String(session.emailHash || '').trim().toLowerCase();
+  if (ROOT_ADMIN_HASHES.has(emailHash)) return { allowed: true, role: 'admin' };
+  const uRows = await sql`SELECT role FROM users WHERE email_hash = ${emailHash} LIMIT 1`.catch(() => []);
+  if (Array.isArray(uRows) && uRows.length > 0 && uRows[0] && uRows[0].role) {
+    const dbRole = String(uRows[0].role).trim().toLowerCase();
+    if (dbRole === 'blocked' || dbRole === 'revoked' || dbRole === 'disabled') {
+      return { allowed: false, status: 403, error: 'Tài khoản của bạn đã bị Quản trị viên tạm khóa quyền truy cập.' };
+    }
+    if (!allowedRoles.includes(dbRole)) {
+      return { allowed: false, status: 403, error: 'Quyền hạn của tài khoản đã bị thu hồi hoặc hạ cấp trên máy chủ.' };
+    }
+    return { allowed: true, role: dbRole };
+  }
+  const tokenRole = String(session.role || 'user').toLowerCase();
+  if (tokenRole === 'blocked') {
+    return { allowed: false, status: 403, error: 'Tài khoản của bạn đã bị Quản trị viên tạm khóa quyền truy cập.' };
+  }
+  return { allowed: allowedRoles.includes(tokenRole), status: 403, error: 'Từ chối truy cập.' };
 }
 
 neonConfig.fetchConnectionCache = true;
@@ -330,6 +363,8 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const authSession = requireSessionAuth(req, res, ['admin']);
       if (!authSession) return;
+      const liveAdmin = await verifyLiveAdminInDb(sql, authSession, ['admin']);
+      if (!liveAdmin.allowed) return res.status(liveAdmin.status).json({ error: liveAdmin.error });
       const includeAudit = Boolean(req.query && req.query.include_audit === '1');
       const bypassCache = Boolean(req.query && req.query._t) || includeAudit;
       if (!bypassCache) {
@@ -393,6 +428,8 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const authSession = requireSessionAuth(req, res, ['admin']);
       if (!authSession) return;
+      const liveAdmin = await verifyLiveAdminInDb(sql, authSession, ['admin']);
+      if (!liveAdmin.allowed) return res.status(liveAdmin.status).json({ error: liveAdmin.error });
       const { email, name, role, department } = req.body || {};
       if (!email) return res.status(400).json({ error: 'Thiếu email phân quyền' });
       const cleanEmail = sanitizeInputString(email, 150).toLowerCase();
@@ -456,6 +493,8 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const authSession = requireSessionAuth(req, res, ['admin']);
       if (!authSession) return;
+      const liveAdmin = await verifyLiveAdminInDb(sql, authSession, ['admin']);
+      if (!liveAdmin.allowed) return res.status(liveAdmin.status).json({ error: liveAdmin.error });
       const { email } = req.query || {};
       const cleanEmail = sanitizeInputString(email || '', 150).toLowerCase();
       const rootProtected = [

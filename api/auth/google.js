@@ -288,7 +288,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { credential, accessToken, userInfo } = req.body || {};
+    const bodyObj = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    const clientIp = String(req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
+    if (bodyObj && bodyObj.action === 'logout') {
+      res.setHeader('Set-Cookie', buildSessionCookieHeader('', 0));
+      return res.status(200).json({ success: true, loggedOut: true });
+    }
+    if (!checkAuthFailRateLimit(clientIp)) {
+      return res.status(429).json({ error: 'Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau 1 phút.' });
+    }
+    const { credential, accessToken, userInfo } = bodyObj;
     let payload = null;
 
     if (accessToken && typeof accessToken === 'string') {
@@ -304,6 +313,7 @@ export default async function handler(req, res) {
         payload = userInfo;
       }
       if (!payload || !payload.email) {
+        recordAuthFail(clientIp);
         return res.status(401).json({ error: 'Không thể xác thực Google Access Token.' });
       }
     } else if (credential && typeof credential === 'string') {
@@ -321,6 +331,7 @@ export default async function handler(req, res) {
       } catch (e) {}
 
       if (!verifiedInfo || !verifiedInfo.email) {
+        recordAuthFail(clientIp);
         return res.status(401).json({ error: 'Chữ ký Google ID Token không hợp lệ hoặc đã hết hạn.' });
       }
       const expectedClientId = process.env.GOOGLE_CLIENT_ID || '';
@@ -367,6 +378,7 @@ export default async function handler(req, res) {
     }
 
     if (role === 'blocked' || role === 'revoked' || role === 'disabled') {
+      res.setHeader('Set-Cookie', buildSessionCookieHeader('', 0));
       return res.status(403).json({
         error: 'Tài khoản của bạn đang bị Quản trị viên tạm khóa quyền truy cập hệ thống.'
       });
@@ -384,6 +396,9 @@ export default async function handler(req, res) {
     // Xóa ngay biến payload trong RAM, chỉ trả về Token phiên ẩn danh (Zero-PII Session Token)
     payload = null;
     const sessionToken = signUserSessionToken({ emailHash, role });
+    if (sessionToken) {
+      res.setHeader('Set-Cookie', buildSessionCookieHeader(sessionToken, 28800));
+    }
     const displayLabel = role === 'admin'
       ? 'Quản trị viên (Admin)'
       : (role === 'office'

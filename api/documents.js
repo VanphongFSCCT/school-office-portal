@@ -248,7 +248,11 @@ export function verifyUserSessionToken(token) {
 
 export function getVerifiedSessionFromReq(req) {
   if (!req || !req.headers) return null;
-  const authHeader = String(req.headers['authorization'] || '').trim();
+  let authHeader = String(req.headers['authorization'] || req.headers['Authorization'] || '').trim();
+  if (!authHeader && req.headers.cookie) {
+    const m = String(req.headers.cookie).match(/(?:^|;\s*)fsc_session_token=([^;]+)/);
+    if (m && m[1]) authHeader = 'Bearer ' + decodeURIComponent(m[1].trim());
+  }
   if (!authHeader.startsWith('Bearer ')) return null;
   const token = authHeader.slice(7).trim();
   return verifyUserSessionToken(token);
@@ -265,23 +269,95 @@ export function getRequestUserRole(req) {
   return ['admin', 'office', 'editor', 'cbgv', 'user'].includes(r) ? r : 'user';
 }
 
+const ROOT_ADMIN_HASHES = new Set([
+  'ccdb5dafa0edf5c24a32d50160062d6db46cc999ff7a0980e9feb8268584f804',
+  '7d0e4f53e0fb4502f51ed94502d866e4d919a41bf9715baea6df68413eaf561f',
+  '32c25b6b26b234ca9b4f17caee7a167bba98d69d248d28ed5f764d7054e03a67',
+  '8817361be3bcd5b7cd133fb4e8b763b6adfa969b8edd36e0d93e46c07af83909'
+]);
+
 export function resolveAuthoritativeRoleFromDb(req, dbUserRows = []) {
   const verified = getVerifiedSessionFromReq(req);
   if (!verified) return 'guest';
   const tokenRole = String(verified.role || 'user').trim().toLowerCase();
-  const tokenEmailHash = String(verified.emailHash || '').trim();
+  const tokenEmailHash = String(verified.emailHash || '').trim().toLowerCase();
+  if (ROOT_ADMIN_HASHES.has(tokenEmailHash)) return 'admin';
   if (tokenEmailHash && Array.isArray(dbUserRows) && dbUserRows.length > 0) {
     for (const u of dbUserRows) {
       if (!u) continue;
-      const uHash = u.email_hash || (u.email ? hashIdentifierSHA256(decryptSensitiveText(u.email) || u.email) : '');
+      const uHash = String(u.email_hash || (u.email ? hashIdentifierSHA256(decryptSensitiveText(u.email) || u.email) : '')).toLowerCase();
       if (uHash && uHash === tokenEmailHash) {
-        if (u.role && ['admin', 'office', 'editor', 'cbgv', 'user'].includes(String(u.role).toLowerCase())) {
-          return String(u.role).toLowerCase();
+        const dbRole = String(u.role || '').trim().toLowerCase();
+        if (dbRole === 'blocked' || dbRole === 'revoked' || dbRole === 'disabled') {
+          return 'blocked';
+        }
+        if (['admin', 'office', 'editor', 'cbgv', 'user'].includes(dbRole)) {
+          return dbRole;
         }
       }
     }
   }
+  if (tokenRole === 'blocked' || tokenRole === 'revoked' || tokenRole === 'disabled') return 'blocked';
   return ['admin', 'office', 'editor', 'cbgv', 'user'].includes(tokenRole) ? tokenRole : 'user';
+}
+
+async function verifyLiveWritePrivilegeFromDb(sql, session, allowedRoles = ['admin']) {
+  if (!session || !session.emailHash) {
+    return { allowed: false, status: 401, error: 'Phiên đăng nhập không hợp lệ.' };
+  }
+  const emailHash = String(session.emailHash || '').trim().toLowerCase();
+  let effectiveRole = String(session.role || 'user').trim().toLowerCase();
+  if (ROOT_ADMIN_HASHES.has(emailHash)) {
+    effectiveRole = 'admin';
+  } else {
+    const uRows = await sql`SELECT role FROM users WHERE email_hash = ${emailHash} LIMIT 1`.catch(() => []);
+    if (Array.isArray(uRows) && uRows.length > 0 && uRows[0] && uRows[0].role) {
+      effectiveRole = String(uRows[0].role).trim().toLowerCase();
+    }
+  }
+  if (effectiveRole === 'blocked' || effectiveRole === 'revoked' || effectiveRole === 'disabled') {
+    return {
+      allowed: false,
+      status: 403,
+      error: 'Tài khoản của bạn đã bị Quản trị viên tạm khóa quyền truy cập. Phiên đăng nhập cũ đã bị thu hồi.'
+    };
+  }
+  if (!allowedRoles.includes(effectiveRole)) {
+    return {
+      allowed: false,
+      status: 403,
+      error: 'Từ chối truy cập: Quyền hạn của tài khoản đã thay đổi hoặc bị thu hồi trên máy chủ.'
+    };
+  }
+  return { allowed: true, role: effectiveRole };
+}
+
+
+const ALLOWED_UPLOAD_EXTENSIONS = new Set(['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.png', '.jpg', '.jpeg']);
+const BLOCKED_DANGEROUS_EXTENSIONS = new Set(['.html', '.htm', '.svg', '.js', '.mjs', '.cjs', '.exe', '.bat', '.cmd', '.sh', '.php', '.jsp', '.asp', '.aspx']);
+const MAX_BASE64_FILE_CHARS = 18 * 1024 * 1024; // ~13.5MB binary
+
+export function validateUploadedDocumentFile(fileName, fileData) {
+  if (fileName) {
+    const safeName = String(fileName).trim().toLowerCase();
+    const dotIdx = safeName.lastIndexOf('.');
+    if (dotIdx !== -1) {
+      const ext = safeName.slice(dotIdx);
+      if (BLOCKED_DANGEROUS_EXTENSIONS.has(ext) || !ALLOWED_UPLOAD_EXTENSIONS.has(ext)) {
+        return { valid: false, error: `Định dạng tập tin "${ext}" không được phép tải lên vì lý do bảo mật (OWASP ASVS V12).` };
+      }
+    }
+  }
+  if (fileData && typeof fileData === 'string') {
+    if (fileData.length > MAX_BASE64_FILE_CHARS) {
+      return { valid: false, error: 'Kích thước tập tin vượt quá giới hạn an toàn cho phép (13.5MB).' };
+    }
+    const headerSlice = fileData.slice(0, 120).toLowerCase();
+    if (headerSlice.startsWith('data:text/html') || headerSlice.startsWith('data:image/svg') || headerSlice.startsWith('data:application/javascript') || headerSlice.startsWith('data:text/javascript')) {
+      return { valid: false, error: 'Loại MIME tập tin chứa mã thực thi (HTML/SVG/JS) bị từ chối vì lý do bảo mật (OWASP ASVS V12).' };
+    }
+  }
+  return { valid: true };
 }
 
 function requireDocumentWriteAuth(req, res, allowedRoles = ['admin']) {
@@ -299,6 +375,14 @@ function requireDocumentWriteAuth(req, res, allowedRoles = ['admin']) {
 }
 
 export function canRequestAccessDocLevel(req, rawAccessLevel, overrideRole = null) {
+  const callerRoleCheck = overrideRole ? String(overrideRole).toLowerCase() : getRequestUserRole(req);
+  if (callerRoleCheck === 'blocked' || callerRoleCheck === 'revoked' || callerRoleCheck === 'disabled') {
+    return {
+      allowed: false,
+      reason: 'accountBlocked',
+      message: 'Tài khoản của bạn đã bị Quản trị viên tạm khóa quyền truy cập hệ thống.'
+    };
+  }
   const acc = String(rawAccessLevel || 'Mở').trim();
   if (acc === 'Mở') return { allowed: true };
   if (!isRequestAuthenticated(req)) {
@@ -670,6 +754,12 @@ export default async function handler(req, res) {
       }
 
       const verifiedCallerRole = resolveAuthoritativeRoleFromDb(req, dbUsersList);
+      if (verifiedCallerRole === 'blocked') {
+        return res.status(403).json({
+          error: 'Tài khoản của bạn đã bị Quản trị viên tạm khóa quyền truy cập hệ thống.',
+          accountBlocked: true
+        });
+      }
 
       const decryptedRows = rows.map(item => {
         const r = item.meta || {};
@@ -756,6 +846,11 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const writeAuth = requireDocumentWriteAuth(req, res, ['admin', 'office', 'editor']);
       if (!writeAuth) return;
+      const liveWriteCheck = await verifyLiveWritePrivilegeFromDb(sql, writeAuth, ['admin', 'office', 'editor']);
+      if (!liveWriteCheck.allowed) {
+        return res.status(liveWriteCheck.status).json({ error: liveWriteCheck.error, accountBlocked: liveWriteCheck.status === 403 });
+      }
+      writeAuth.role = liveWriteCheck.role;
       const idempHit = checkIdempotencyKey(req);
       if (idempHit) {
         res.setHeader('X-Idempotent-Replay', 'true');
@@ -797,6 +892,10 @@ export default async function handler(req, res) {
         download_perm, current_file, file_data, version_history
       } = body;
 
+      const uploadCheck = validateUploadedDocumentFile(current_file, file_data);
+      if (!uploadCheck.valid) {
+        return res.status(400).json({ error: uploadCheck.error });
+      }
       const cleanCode = sanitizeInputString(code, 120);
       const cleanOldCode = old_code ? sanitizeInputString(old_code, 120) : '';
       const cleanTitle = sanitizeInputString(title || code, 500);
@@ -992,6 +1091,10 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const deleteAuth = requireDocumentWriteAuth(req, res, ['admin']);
       if (!deleteAuth) return;
+      const liveDelCheck = await verifyLiveWritePrivilegeFromDb(sql, deleteAuth, ['admin']);
+      if (!liveDelCheck.allowed) {
+        return res.status(liveDelCheck.status).json({ error: liveDelCheck.error, accountBlocked: liveDelCheck.status === 403 });
+      }
       const { id, purge } = req.query || {};
       if (purge === 'all') {
         try { await sql`DELETE FROM document_history`; } catch (e) {}
@@ -1036,6 +1139,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     console.error('Database API error:', err.message);
-    return res.status(500).json({ error: 'Lỗi xử lý cơ sở dữ liệu: ' + err.message });
+    return res.status(500).json({ error: 'Lỗi xử lý cơ sở dữ liệu nội bộ. Vui lòng thử lại sau.' });
   }
 }
