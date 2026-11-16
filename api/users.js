@@ -285,7 +285,15 @@ export default async function handler(req, res) {
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
-  const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.NEON_DATABASE_URL;
+  const isPreviewEnv = process.env.VERCEL_ENV === 'preview';
+  if (isPreviewEnv && (req.method === 'POST' || req.method === 'DELETE') && !process.env.DATABASE_URL_PREVIEW && process.env.ALLOW_PREVIEW_PROD_WRITE !== 'true') {
+    return res.status(403).json({
+      error: 'Bảo vệ Môi trường Preview: Chặn thao tác Ghi/Xóa vào CSDL Production từ bản triển khai thử nghiệm (Preview). Hãy cấu hình DATABASE_URL_PREVIEW trỏ vào nhánh Neon Test riêng.'
+    });
+  }
+  const databaseUrl = (isPreviewEnv && process.env.DATABASE_URL_PREVIEW)
+    ? process.env.DATABASE_URL_PREVIEW
+    : (process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.NEON_DATABASE_URL);
   if (!databaseUrl) {
     return res.status(200).json({
       success: true,

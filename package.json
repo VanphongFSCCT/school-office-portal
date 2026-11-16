@@ -6,7 +6,13 @@
   "scripts": {
     "start": "node api/index.js",
     "dev": "vercel dev",
-    "db:init": "node db/init.js"
+    "db:init": "node db/init.js",
+    "test": "node tests/automated_qa_and_security_scan.js",
+    "test:load": "node tests/load_and_concurrency_benchmark.mjs",
+    "dr:keygen": "node scripts/fsc_backup_restore_dr.mjs keygen",
+    "dr:backup": "node scripts/fsc_backup_restore_dr.mjs backup",
+    "dr:verify": "node scripts/fsc_backup_restore_dr.mjs verify",
+    "hooks:install": "sh scripts/install-git-hooks.sh"
   },
   "keywords": [
     "school-portal",
