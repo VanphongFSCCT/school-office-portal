@@ -1000,7 +1000,7 @@ export default async function handler(req, res) {
               version_history = ${finalHistory}::jsonb,
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ${targetId} OR LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
-            RETURNING id, code, version, effective_date, access_level
+            RETURNING id, code, version, effective_date, next_review_date, access_level
           `;
           savedRecord = updated[0];
         } catch (upErr) {
@@ -1013,6 +1013,7 @@ export default async function handler(req, res) {
               doc_type = ${cleanType},
               version = ${cleanVer},
               effective_date = ${effDate},
+              next_review_date = ${nextRevDate},
               department = ${encryptedDept},
               description = ${encryptedDesc},
               access_level = ${cleanAccess},
@@ -1021,7 +1022,7 @@ export default async function handler(req, res) {
               file_data = CASE WHEN ${encryptedFileData} <> '' THEN ${encryptedFileData} ELSE file_data END,
               updated_at = CURRENT_TIMESTAMP
             WHERE id = ${targetId} OR LOWER(code) = ${lookupCode.toLowerCase()} OR LOWER(code) = ${cleanCode.toLowerCase()}
-            RETURNING id, code, version, effective_date, access_level
+            RETURNING id, code, version, effective_date, next_review_date, access_level
           `;
           savedRecord = updatedFallback[0];
         }
@@ -1037,7 +1038,7 @@ export default async function handler(req, res) {
               ${effDate}, ${nextRevDate}, ${encryptedDept}, ${encryptedDesc}, ${cleanAccess},
               ${cleanPerm}, ${encryptedFileName}, ${encryptedFileData}, ${historyJson}::jsonb
             )
-            RETURNING id, code, version, effective_date
+            RETURNING id, code, version, effective_date, next_review_date, access_level
           `;
           savedRecord = inserted[0];
         } catch (insErr) {

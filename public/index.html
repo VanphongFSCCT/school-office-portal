@@ -1758,8 +1758,16 @@
             </select>
           </div>
           <div>
-            <label class="block text-[#B8C8DC] mb-1 font-medium">Hạn rà soát văn bản:</label>
-            <input type="date" id="inp-edit-doc-review-date" class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-[#FFC857] font-mono font-bold focus:outline-none focus:border-[#FFC857]">
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[#B8C8DC] font-medium">Hạn rà soát riêng:</label>
+              <div class="flex items-center space-x-1">
+                <button type="button" onclick="applyQuickEditReviewOffset(3)" class="px-1.5 py-0.5 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-[9.5px] font-bold transition cursor-pointer" title="Đặt hạn rà soát sau 3 tháng">+3T</button>
+                <button type="button" onclick="applyQuickEditReviewOffset(6)" class="px-1.5 py-0.5 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-[9.5px] font-bold transition cursor-pointer" title="Đặt hạn rà soát sau 6 tháng">+6T</button>
+                <button type="button" onclick="applyQuickEditReviewOffset(12)" class="px-1.5 py-0.5 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-[9.5px] font-bold transition cursor-pointer" title="Đặt hạn rà soát sau 1 năm">+1N</button>
+                <button type="button" onclick="applyQuickEditReviewOffset(24)" class="px-1.5 py-0.5 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] border border-[#FFC857]/40 text-[9.5px] font-bold transition cursor-pointer" title="Đặt hạn rà soát sau 2 năm">+2N</button>
+              </div>
+            </div>
+            <input type="date" id="inp-edit-doc-review-date" class="w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/30 rounded-lg text-[#FFC857] font-mono font-bold focus:outline-none focus:border-[#FFC857] cursor-pointer" title="Chọn ngày tháng cụ thể để rà soát quy trình này">
           </div>
         </div>
 
@@ -1973,8 +1981,9 @@
         <input type="hidden" id="eco-edit-id" value="">
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
           <div class="sm:col-span-2">
-            <label class="block text-[#B8C8DC] mb-1 text-[11px]">Biểu tượng:</label>
-            <input type="text" id="eco-inp-icon" value="🏛️" class="w-full px-2.5 py-1.5 rounded-lg bg-[#102E52] border border-[#B98A33]/40 text-center text-base text-white focus:outline-none focus:border-[#FFC857]">
+            <label class="block text-[#B8C8DC] mb-1 text-[11px]">Thứ tự hiển thị:</label>
+            <input type="number" id="eco-inp-order" min="1" value="1" class="w-full px-2.5 py-1.5 rounded-lg bg-[#102E52] border border-[#B98A33]/40 text-center font-mono font-extrabold text-sm text-[#FFC857] focus:outline-none focus:border-[#FFC857]" title="Vị trí thứ tự hiển thị trong danh sách (1, 2, 3...)">
+            <input type="hidden" id="eco-inp-icon" value="">
           </div>
           <div class="sm:col-span-5">
             <label class="block text-[#B8C8DC] mb-1 text-[11px]">Tên hệ thống / Cổng thông tin *:</label>
@@ -4746,12 +4755,20 @@
         const actionLabel = isInternalDept ? 'Mở bộ phận →' : 'Truy cập ↗';
         const permBadgeHtml = isAdmin ? getEcosystemAccessLabelHtml(item.accessRole) : '';
 
+        const realIdxInMaster = ecosystemLinks.findIndex(x => x.id === item.id);
         card.innerHTML = `
           <div class="flex items-center space-x-3.5 min-w-0 flex-1">
-            <span class="text-xs sm:text-sm font-mono font-extrabold text-[#FFC857]/80 w-5 text-center shrink-0">${idx + 1}</span>
-            <div class="w-11 h-11 rounded-2xl bg-[#071F3D] border border-[#B98A33]/45 flex items-center justify-center text-lg shrink-0 shadow-md group-hover:border-[#FFC857] transition">
-              ${escapeHtmlStr(item.icon || '🌐')}
-            </div>
+            ${isAdmin ? `
+              <div class="flex items-center space-x-1 shrink-0" onclick="event.stopPropagation()">
+                <input type="number" min="1" max="${visibleEcoLinks.length}" value="${idx + 1}" class="inp-eco-item-order w-11 px-1 py-1 rounded-lg bg-[#071F3D] border border-[#FFC857]/50 text-[#FFC857] font-mono font-extrabold text-xs text-center focus:outline-none focus:border-[#FFC857]" title="Nhập số thứ tự rồi nhấn Enter hoặc đổi số để chuyển vị trí">
+                <div class="flex flex-col space-y-0.5">
+                  <button type="button" class="btn-eco-move-up px-1.5 py-0.5 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] text-[9px] font-extrabold leading-none transition cursor-pointer ${idx === 0 ? 'opacity-30 pointer-events-none' : ''}" title="Đưa lên trên">▲</button>
+                  <button type="button" class="btn-eco-move-down px-1.5 py-0.5 rounded bg-[#102E52] hover:bg-[#FFC857] text-[#FFC857] hover:text-[#03152D] text-[9px] font-extrabold leading-none transition cursor-pointer ${idx === visibleEcoLinks.length - 1 ? 'opacity-30 pointer-events-none' : ''}" title="Đưa xuống dưới">▼</button>
+                </div>
+              </div>
+            ` : `
+              <span class="text-xs sm:text-sm font-mono font-extrabold text-[#FFC857] w-6 h-6 rounded-lg bg-[#071F3D] border border-[#B98A33]/40 flex items-center justify-center shrink-0">${idx + 1}</span>
+            `}
             <div class="min-w-0 flex-1">
               <div class="flex items-center flex-wrap gap-2">
                 <h4 class="text-sm sm:text-base font-extrabold text-white group-hover:text-[#FFC857] transition">${escapeHtmlStr(item.name)}</h4>
@@ -4764,14 +4781,14 @@
           <div class="flex items-center space-x-2 shrink-0">
             <span class="px-3.5 py-1.5 rounded-xl bg-[#102E52] group-hover:bg-[#FFC857] text-[#FFC857] group-hover:text-[#03152D] border border-[#B98A33]/50 text-xs font-extrabold transition shadow">${actionLabel}</span>
             ${isAdmin ? `
-              <button type="button" class="btn-eco-item-edit px-2.5 py-1.5 rounded-xl bg-[#14345B] hover:bg-[#B98A33] text-[#FFC857] hover:text-white border border-[#FFC857]/30 text-xs font-bold transition cursor-pointer" title="Sửa liên kết & phân quyền">✏️ Sửa</button>
+              <button type="button" class="btn-eco-item-edit px-2.5 py-1.5 rounded-xl bg-[#14345B] hover:bg-[#B98A33] text-[#FFC857] hover:text-white border border-[#FFC857]/30 text-xs font-bold transition cursor-pointer" title="Sửa liên kết, thứ tự & phân quyền">✏️ Sửa</button>
               <button type="button" class="btn-eco-item-del px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold transition cursor-pointer" title="Xóa liên kết">✕</button>
             ` : ''}
           </div>
         `;
 
         card.addEventListener('click', (e) => {
-          if (e.target.closest('.btn-eco-item-edit') || e.target.closest('.btn-eco-item-del')) return;
+          if (e.target.closest('.btn-eco-item-edit') || e.target.closest('.btn-eco-item-del') || e.target.closest('.btn-eco-move-up') || e.target.closest('.btn-eco-move-down') || e.target.closest('.inp-eco-item-order')) return;
           closeFscEcosystemModal();
           if (isInternalDept) {
             const deptName = String(item.url).replace('#dept:', '').trim();
@@ -4782,13 +4799,61 @@
           }
         });
 
+        const upBtn = card.querySelector('.btn-eco-move-up');
+        if (upBtn) {
+          upBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (realIdxInMaster > 0) {
+              const [moved] = ecosystemLinks.splice(realIdxInMaster, 1);
+              ecosystemLinks.splice(realIdxInMaster - 1, 0, moved);
+              saveEcosystemLinksToCloud();
+              renderEcosystemGridDOM();
+              showToast(`⬆️ Đã chuyển "${item.name}" lên vị trí số ${realIdxInMaster}!`, 'info');
+            }
+          });
+        }
+
+        const downBtn = card.querySelector('.btn-eco-move-down');
+        if (downBtn) {
+          downBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (realIdxInMaster !== -1 && realIdxInMaster < ecosystemLinks.length - 1) {
+              const [moved] = ecosystemLinks.splice(realIdxInMaster, 1);
+              ecosystemLinks.splice(realIdxInMaster + 1, 0, moved);
+              saveEcosystemLinksToCloud();
+              renderEcosystemGridDOM();
+              showToast(`⬇️ Đã chuyển "${item.name}" xuống vị trí số ${realIdxInMaster + 2}!`, 'info');
+            }
+          });
+        }
+
+        const orderInp = card.querySelector('.inp-eco-item-order');
+        if (orderInp) {
+          orderInp.addEventListener('change', (e) => {
+            e.stopPropagation();
+            const targetPos = Math.max(1, Math.min(ecosystemLinks.length, parseInt(e.target.value, 10) || (realIdxInMaster + 1)));
+            const targetIdx = targetPos - 1;
+            if (realIdxInMaster !== -1 && targetIdx !== realIdxInMaster) {
+              const [moved] = ecosystemLinks.splice(realIdxInMaster, 1);
+              ecosystemLinks.splice(targetIdx, 0, moved);
+              saveEcosystemLinksToCloud();
+              renderEcosystemGridDOM();
+              showToast(`🔢 Đã đặt thứ tự của "${item.name}" sang vị trí số ${targetPos}!`, 'success');
+            } else {
+              e.target.value = realIdxInMaster + 1;
+            }
+          });
+        }
+
         const editBtn = card.querySelector('.btn-eco-item-edit');
         if (editBtn) {
           editBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleEcosystemAddForm(true);
             document.getElementById('eco-edit-id').value = item.id;
-            document.getElementById('eco-inp-icon').value = item.icon || '🌐';
+            const ordEl = document.getElementById('eco-inp-order');
+            if (ordEl) ordEl.value = realIdxInMaster !== -1 ? (realIdxInMaster + 1) : (idx + 1);
+            document.getElementById('eco-inp-icon').value = item.icon || '';
             document.getElementById('eco-inp-name').value = item.name || '';
             document.getElementById('eco-inp-url').value = item.url || '';
             document.getElementById('eco-inp-badge').value = item.badge || '';
@@ -4908,7 +4973,9 @@
       if (willShow) {
         formBox.classList.remove('hidden');
         document.getElementById('eco-edit-id').value = '';
-        document.getElementById('eco-inp-icon').value = '🌐';
+        document.getElementById('eco-inp-icon').value = '';
+        const ordEl = document.getElementById('eco-inp-order');
+        if (ordEl) ordEl.value = (Array.isArray(ecosystemLinks) ? ecosystemLinks.length : 0) + 1;
         document.getElementById('eco-inp-name').value = '';
         document.getElementById('eco-inp-url').value = '';
         document.getElementById('eco-inp-badge').value = '';
@@ -4939,13 +5006,20 @@
         return;
       }
 
+      const ordInpEl = document.getElementById('eco-inp-order');
+      const requestedOrder = ordInpEl ? parseInt(ordInpEl.value, 10) : NaN;
       if (editId) {
         const idx = ecosystemLinks.findIndex(x => x.id === editId);
         if (idx !== -1) {
-          ecosystemLinks[idx] = { id: editId, icon, name, url, badge, accessRole, desc };
+          const updatedItem = { id: editId, icon, name, url, badge, accessRole, desc };
+          ecosystemLinks.splice(idx, 1);
+          const insertIdx = !isNaN(requestedOrder)
+            ? Math.max(0, Math.min(ecosystemLinks.length, requestedOrder - 1))
+            : idx;
+          ecosystemLinks.splice(insertIdx, 0, updatedItem);
         }
       } else {
-        ecosystemLinks.push({
+        const newItem = {
           id: 'eco-' + Date.now(),
           icon,
           name,
@@ -4953,7 +5027,12 @@
           badge,
           accessRole,
           desc
-        });
+        };
+        if (!isNaN(requestedOrder) && requestedOrder >= 1 && requestedOrder <= ecosystemLinks.length) {
+          ecosystemLinks.splice(requestedOrder - 1, 0, newItem);
+        } else {
+          ecosystemLinks.push(newItem);
+        }
       }
 
       const isNewAdd = !Boolean(editId);
@@ -5055,6 +5134,18 @@
       if (!yyyy || !mm || !dd) return '';
       return `${parseInt(dd, 10)}/${parseInt(mm, 10)}/${yyyy}`;
     }
+
+    
+    window.applyQuickEditReviewOffset = function(months) {
+      const inp = document.getElementById('inp-edit-doc-review-date');
+      if (!inp) return;
+      const d = new Date();
+      d.setMonth(d.getMonth() + (parseInt(months, 10) || 12));
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      inp.value = `${yyyy}-${mm}-${dd}`;
+    };
 
     function renderQmsReviewTrackerModalDOM() {
       const tbody = document.getElementById('qms-review-tracker-tbody');
@@ -8607,6 +8698,11 @@
           isAutoTitle: true,
           access: 'Mở',
           downloadPerm: 'allow_all',
+          nextReviewDateIso: (() => {
+            const d = new Date();
+            d.setFullYear(d.getFullYear() + 1);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+          })(),
           desc: '',
           file: null,
           fileName: '',
@@ -8692,7 +8788,7 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-              <div class="sm:col-span-6">
+              <div class="sm:col-span-5">
                 <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Tên tài liệu / quy trình <span class="text-[#FFC857]">*</span>:</label>
                 <input type="text" data-idx="${idx}" data-field="title" value="${escapeHtmlStr(entry.title)}" required placeholder="Nhập tên quy trình (hoặc chọn file bên dưới để tự điền)..." class="entry-field-input w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-white text-xs focus:outline-none focus:border-[#FFC857]">
               </div>
@@ -8705,13 +8801,17 @@
                   <option value="Chỉ Admin" ${entry.access === 'Chỉ Admin' ? 'selected' : ''}>👑 Bảo mật Quản trị (Chỉ Admin)</option>
                 </select>
               </div>
-              <div class="sm:col-span-3">
+              <div class="sm:col-span-2">
                 <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Quyền tải xuống:</label>
                 <select data-idx="${idx}" data-field="downloadPerm" class="entry-field-select w-full px-2.5 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-white text-xs focus:outline-none focus:border-[#FFC857]">
                   <option value="allow_all" ${entry.downloadPerm === 'allow_all' ? 'selected' : ''}>Cho phép tải về</option>
                   <option value="view_only" ${entry.downloadPerm === 'view_only' ? 'selected' : ''}>Chỉ xem trực tuyến</option>
                   <option value="admin_only" ${entry.downloadPerm === 'admin_only' ? 'selected' : ''}>Chỉ Admin tải</option>
                 </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[#B8C8DC] mb-1 font-medium text-[11px]">Hạn rà soát riêng:</label>
+                <input type="date" data-idx="${idx}" data-field="nextReviewDateIso" value="${escapeHtmlStr(entry.nextReviewDateIso || '')}" class="entry-field-input w-full px-2 py-1.5 bg-[#102E52] border border-[#B98A33]/35 rounded-lg text-[#FFC857] font-mono font-bold text-xs focus:outline-none focus:border-[#FFC857] cursor-pointer" title="Chọn ngày hạn rà soát cụ thể cho quy trình này">
               </div>
             </div>
 
@@ -9121,6 +9221,7 @@
               dept: catVal,
               desc: descVal,
               effectiveDate: new Date().toLocaleDateString('vi-VN'),
+              nextReviewDate: item.nextReviewDateIso ? formatIsoInputToViDate(item.nextReviewDateIso) : '',
               status: 'Có hiệu lực',
               currentFile: item.fileName || (itemCode + (typeVal === 'Biểu mẫu' ? '.docx' : '.pdf')),
               fileData: item.fileData || '',
