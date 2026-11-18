@@ -228,6 +228,7 @@ export function signUserSessionToken(userObj) {
         ? userObj.emailHash.toLowerCase()
         : hashIdentifierSHA256(userObj.emailHash || 'anonymous')),
     role: userObj.role || 'user',
+    department: userObj.department || '',
     iat: issuedAt,
     exp: expiresAt
   };
@@ -316,6 +317,28 @@ export function resolveAuthoritativeRoleFromDb(req, dbUserRows = []) {
   }
   if (tokenRole === 'blocked' || tokenRole === 'revoked' || tokenRole === 'disabled') return 'blocked';
   return ['admin', 'office', 'editor', 'cbgv', 'user'].includes(tokenRole) ? tokenRole : 'user';
+}
+
+
+export function resolveAuthoritativeDeptFromDb(req, dbUserRows = []) {
+  const verified = getVerifiedSessionFromReq(req);
+  if (!verified) return '';
+  const tokenEmailHash = String(verified.emailHash || '').trim().toLowerCase();
+  const headerEmail = String((req && req.headers && (req.headers['x-user-email'] || req.headers['X-User-Email'])) || verified.email || '').trim().toLowerCase();
+  const headerEmailHash = headerEmail ? hashIdentifierSHA256(headerEmail).toLowerCase() : '';
+  if (ROOT_ADMIN_HASHES.has(tokenEmailHash) || (headerEmailHash && ROOT_ADMIN_HASHES.has(headerEmailHash))) return 'Tất cả';
+  if (Array.isArray(dbUserRows) && dbUserRows.length > 0) {
+    for (const u of dbUserRows) {
+      if (!u) continue;
+      const decEmail = String(decryptSensitiveText(u.email) || u.email || '').trim().toLowerCase();
+      const uHash = String(u.email_hash || (decEmail ? hashIdentifierSHA256(decEmail) : '')).toLowerCase();
+      if ((uHash && (uHash === tokenEmailHash || uHash === headerEmailHash)) || (decEmail && headerEmail && decEmail === headerEmail)) {
+        const decDept = String(decryptSensitiveText(u.department || '') || u.department || '').trim();
+        return decDept || 'Tất cả';
+      }
+    }
+  }
+  return String(verified.department || '').trim();
 }
 
 async function verifyLiveWritePrivilegeFromDb(sql, session, allowedRoles = ['admin']) {
@@ -631,8 +654,8 @@ export default async function handler(req, res) {
             WHERE LOWER(doc_code) = ${codeKey}
           ),
           caller_user AS (
-            SELECT COALESCE(jsonb_agg(jsonb_build_object('email', email, 'email_hash', email_hash, 'role', role)), '[]'::jsonb) AS users_json
-            FROM (SELECT email, email_hash, role FROM users WHERE ${callerHash} <> '' LIMIT 200) u_sub
+            SELECT COALESCE(jsonb_agg(to_jsonb(u_sub)), '[]'::jsonb) AS users_json
+            FROM (SELECT * FROM users WHERE ${callerHash} <> '' LIMIT 200) u_sub
           )
           SELECT
             (SELECT row_json FROM target_doc) AS doc_json,
@@ -748,8 +771,8 @@ export default async function handler(req, res) {
               SELECT COALESCE(jsonb_agg(LOWER(doc_code)), '[]'::jsonb) AS codes FROM deleted_documents_log
             ),
             caller_usr AS (
-              SELECT COALESCE(jsonb_agg(jsonb_build_object('email', email, 'email_hash', email_hash, 'role', role)), '[]'::jsonb) AS u_list
-              FROM (SELECT email, email_hash, role FROM users WHERE ${callerListHash} <> '' LIMIT 200) u_sub
+              SELECT COALESCE(jsonb_agg(to_jsonb(u_sub)), '[]'::jsonb) AS u_list
+              FROM (SELECT * FROM users WHERE ${callerListHash} <> '' LIMIT 200) u_sub
             )
             SELECT
               COALESCE((SELECT jsonb_agg(jsonb_build_object('meta', meta, 'has_file', has_file)) FROM doc_meta), '[]'::jsonb) AS meta_rows,
@@ -773,6 +796,7 @@ export default async function handler(req, res) {
       }
 
       const verifiedCallerRole = resolveAuthoritativeRoleFromDb(req, dbUsersList);
+      const verifiedCallerDept = resolveAuthoritativeDeptFromDb(req, dbUsersList);
       if (verifiedCallerRole === 'blocked') {
         return res.status(403).json({
           error: 'Tài khoản của bạn đã bị Quản trị viên tạm khóa quyền truy cập hệ thống.',
@@ -846,6 +870,7 @@ export default async function handler(req, res) {
         success: true,
         hasDatabase: true,
         callerRole: verifiedCallerRole,
+        callerDepartment: verifiedCallerDept,
         encryption: 'AES-256-GCM',
         totalCount: authorizedRows.length,
         page: reqPage || 1,

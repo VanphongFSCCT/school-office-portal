@@ -228,6 +228,7 @@ export function signUserSessionToken(userObj) {
         ? userObj.emailHash.toLowerCase()
         : hashIdentifierSHA256(userObj.emailHash || 'anonymous')),
     role: userObj.role || 'user',
+    department: userObj.department || '',
     iat: issuedAt,
     exp: expiresAt
   };
@@ -362,8 +363,10 @@ export default async function handler(req, res) {
     ];
 
     let role = null;
+    let userDepartment = '';
     if (ROOT_ADMINS.includes(email)) {
       role = 'admin';
+      userDepartment = 'Tất cả';
     }
 
     const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.NEON_DATABASE_URL;
@@ -371,14 +374,16 @@ export default async function handler(req, res) {
       try {
         const sql = getAuthSqlClient(databaseUrl);
         const rows = await executeWithRetry(() => sql`
-          SELECT email, email_hash, role FROM users LIMIT 200
+          SELECT to_jsonb(u) AS u_json FROM users u LIMIT 200
         `, 2);
-        for (const r of (rows || [])) {
+        for (const row of (rows || [])) {
+          const r = (row && row.u_json) ? row.u_json : row;
           if (!r) continue;
           const decEm = String(decryptSensitiveText(r.email) || r.email || '').trim().toLowerCase();
           const rHash = String(r.email_hash || '').trim().toLowerCase();
           if ((rHash && rHash === emailHash.toLowerCase()) || (decEm && decEm === email)) {
             if (r.role) role = String(r.role).trim().toLowerCase();
+            userDepartment = String(decryptSensitiveText(r.department || '') || r.department || 'Tất cả').trim();
             break;
           }
         }
@@ -403,7 +408,7 @@ export default async function handler(req, res) {
 
     // Xóa ngay biến payload trong RAM, chỉ trả về Token phiên ẩn danh (Zero-PII Session Token)
     payload = null;
-    const sessionToken = signUserSessionToken({ emailHash, role });
+    const sessionToken = signUserSessionToken({ emailHash, role, department: userDepartment });
     if (sessionToken) {
       res.setHeader('Set-Cookie', buildSessionCookieHeader(sessionToken, 28800));
     }
@@ -423,6 +428,7 @@ export default async function handler(req, res) {
         emailHash,
         displayLabel,
         role,
+        department: userDepartment,
         sessionToken,
         sessionIssuedAt: Date.now(),
         sessionExpiresAt: Date.now() + 8 * 3600 * 1000

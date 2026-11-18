@@ -228,6 +228,7 @@ export function signUserSessionToken(userObj) {
         ? userObj.emailHash.toLowerCase()
         : hashIdentifierSHA256(userObj.emailHash || 'anonymous')),
     role: userObj.role || 'user',
+    department: userObj.department || '',
     iat: issuedAt,
     exp: expiresAt
   };

@@ -228,6 +228,7 @@ export function signUserSessionToken(userObj) {
         ? userObj.emailHash.toLowerCase()
         : hashIdentifierSHA256(userObj.emailHash || 'anonymous')),
     role: userObj.role || 'user',
+    department: userObj.department || '',
     iat: issuedAt,
     exp: expiresAt
   };
@@ -478,7 +479,7 @@ export default async function handler(req, res) {
         sanitizeInputString(name || cleanEmail.split('@')[0], 150)
       );
       const encryptedDept = encryptSensitiveText(
-        sanitizeInputString(department || 'Văn phòng', 150)
+        sanitizeInputString(department || 'Tất cả', 150)
       );
 
       await executeWithRetry(async () => {
@@ -532,7 +533,8 @@ export default async function handler(req, res) {
           email: cleanEmail,
           emailHash,
           name: sanitizeInputString(name || cleanEmail.split('@')[0], 150),
-          role: safeRole
+          role: safeRole,
+          department: sanitizeInputString(department || 'Tất cả', 150)
         }
       });
     }
